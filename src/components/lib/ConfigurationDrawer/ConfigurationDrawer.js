@@ -1,18 +1,8 @@
-import {
-  Card,
-  Chip,
-  Divider,
-  Drawer,
-  IconButton,
-  Typography,
-  Stack,
-} from "@mui/material";
+import { Card, Chip, Divider, Typography, Stack } from "@mui/material";
 import {
   Add,
   Close,
   CloseFullscreen,
-  ExpandLess,
-  ExpandMore,
   OpenInFull,
   Save,
   SortByAlpha,
@@ -123,6 +113,18 @@ export default function ConfigurationDrawer({ machine }) {
                     <b>State: </b> {statePath(submachine.state.value)}
                   </Typography>
                 </Spacer>
+
+                {/* {submachine.state.can("add") && (
+                  <Chip
+                    size="small"
+                    color="success"
+                    variant="outlined"
+                    label={`Add ${
+                      submachine.candidateType || submachine.machineName
+                    }`}
+                    icon={<Add />}
+                  />
+                )} */}
 
                 {Object.keys(toolbarBtn)
                   .filter((btn) => submachine.state.can(btn))

@@ -561,7 +561,10 @@ export default function ConnectionDrawer(props) {
                 <Spacer />
                 <TinyButton
                   onClick={() => submachine.send("close connection")}
-                  hidden={connectionID !== connection.ID}
+                  hidden={
+                    connectionID !== connection.ID ||
+                    !submachine.state.can("close connection")
+                  }
                   icon="Close"
                 />
               </Flex>

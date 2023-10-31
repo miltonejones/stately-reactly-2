@@ -37,6 +37,7 @@ import EditBlock from "../../../styled/EditBlock";
 import stateRead from "../../../util/stateRead";
 import ChipMenu from "../../../styled/ChipMenu";
 import Json from "../../../styled/Json";
+import PageTitle from "../PageTitle/PageTitle";
 
 function AppGrid({ appKeys, machine }) {
   return (
@@ -349,6 +350,7 @@ export default function ComponentTree({ machine }) {
 
   return (
     <>
+      <PageTitle machine={machine} />
       <InvokeErrorModal invoker={machine.invoker} />
       <ComponentModal machine={machine} />
       <ConfigurationDrawer machine={machine} />

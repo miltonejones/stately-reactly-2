@@ -1090,8 +1090,6 @@ export const updateAppState = assign((context, event) => {
 
   let prop;
 
-  console.log({ key, options });
-
   if (!!key && options.item) {
     prop = options.item[key];
   } else {

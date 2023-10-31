@@ -9,7 +9,7 @@ const Backless = styled(Card)(({ open }) => ({
   bottom: 0,
   right: 0,
   width: "100vw",
-  backgroundColor: "#FFF",
+  backgroundColor: "aliceblue",
   zIndex: 400,
 }));
 
