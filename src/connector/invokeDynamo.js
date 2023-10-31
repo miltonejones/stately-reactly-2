@@ -1,12 +1,52 @@
 import AWS from "aws-sdk";
+import { restoreObjectLabels } from "../util/restoreObjectLabels";
 
-function invokeDynamo(connection, resource) {
-  return new Promise((resolve, reject) => {
-    const dynamodb = new AWS.DynamoDB({
-      region: connection.region,
-      accessKeyId: connection.accesskey,
-      secretAccessKey: connection.secretkey,
+function invokeDynamo(connection, resource, item) {
+  const dynamodb = new AWS.DynamoDB({
+    region: connection.region,
+    accessKeyId: connection.accesskey,
+    secretAccessKey: connection.secretkey,
+  });
+
+  if (resource.method === "PUT") {
+    return new Promise((resolve, reject) => {
+      const Item = restoreObjectLabels(item);
+      console.log({ Item });
+      const params = {
+        TableName: resource.tablename,
+        Item,
+      };
+
+      dynamodb.putItem(params, (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve({ message: "Item added successfully", data });
+        }
+      });
     });
+  }
+
+  if (!!item && item.filterKey && resource.method === "DELETE") {
+    return new Promise((resolve, reject) => {
+      const params = {
+        TableName: resource.tablename,
+        Key: {
+          [item.filterKey]: { S: item.filterValue },
+        },
+      };
+
+      dynamodb.deleteItem(params, (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve({ message: "Item deleted successfully", data });
+        }
+      });
+    });
+  }
+
+  return new Promise((resolve, reject) => {
     const params = {
       TableName: resource.tablename,
     };

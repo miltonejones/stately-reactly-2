@@ -26,6 +26,7 @@ import ClientScriptrawer from "./ClientScriptDrawer";
 import ConnectionDrawer from "./ConnectionDrawer";
 import statePath from "../../../util/statePath";
 import Flex from "../../../styled/Flex";
+import BacklessDrawer from "../../../styled/BacklessDrawer";
 
 export default function ConfigurationDrawer({ machine }) {
   const submachine = machine.configMachines[machine.configurationType];
@@ -80,7 +81,7 @@ export default function ConfigurationDrawer({ machine }) {
   return (
     <>
       <AddModal submachine={submachine} />
-      <Drawer anchor="bottom" open={submachine.state.can("close")}>
+      <BacklessDrawer anchor="bottom" open={submachine.state.can("close")}>
         <Card>
           <Stack>
             {!!submachine && (
@@ -140,7 +141,7 @@ export default function ConfigurationDrawer({ machine }) {
             )}
           </Stack>
         </Card>
-      </Drawer>
+      </BacklessDrawer>
     </>
   );
 }

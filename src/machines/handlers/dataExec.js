@@ -14,7 +14,25 @@ const dataExec = async (context) => {
   );
 
   if (connection.type === "dynamo") {
-    const data = await invokeDynamo(connection, resource);
+    let item = stateRead({
+      value: resource.body,
+      page,
+      application,
+      options,
+    });
+    if (resource.filterValue) {
+      const filterValue = stateRead({
+        value: resource.filterValue,
+        page,
+        application,
+        options,
+      });
+      item = {
+        filterValue,
+        filterKey: resource.filterKey,
+      };
+    }
+    const data = await invokeDynamo(connection, resource, item);
     const rows = resolveRows(data, resource.node.split("/"));
     const packaged = {
       ...application,

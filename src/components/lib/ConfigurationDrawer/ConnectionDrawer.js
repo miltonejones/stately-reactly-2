@@ -27,6 +27,7 @@ import SearchInput from "../../../styled/SearchInput";
 import EditBlock from "../../../styled/EditBlock";
 import PredicateList from "./PredicateList";
 import generateGuid from "../../../util/generateGuid";
+import Columns from "../../../styled/Columns";
 
 // function HideBox({ in: visible, children, ...props }) {
 //   if (!visible) return <i />;
@@ -315,7 +316,7 @@ function CommonForm({
   );
 }
 
-function ResourceForm({ resource, connection, machine }) {
+function ResourceForm({ resource, connection, stateAttr, machine }) {
   const resourceProps = [
     {
       title: "method",
@@ -363,6 +364,7 @@ function ResourceForm({ resource, connection, machine }) {
       title: "name",
     },
     {
+      type: machine.tableList || [],
       title: "tablename",
       alias: "Table Name",
       xs: 6,
@@ -389,7 +391,12 @@ function ResourceForm({ resource, connection, machine }) {
         <Button
           color="error"
           variant="contained"
-          onClick={() => machine.send("test")}
+          onClick={() => {
+            machine.send({
+              type: "test",
+              attr: stateAttr,
+            });
+          }}
         >
           test
         </Button>
@@ -439,11 +446,15 @@ export default function ConnectionDrawer(props) {
   // labels for the resource tabs
   const tabs = [{ label: "settings" }, { label: "events" }];
 
-  if (chosenConnection?.type === "rest") {
+  const isPostRequest = ["POST", "PUT"].some(
+    (f) => chosenResource?.method === f
+  );
+
+  if (chosenConnection?.type === "rest" || isPostRequest) {
     tabs.push({ label: "parameters" });
   }
 
-  if (chosenResource?.method === "POST") {
+  if (isPostRequest) {
     tabs.push({ label: "body" });
   }
 
@@ -547,6 +558,12 @@ export default function ConnectionDrawer(props) {
                 >
                   {connection.name}
                 </Nowrap>
+                <Spacer />
+                <TinyButton
+                  onClick={() => submachine.send("close connection")}
+                  hidden={connectionID !== connection.ID}
+                  icon="Close"
+                />
               </Flex>
               {connectionID === connection.ID && (
                 <Stack>
@@ -610,11 +627,51 @@ export default function ConnectionDrawer(props) {
                     <TabBody minWidth={500} in={tab === 0}>
                       <Stack>
                         <ResourceForm
+                          stateAttr={machine.stateAttr}
                           machine={submachine}
                           resource={chosenResource}
                           connection={chosenConnection}
                           connections={connections}
                         />
+
+                        <Collapse
+                          in={
+                            chosenResource.method === "DELETE" &&
+                            chosenConnection.type === "dynamo"
+                          }
+                        >
+                          <EditBlock
+                            title="Select record"
+                            description="Choose the column and value of the record that you want to delete"
+                          >
+                            <Columns>
+                              {!!submachine.columnList && (
+                                <SearchInput
+                                  options={submachine.columnList}
+                                  value={chosenResource.filterKey}
+                                  onChange={(e) => {
+                                    submachine.send({
+                                      type: "update",
+                                      name: "filterKey",
+                                      value: e.target.value,
+                                    });
+                                  }}
+                                />
+                              )}
+                              <SearchInput
+                                value={chosenResource.filterValue}
+                                onChange={(e) => {
+                                  submachine.send({
+                                    type: "update",
+                                    name: "filterValue",
+                                    value: e.target.value,
+                                  });
+                                }}
+                                options={Object.keys(machine.stateAttr)}
+                              />
+                            </Columns>
+                          </EditBlock>
+                        </Collapse>
                         <Collapse
                           in={
                             chosenResource.range === "filter" &&

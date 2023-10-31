@@ -178,7 +178,7 @@ export const assignStateList = assign((context) => {
   });
 
   const stateList = appData.state.map((item) => `application.${item.Key}`);
-  let stateAttr = stateReduce(appData.state);
+  let stateAttr = stateReduce(appData.state, "application.");
   if (page) {
     stateAttr = {
       ...stateAttr,
@@ -297,20 +297,20 @@ export const openCreatedComponent = assign((context, event) => {
     (t) => t.ComponentName === createdComponent.ComponentType
   );
 
-  const props = JSON.parse(Attributes);
+  // const props = JSON.parse(Attributes);
 
-  props.map((prop) => {
-    if (prop.default) {
-      const SettingValue =
-        prop.type === "bool" ? prop.default !== "false" : prop.default;
-      createdComponent.settings.push({
-        SettingName: prop.title,
-        SettingValue,
-      });
-    }
-  });
-  console.log({ createdComponent });
-  alert(JSON.stringify(createdComponent.settings, 0, 2));
+  // props.map((prop) => {
+  //   if (prop.default) {
+  //     const SettingValue =
+  //       prop.type === "bool" ? prop.default !== "false" : prop.default;
+  //     createdComponent.settings.push({
+  //       SettingName: prop.title,
+  //       SettingValue,
+  //     });
+  //   }
+  // });
+  // console.log({ createdComponent });
+  // alert(JSON.stringify(createdComponent.settings, 0, 2));
 
   if (!!page) {
     const updatedPage = editPage(appData, page.ID, (page) => {
@@ -917,17 +917,20 @@ export const registerPackage = assign((context, event) => {
     setupData,
   };
 });
+
 export const resetComponent = assign((context) => {
   return {
     componentID: context.selectedComponent.ID,
   };
 });
+
 export const assignComponent = assign((_, event) => {
   const componentID = event.ID;
   return {
     componentID,
   };
 });
+
 export const assignLibraryData = assign((_, event) => {
   const Library = event.data;
   const iconList = Library.filter((f) => !!f.Icon).reduce((out, key) => {
@@ -964,10 +967,12 @@ export const assignComponentBindings = assign((context, event) => {
     selectedComponent: updatedComponent,
   };
 });
+
 export const clearComponent = assign({
   componentID: null,
   selectedComponent: null,
 });
+
 export const reassignAppData = assign((context, event) => {
   if (!event.application) return;
 
@@ -1027,6 +1032,7 @@ export const reassignAppData = assign((context, event) => {
   }
   return appContext;
 });
+
 export const updateMachineContext = assign((_, event) => ({
   [event.name]: event.value,
 }));
