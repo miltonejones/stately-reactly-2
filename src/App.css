@@ -1,5 +1,11 @@
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
 .App {
-  text-align: center;
+  width: 100vw;
+  height: 100vh;
 }
 
 .App-logo {
@@ -35,4 +41,72 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+pre.code {
+  position: relative;
+  background-color: rgb(40, 44, 52);
+  color: #fff;
+  padding: 32px 4px 12px 4px;
+  overflow-x: auto;
+  border-radius: 0.25rem;
+  height: calc(100% - 64px);
+  width: calc(100% - 16px);
+  font-size: 0.75rem;
+}
+
+pre.code::before {
+  cursor: pointer;
+  position: absolute;
+  background-color: rgb(0, 0, 0);
+  font-family: Roboto;
+  font-size: 0.7rem;
+  color: #fff;
+  top: 0;
+  left: 0;
+  text-align: left;
+  width: 100%;
+  content: "📋 Copy code   ";
+  padding: 4px 0;
+}
+
+pre.code.clicked::before {
+  content: "📋 Copied!   ";
+}
+
+.photo-swappable {
+  position: absolute;
+  top: 0;
+}
+
+.swapping {
+  transition: left 0.7s linear;
+}
+
+.image-idle {
+  left: 0;
+}
+
+.image-swapped {
+  left: -100%;
+}
+
+.image-standby {
+  left: 100%;
+}
+
+.string {
+  color: green;
+}
+.number {
+  color: darkorange;
+}
+.boolean {
+  color: blue;
+}
+.null {
+  color: magenta;
+}
+.key {
+  color: red;
 }
