@@ -2,37 +2,19 @@ import {
   Add,
   CheckBoxOutlineBlankRounded,
   Delete,
-  MoreVert,
   Remove,
   Sync,
 } from "@mui/icons-material";
 import Flex from "../../../styled/Flex";
 import Nowrap from "../../../styled/Nowrap";
 import { TinyButton } from "../../../styled/TinyButton";
-import { Chip, Collapse, Link } from "@mui/material";
+import { Chip, Collapse } from "@mui/material";
 import findMaxNumber from "../../../util/findMaxNumber";
 import useBinding from "../../../hooks/useBinding";
 
 export default function ComponentNav(props) {
-  const {
-    componentList,
-    components,
-    component: currentComponent,
-    send,
-    create,
-    expand,
-    expanded,
-    machine,
-    iconList = {},
-    ml = 1,
-  } = props;
+  const { components, component: currentComponent, send } = props;
   const items = components.sort((a, b) => (a.order > b.order ? 1 : -1));
-  const selectComponent = (ID) => {
-    send({
-      type: "edit",
-      ID,
-    });
-  };
 
   return (
     <>
@@ -74,14 +56,20 @@ const ComponentChild = (props) => {
   );
 
   // find any repeater data for this component
-  const { repeaterItems } = useBinding(machine, component, true);
+  const { repeaterItems } = useBinding(
+    machine,
+    component,
+    true,
+    "Component Nav"
+  );
 
   const highest = findMaxNumber(childComponents.map((f) => f.order));
 
   const libRecord = iconList[component.ComponentType];
+  const marginLeft = !!childComponents.length ? ml : ml + 2;
   return (
     <>
-      <Flex sx={{ ml }}>
+      <Flex sx={{ ml: marginLeft }}>
         {!!childComponents.length && (
           <TinyButton
             onClick={() => expand(component.ID)}

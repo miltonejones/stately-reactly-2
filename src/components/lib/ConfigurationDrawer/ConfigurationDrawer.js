@@ -3,6 +3,7 @@ import {
   Add,
   Close,
   CloseFullscreen,
+  Delete,
   OpenInFull,
   Save,
   SortByAlpha,
@@ -17,6 +18,8 @@ import ConnectionDrawer from "./ConnectionDrawer";
 import statePath from "../../../util/statePath";
 import Flex from "../../../styled/Flex";
 import BacklessDrawer from "../../../styled/BacklessDrawer";
+import DropModal from "../ComponentTree/DropModal";
+import StateBar from "../../../styled/StateBar";
 
 export default function ConfigurationDrawer({ machine }) {
   const submachine = machine.configMachines[machine.configurationType];
@@ -54,6 +57,9 @@ export default function ConfigurationDrawer({ machine }) {
     add: {
       icon: Add,
     },
+    drop: {
+      icon: Delete,
+    },
     commit: {
       icon: Save,
       props: {
@@ -70,6 +76,7 @@ export default function ConfigurationDrawer({ machine }) {
 
   return (
     <>
+      <DropModal machine={submachine} />
       <AddModal submachine={submachine} />
       <BacklessDrawer anchor="bottom" open={submachine.state.can("close")}>
         <Card>
@@ -102,7 +109,8 @@ export default function ConfigurationDrawer({ machine }) {
                   </>
                 )}
 
-                <Spacer
+                <StateBar state={submachine.state} />
+                {/* <Spacer
                   sx={{
                     backgroundColor: (theme) => theme.palette.grey[300],
                     borderRadius: 2,
@@ -112,7 +120,7 @@ export default function ConfigurationDrawer({ machine }) {
                   <Typography variant="caption">
                     <b>State: </b> {statePath(submachine.state.value)}
                   </Typography>
-                </Spacer>
+                </Spacer> */}
 
                 {/* {submachine.state.can("add") && (
                   <Chip

@@ -7,9 +7,12 @@ import { findMatches } from "../util/findMatches";
 import invokeDynamo from "../connector/invokeDynamo";
 import describeDynamo from "../connector/describeDynamo";
 import resolveNode from "../util/resolveNode";
+import invokeMySQL, { getTable, getTables } from "../connector/invokeMySQL";
+import objectKeys from "../util/objectKeys";
+import encrypt from "../util/encrypt";
 const connectionMachine = createMachine(
   {
-    /** @xstate-layout N4IgpgJg5mDOIC5QGMD2A7dZkBcCWGAxADaoCGEA2gAwC6ioADqrHvhgyAB6IDMAnAFYAdACYA7KMHiB46gDZRvXgBYANCACeiALQBGPfL3DBK3qL3VxADlFTq1gL6ONaTNnboS5KnvpIQZlZPTh4EZXFhSVVRfkVBfmpTDW0EHX5eEUN5XmorFUFRW15nVwwsXAJ0YTcKzwACAFtUCDJierxYetRGMC9kUlgwGn8mFjYq0MQ9XmFrfmtzaxUzUTzBPVEU3X44qItFFRyjW0FSkFqPKpryq4wmlraOrp6+4TwIYjBCIZx6y8qGBGnCCEw4ATCOjss12iz0tmi1CK2zSKmo-DmuUEgjyRT0BXOAM8N3cgPQD1a7U63V61Q+X0IFCodBB4xCEN0kkiOUW8nEenEcWx4hROg2kRUdg2kvkBQkJRcF1uZJJdSqFKe1Ne1UgE3QUH+ys8hAGLDAhtJnmBAVB7NAkJs1DEhXE8n4Kk2R2kKJkwkM4lMGSKjv5hKN1yJ6ualOeNLeuvw+otaqIv3qACc4KgAK7p5DDFk2tmTDkIax6DG7HKiD2u2IyUVSYwqcSSQTHIwVzJhy0R8P3aOal604QJvBJyNEbOMVo4AujQLF8H23TKJ2xJIGQoCXg5FHw0TCXd6HHyUzyYoZHsp6qT8mDqnD+MQPUGu+MiDMhe2ksrhDxYQkTiQwinbHFrFFFRbEAwx214awHBUXZeHEa87lvft70eR84x1F9EzfTDhEzChNBNVBGkaNhrTGYJf24Vdd2EXZxBWeRZXdQRrBFLQ+BUI9uKggxVDRax5DQlU7w1HDtVHfDx0I3sMBuSi2GTdD-gACzIfU4EICAMDAd50AAN1QABrIy71VDSH1jWSxwnIi0FUv4pOQbTdNgBBxzM5AyCtOgaMXOjlwY8J2OEI5LEFVt+TWBRRRPQ90QFC90Wscsa1ECTiSkuytRHRyDUzWAczzb5TSGDMs1zfNgp-MKwnxDFFkEnJ2zdN1eH3GtrBMeCBAKcwjADXK+yUrCY0K59Xxqsq6u+adZ3nVlQvQKYEAyJ03WoAoEi4wpFH3FYRFEC8FkyagKxA8blPy7D7KK+Sk1K8r8xNL4yHTBqlw20tNhyEwlFMRZqEyFD1F4hB8UsI8zwERQZFsBQ7owybpKe2aCPm97vjTN7Ft+9bNqlYxBERxZ+BmBxMhRMxZl3SVNjEhZNhyxVrIe6anzwubCYq4iwFI8jXOJsF-r-CsrCi1jEjiRC0p9VQjzRF1MoKdinE55zMMxma+ZxgX8yFkW51gHBxbtcK4gxNdIasa6Mh66G4KiIRpBQrWuI5spJpssl9d5uT+dqwWSIgMimSt+jmoFEQ2aSRRcjyPR6dlMQwddeP5ikNGA4aArg+K3HFtNyOak07BzNLir6hwTRekIGOmumXh4Rg5QUJPKDpEEFF5mMSRrovHIrEFPR8+5odcJDo2w5NiPNGEGA-kj9AyGaQ1iGzRp0FgfTDOMszLILiabyD2eS+Noyl5XsA180Det7QHe9+83zUH8wLaBbyXwsMLkYQ8gHB8kynECw8x9zXUiLsdsZgrA+wvFPPWRcr4vRKgvKyFEqJ-BvlpHSMAD4GSwMfCy2D-bTxks9UOC1BYuVwbXfMBCvI+VMl-AKVQRh-02hkDEMwcQFFbNIViadobs3kEeWIcQ5CdVdKhHWlDUGPQNnPBSTCjLmzwVg+ovwCLEKPp-U+XNlE83QbQvGwgtEaN0Q-fRbC-KcKBEFQstEJa8LyIBfkF5lCGHmAIFEuR+L+L2jubiihfZKiURjNBDkMEaOEEydRc50yNBNJ5GAPCAbnVmFYSwWI0RxACeIvkcwqYrFkHtRYCi-Y3jPgOFRxd4k30SZ+ZJYBUk-DICZVaRYSbZJWHMPIkooL8CUMiV2UE-SSgiBINE4NxKKLqVQrGht1EtKSUmFJaT-LoHzMQLJUsWYmFEvM+ZQh5D7kSMAywSFWKCkyIcFBMTGmz02YpG8JodL7MOTbWYsokhrHma6N0-doY6D5GdKC8wzCtgMPwZ5F9YkjneepMk6TCG9LcdbMIUh+orFiAhAU0t3SinYhiOwCF27oj5AoRZtT0L1KmjPWSqL3ywG6VikK7iAa+nyeM7E0UPSihQv1WI2J+CCgiShBUDLJKmJZSitpr0sEYt0r8sI3ixDwUlBAkBFgwWpB0DISI8F8RKCMB6JQsqonLIVdQt4qKb5fL2WAA5rjuU4sQIUEQYkLzSASjYKB4KVjGHdLkfkJKayTyWYylZqinWqo5T0jV0wzDBN5NIAUYzDW6E7H6XaGx2bU3dIi2yrzZL4MYJmHQHlq6V2rmihoDcm6pphpauY7oMiexWCsRsRgTCZUFPMbcaJWxlsDsit4Vaa11uQOZBt86m3qhbd8Sgfg1o8qlooSRLZchnkKAs7ioouIFpOMePh1qzixvlS8sxladHVrALWqu8776P2fqgeuZAABGXwDGkKMRQu1d7FXTsfbO19C7V71HXpvL9OBf3-ocRwn+bb4SSCPIKQoTYfGbFFOWYBkpJCymWFxJEKgp6DAUofQD7DjHOWo-qFD38uEuO-H9TaUJMMyg9AUT0VSkr5OAaoBw2UzWUfOOgFocBOB3k3V6tI4TnQSDdFar0PEjWegxKEwwhgjhgPzvSMACnY66E9n6PIrEkhiSQkkJK6J+IyF3NIbi10uITsLhW2kpnW5KaKCp107pPRnk07oWwGb8S5EMO6M8km5V5Xtas94nwTN9K3eFY1UgROLElLTbtUMjXwUiPkhY8wThxWvQl8+5b700JxvJ9LimdBHB2hTOQKwFjkrC2kJQGIEgClYnFnuZ5PNRm89jdR1kl6+f-rizKcwpC7ipfMcBoonRITEijBZrZYRiTGw0urk2nJKNcsu+4HlMXwCa2Z1EmxgHtb2pt7rSU0SAUlOWM8J4FB4oO8yh1ayVV0PzLNzatgMRISQlxduCR4KXOhpkMpQ0jpVKDX9y+cSLFlxmzdvzcCjwJA9PkT7BRlYwjkPHOQu5U7o6nYDzBwPb7CwrnOmu+DV2g4BqEgnwXif6dzWWeYssR5CjMO6Gptq41JdUdfLB5dl4wbgy-VAb996c6lrD5i5ykJ8kyAGAeZ5mIU9YssEeVhacTfpwku+pAKCQHVwA8wToREWHim5jY0CBBiDsGsGQjmPQ2pMaBgHaigeWIYWpfBl2vIO+ahPLDuq9pJBsL1e7NgLnZX5EICXQekWW9Dwzyx1j8F6IUtd7Ft3uISi7dDk8GQxL0zezYfdrowKyhbBbo7VuNnKoNNs2P0wDBOlOBTeY8ULwQQR+DOYoKhBVOIx3m9iXg-JbZZhAf-5IhAosAoNEZ4xnw6NRsfqYNRLJwJfSyXt689d9aS+MPi0N84aiJCswboDB2EP3mva8Nw3ljr3yJfrnrVmBtUDOs+qzhvjTL6lBFTr7g2OCpkMYMoFXp9mMtTJEsAZOvnuAS+vWqzuduSBzrjnNm3BTHMLAeDPAS7EajkpiNxLsAUO6Lvp3qAULIzvUE+ngW+ork-PBt+n+rJiQZtPCKetxNkH4n7viP2rMG1K2NYHBNIGYFVlfnlExlAFAXbHIJCviJIBuALvoDTCYAkIKAahakIM4M4EAA */
+    /** @xstate-layout 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-EDmDMxsM0Lg-BOAyAACM6QFPIUU6xtLQ0ypqIBijwHQOsPYYxljbGvH8N8bQC94MURoQ-W2a8GQNiPqrMZQU0ps4KESPWQjrN-0JhcAAMzwKsnozGABWbg2GyUYIQTQcAL16EKLvCUEUogKFyOsUUthJQrtyAfMyuR+R6Z1oW8cxnTNNHM1Z3ANneiEHQKgJz-TuX91gqcX++lUjOe9FIUwGI9h1ixGajdPtpW3OEJjaaJoZzdCqhAapsBhDDHQI1oaGyarmI43w4psKKvF2q4uCDJCGgNaay1-o7X7IKtGhJxpfxml1y+Ry5KKqYgdt3GFbEqgH05fMGLdERR5CmqUaFp8YaExDdq8RerbWJutca0Y2bXXCm9a47+vtxGrvzhqyNu7T3UHNce9U9xpj5sCMW9JqtK3lI6ChFyd9Kh+SISTRhiUYhJDHHc9EM51yhj5TIfVTj0zagE51BDqTTnwSSgkBC-QVYInbQie2Sy2cOmJClPwc7Mzwv6wqaW6StmZM7XUvEZCYJdvMXnWiYyl5ih1nCrenn-aIsYBM2ZoxMkEsOdgDJ46xljg7fyJSyQiJViryOMdpIzpkowzKwXP9l2ajXaa0TyxrUPuboG-7V3ej6l8IW+gIRy34PKVOFkKytb8verCqKCRx9Mhc4PlSkLDvNE8cq5FzXpHtd2aSzJ2Q3oqw2HbUINC3mDLyG9FbyCjFAyrD7On5JX2+d3JLVPZhd9BOg6g5-WDnyw9L16TE0wdZjhJGAfI+CqJGdWC7gsMwjgLhJYgHATgM44Pjq2AcYZ6azi7jBlvR9QgbCG6pZ+g4Lopk0jpFvxeuhJAiHS9udEGRHTM+rFZWQZh9DExWCrt9gEq0otHoP3ArOKGhAfm7PMJ6ipN-mIAzIPJli3KVsPN7pnsXLfmAPft-GkB2u2I6IGPPjLNqnAToBpBCBYGsNEDYD2N+iUq3gZu3gVLZLgW0l6vkHLhXsUA3qsOQTkBAqYKsGtr5ruIAW3sgqwW5LfOwYtOBIoqoLIIkHuIdKIKKLTrCJtD-jEIdDCjYpgRfL1P1hHCNmDqNHIRWDoLmtwRKLwQDEcNtJEIrBvAhPoFEKoLAugeVoYeUoOqWpYQBEYHJnIHkMoRZCpqkIYA6LyOBOBJOs6BIcwVIdUl3oEcpPMOBNkAfNnJZB5ntj-PEavIxMlOBJBGnt4Y7kwc7ikQsrfGBk-EYlBukUvGZFuDkScPEFpAUZerLvIGFEapkFIJIEkTUQiqWl3jRtgvRhwlwsQvAIPtvpejyKvMhGPvBMQXAUUEIMUQMVIN-jmqMbxrUUwvUaQBQJAC0T-GEN6MUExIUElM6FsfsYrCVuqnQYKGgT+hgU7sceMZ3mgKYc9p1gsWOg-pevjNkIKOEYYKoB6AZMId6BFNeOvMxFYBFEcZVv8RXFUkYrUjqKCSIkscxPHKEUXteBEYiG6sZCbrJm0SMc3tMqrvzv4Z3oys8lcZesdsZInhKJYIlD0TuD6CUM6D2CsGnJicXHKsRJyXoDsQcHELCMGOBPBOQYaj6BEvWEGCZEcJKf7BGqgpycqT6FIruCIW3IIPHlZPFKsIfl3FINEPodxr8ZVvxpRo-JyclOiMUQzPvGZDYD5oUPFHuIkFZEcLEMUHqUgm6YJg0WYc0YseCb-MXgan6ZAaKCsMXglG8diB5lGU5DGVRkJrRiJpwkxqxuvomXgUMYonGryNeMhkUBmRIuluKBBLeruARoyVukgtntFqgJZtZnnrKTtBCMmUUJBJYFWNtMtHyPWfEMlI3nIPmeOK7nVmNvdv7iOUbj6PvlpDAcfjlteFyHyMdCdhpBHiuT9ljP9huYDqWsDlNmYS9oSSAVYaYCSpAWYPuUfuQYPDyX9DINnGtleS7r9sNuueNv7pNpuaRi+SOWoqvI2iqWUf3OoY+v+asIBfIFWGhPjhMDqJydnBEFEFmpeP0QAszoKOpGaZ2GYImtSowURpIX2aDsOVWRwZevWPHMhF5nIGFNnJERuCoHLmcPLteNEHWJMt2T7kgn7kDp6foArFmpBM6jmlKEKlkLyUcDECcIYMvvYEAA */
     id: "connection",
 
     initial: "idle",
@@ -29,11 +32,6 @@ const connectionMachine = createMachine(
         states: {
           idle: {
             on: {
-              "set connection": {
-                target: "editing connection",
-                actions: "assignSelectedConnection",
-              },
-
               add: {
                 target: "adding connection",
                 actions: assign({
@@ -66,6 +64,17 @@ const connectionMachine = createMachine(
                 actions: assign({
                   candidateType: "resource",
                 }),
+              },
+
+              secret: {
+                target: "editing connection",
+                internal: true,
+                actions: "assignEncryptedProp",
+              },
+
+              drop: {
+                target: "confirm object drop",
+                actions: "assignConnectionDropMessage",
               },
             },
 
@@ -111,6 +120,11 @@ const connectionMachine = createMachine(
                 internal: true,
                 actions: "assignSelectedResource",
               },
+
+              drop: {
+                target: "confirm resource drop",
+                actions: "assignResourceDropMessage",
+              },
             },
 
             description: `A resource is selected and being edited or tested.`,
@@ -135,10 +149,13 @@ const connectionMachine = createMachine(
 
                 states: {
                   "check resource type": {
-                    always: {
-                      target: "get dynamo columns",
-                      cond: "columns needed",
-                    },
+                    always: [
+                      {
+                        target: "get dynamo columns",
+                        cond: "columns needed",
+                      },
+                      "loaded",
+                    ],
                   },
 
                   "get dynamo columns": {
@@ -264,6 +281,58 @@ const connectionMachine = createMachine(
 
             initial: "check connection type",
           },
+
+          "confirm object drop": {
+            on: {
+              yes: {
+                target: "update connections and resources",
+                actions: "dropCurrentConnection",
+              },
+
+              no: "editing connection",
+            },
+          },
+
+          "update connections and resources": {
+            states: {
+              "send connection changes": {
+                invoke: {
+                  src: "sendConnectionUpdate",
+                  onDone: "send resource changes",
+                },
+              },
+
+              "send resource changes": {
+                invoke: {
+                  src: "sendResourceUpdate",
+                  onDone: {
+                    target: "#connection.connection modal is open.idle",
+                    actions: "assignFirstConnection",
+                  },
+                },
+              },
+            },
+
+            initial: "send connection changes",
+          },
+
+          "confirm resource drop": {
+            on: {
+              yes: {
+                target: "update resources",
+                actions: "dropCurrentResource",
+              },
+
+              no: "editing resource",
+            },
+          },
+
+          "update resources": {
+            invoke: {
+              src: "sendResourceUpdate",
+              onDone: "editing connection",
+            },
+          },
         },
 
         initial: "idle",
@@ -272,6 +341,11 @@ const connectionMachine = createMachine(
           close: {
             target: "closing",
             actions: "clearSelectedConnection",
+          },
+
+          "set connection": {
+            target: ".editing connection",
+            actions: "assignSelectedConnection",
           },
         },
       },
@@ -291,12 +365,12 @@ const connectionMachine = createMachine(
       load: [
         {
           target: ".connection modal is open",
-          actions: "assignConnections",
+          actions: ["assignConnections", "assignFirstConnection"],
           cond: "no connections are present",
         },
         {
           target: ".connection modal is open.editing connection",
-          actions: "assignConnections",
+          actions: ["assignConnections", "assignFirstConnection"],
         },
       ],
     },
@@ -310,7 +384,10 @@ const connectionMachine = createMachine(
           (c) => c.ID === context.connectionID
         );
 
-        return chosenConnection.type === "dynamo" && !context.tableList;
+        return (
+          ["dynamo", "mysql"].some((f) => chosenConnection.type === f) &&
+          !context.tableList
+        );
       },
       "columns needed": (context) => {
         const { connections } = context.connectionProps;
@@ -319,7 +396,10 @@ const connectionMachine = createMachine(
           (c) => c.ID === context.connectionID
         );
 
-        return chosenConnection.type === "dynamo" && !context.columnList;
+        return (
+          ["dynamo", "mysql"].some((f) => chosenConnection.type === f) &&
+          !context.columnList
+        );
       },
       "no connections are present": (_, event) => !event.connections?.length,
     },
@@ -329,21 +409,114 @@ const connectionMachine = createMachine(
           resources: event.resources,
           connections: event.connections,
         };
-        const firstConnection = event.connections[0];
+        // const firstConnection = event.connections[0];
+        // const connectionID = firstConnection?.ID;
         return {
           connectionProps,
-          connectionID: firstConnection?.ID,
+          // connectionID,
+          // chosenConnection: firstConnection,
         };
       }),
-      assignSelectedConnection: assign((_, event) => ({
-        connectionID: event.ID,
-      })),
+
+      assignFirstConnection: assign((context) => {
+        const { connections } = context.connectionProps;
+        const firstConnection = connections[0];
+        const connectionID = firstConnection?.ID;
+        return {
+          connectionID,
+          chosenConnection: firstConnection,
+        };
+      }),
+
+      assignSelectedConnection: assign((context, event) => {
+        const { connections } = context.connectionProps;
+        const connectionID = event.ID;
+        const chosenConnection = connections.find((c) => c.ID === connectionID);
+
+        return {
+          connectionID,
+          chosenConnection,
+        };
+      }),
+
       assignStateProps: assign((_, event) => ({
         stateProps: event.attr,
       })),
-      assignSelectedResource: assign((_, event) => ({
-        resourceID: event.ID,
+      assignSelectedResource: assign((context, event) => {
+        const { resources } = context.connectionProps;
+        const resourceID = event.ID;
+        const chosenResource = resources.find((c) => c.ID === resourceID);
+        return {
+          resourceID,
+          chosenResource,
+        };
+      }),
+
+      assignConnectionDropMessage: assign((context) => ({
+        message: `Are you sure you want to delete connection ${context.chosenConnection.name}?`,
+        caption: "This action cannot be undone!",
       })),
+
+      assignResourceDropMessage: assign((context) => ({
+        message: `Are you sure you want to delete resource ${context.chosenResource.name}?`,
+        caption: "This action cannot be undone!",
+      })),
+
+      dropCurrentResource: assign((context, event) => {
+        return {
+          dirty: true,
+          message: null,
+          caption: null,
+          chosenResource: null,
+          connectionProps: {
+            ...context.connectionProps,
+            resources: context.connectionProps.resources.filter(
+              (res) => res.ID !== context.resourceID
+            ),
+          },
+        };
+      }),
+
+      dropCurrentConnection: assign((context, event) => {
+        return {
+          dirty: true,
+          message: null,
+          caption: null,
+          chosenConnection: null,
+          connectionProps: {
+            ...context.connectionProps,
+            connections: context.connectionProps.connections.filter(
+              (res) => res.ID !== context.connectionID
+            ),
+            resources: context.connectionProps.resources.filter(
+              (res) => res.connectionID !== context.connectionID
+            ),
+          },
+        };
+      }),
+
+      assignEncryptedProp: assign((context, event) => {
+        const chosenConnection = {
+          ...context.chosenConnection,
+          [event.name]: null,
+          config: {
+            ...context.chosenConnection.config,
+            [event.name]: encrypt(event.value),
+          },
+        };
+
+        return {
+          dirty: true,
+          chosenConnection,
+          connectionProps: {
+            ...context.connectionProps,
+            connections: context.connectionProps.connections.map((res) =>
+              res.ID === chosenConnection.ID ? chosenConnection : res
+            ),
+          },
+        };
+      }),
+
       updateSelectedConnection: assign((context, event) => {
         const { connections } = context.connectionProps;
 
@@ -366,6 +539,7 @@ const connectionMachine = createMachine(
           },
         };
       }),
+
       updateSelectedResource: assign((context, event) => {
         const { resources } = context.connectionProps;
         const chosenResource = resources.find(
@@ -495,8 +669,16 @@ export const useConnection = (handleClose, handleUpdate) => {
         const chosenConnection = connections.find((c) => c.ID === connectionID);
         const chosenResource = resources.find((c) => c.ID === resourceID);
 
+        if (chosenConnection.type === "mysql") {
+          const res = await invokeMySQL(chosenConnection, chosenResource);
+          return {
+            columns: objectKeys(res),
+            records: res,
+          };
+        }
+
         if (chosenConnection.type === "dynamo") {
-          return invokeDynamo(
+          return await invokeDynamo(
             chosenConnection,
             chosenResource,
             stateProps[chosenResource.body]
@@ -537,6 +719,10 @@ export const useConnection = (handleClose, handleUpdate) => {
         const { resources, connections } = connectionProps;
         const chosenConnection = connections.find((c) => c.ID === connectionID);
         const chosenResource = resources.find((c) => c.ID === resourceID);
+        if (chosenConnection.type === "mysql") {
+          const res = await getTable(chosenConnection, chosenResource);
+          return res;
+        }
         if (chosenConnection.type === "dynamo") {
           const res = await invokeDynamo(chosenConnection, chosenResource);
           const items = resolveNode(res, ["Items"]);
@@ -548,6 +734,9 @@ export const useConnection = (handleClose, handleUpdate) => {
         const chosenConnection = connections.find(
           (c) => c.ID === context.connectionID
         );
+        if (chosenConnection.type === "mysql") {
+          return await getTables(chosenConnection);
+        }
         return await describeDynamo(chosenConnection);
       },
       sendConnectionUpdate: async (context) =>

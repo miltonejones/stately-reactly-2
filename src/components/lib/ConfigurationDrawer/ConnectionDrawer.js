@@ -4,6 +4,7 @@ import {
   Card,
   Collapse,
   Grid,
+  LinearProgress,
   MenuItem,
   Stack,
   Switch,
@@ -28,6 +29,7 @@ import EditBlock from "../../../styled/EditBlock";
 import PredicateList from "./PredicateList";
 import generateGuid from "../../../util/generateGuid";
 import Columns from "../../../styled/Columns";
+import decrypt from "../../../util/decrypt";
 
 // function HideBox({ in: visible, children, ...props }) {
 //   if (!visible) return <i />;
@@ -66,13 +68,35 @@ const connectionProps = [
     title: "region",
     when: (c) => c.type === "dynamo",
   },
+  {
+    title: "host",
+    encrypt: true,
+    when: (c) => c.type === "mysql",
+  },
+  {
+    alias: "user name",
+    encrypt: true,
+    title: "user",
+    when: (c) => c.type === "mysql",
+  },
+  {
+    title: "password",
+    encrypt: true,
+    when: (c) => c.type === "mysql",
+    password: true,
+  },
+  {
+    title: "database",
+    encrypt: true,
+    when: (c) => c.type === "mysql",
+  },
 ];
 
 function BodyForm({ resource, machine, stateList, stateAttr }) {
   const ref = React.useRef();
   const isJSON = !resource.bodyType || resource.bodyType === "JSON";
   return (
-    <Box sx={{ p: 1, height: "calc(45vh - 60px)", overflow: "auto" }}>
+    <Box sx={{ p: 1, height: "calc(40vh - 60px)", overflow: "auto" }}>
       <Stack spacing={2}>
         <Flex spacing={1}>
           <Typography variant="body2">
@@ -113,7 +137,7 @@ function BodyForm({ resource, machine, stateList, stateAttr }) {
             </EditBlock>
             <Json
               style={{
-                height: "calc(45vh - 200px)",
+                height: "calc(40vh - 200px)",
                 outline: "dotted 1px gray",
                 overflow: "auto",
               }}
@@ -129,7 +153,7 @@ function BodyForm({ resource, machine, stateList, stateAttr }) {
               ref={ref}
               contentEditable
               style={{
-                height: "calc(45vh - 180px)",
+                height: "calc(40vh - 180px)",
                 outline: "dotted 1px gray",
               }}
             >
@@ -158,7 +182,7 @@ function BodyForm({ resource, machine, stateList, stateAttr }) {
 
 function ParameterForm({ resource, machine, stateAttr, hasRecords }) {
   return (
-    <Box sx={{ p: 1, height: "calc(45vh - 60px)", overflow: "auto" }}>
+    <Box sx={{ p: 1, height: "calc(40vh - 60px)", overflow: "auto" }}>
       <Flex sx={{ mb: 2 }}>
         <Typography variant="body2">
           {" "}
@@ -297,8 +321,18 @@ function CommonForm({
                 size="small"
                 key={prop.title}
                 label={prop.alias || prop.title}
-                value={record[prop.title]}
-                onChange={(e) => onChange(prop.title, e.target.value)}
+                value={
+                  prop.encrypt && !!record.config && !!record.config[prop.title]
+                    ? decrypt(record.config[prop.title])
+                    : record[prop.title]
+                }
+                onChange={(e) =>
+                  onChange(
+                    prop.title,
+                    e.target.value,
+                    prop.encrypt ? "secret" : "update"
+                  )
+                }
               />
             </Grid>
           ))}
@@ -335,15 +369,21 @@ function ResourceForm({ resource, connection, stateAttr, machine }) {
     },
     {
       title: "path",
+      when: (item) => item.method === "POST",
+    },
+    {
+      title: "path",
       xs: 6,
+      when: (item) => item.method !== "POST",
     },
     {
       title: "node",
       xs: 6,
+      when: (item) => item.method !== "POST",
     },
-    {
-      title: "transform",
-    },
+    // {
+    //   title: "transform",
+    // },
   ];
 
   const dynamoProps = [
@@ -375,9 +415,34 @@ function ResourceForm({ resource, connection, stateAttr, machine }) {
     },
   ];
 
+  const mysqlProps = [
+    {
+      title: "method",
+      type: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+      chip: true,
+      xs: 7,
+    },
+    {
+      title: "range",
+      type: ["all rows", "filter"],
+      chip: true,
+      xs: 5,
+      when: (item) => item.method === "SELECT",
+    },
+    {
+      title: "name",
+    },
+    {
+      type: machine.tableList || [],
+      title: "tablename",
+      alias: "Table Name",
+    },
+  ];
+
   const types = {
     rest: resourceProps,
     dynamo: dynamoProps,
+    mysql: mysqlProps,
   };
 
   const props = {
@@ -387,7 +452,7 @@ function ResourceForm({ resource, connection, stateAttr, machine }) {
       </>
     ),
     buttons:
-      connection.type === "dynamo" ? (
+      connection.type !== "rest" ? (
         <Button
           color="error"
           variant="contained"
@@ -432,10 +497,18 @@ export default function ConnectionDrawer(props) {
   const { resources, connections } = submachine.connectionProps;
   const chosenConnection = connections.find((c) => c.ID === connectionID);
   const chosenResource = resources.find((c) => c.ID === resourceID);
+  let candidateColumns = submachine.testResponse;
 
-  const candidateColumns = !(submachine.testResponse && chosenResource)
-    ? null
-    : resolveNode(submachine.testResponse, chosenResource.node.split("/"));
+  if (chosenResource?.node && candidateColumns) {
+    candidateColumns = resolveNode(
+      candidateColumns,
+      chosenResource.node.split("/")
+    );
+  }
+
+  // const candidateColumns = !(submachine.testResponse && chosenResource)
+  //   ? null
+  //   : resolveNode(submachine.testResponse, chosenResource.node.split("/"));
 
   const hasRecords =
     !!submachine.testResponse && submachine.state.can("close resource");
@@ -507,9 +580,9 @@ export default function ConnectionDrawer(props) {
     fields: connectionProps,
     record: chosenConnection,
     disabled: false,
-    onChange: (name, value) => {
+    onChange: (name, value, event = "update") => {
       submachine.send({
-        type: "update",
+        type: event,
         name,
         value,
       });
@@ -524,7 +597,7 @@ export default function ConnectionDrawer(props) {
   return (
     <Grid spacing={1} container sx={{ p: 1 }}>
       <Grid item xs={xs}>
-        <Stack sx={{ p: 1, height: "45vh", overflow: "auto" }}>
+        <Stack sx={{ p: 1, height: "40vh", overflow: "auto" }}>
           <PanelHeader>
             <b>Connections</b>
           </PanelHeader>
@@ -559,6 +632,15 @@ export default function ConnectionDrawer(props) {
                   {connection.name}
                 </Nowrap>
                 <Spacer />
+                <TinyButton
+                  onClick={() => submachine.send("drop")}
+                  hidden={
+                    connectionID !== connection.ID ||
+                    !submachine.state.can("close connection") ||
+                    !!resourceID
+                  }
+                  icon="Delete"
+                />
                 <TinyButton
                   onClick={() => submachine.send("close connection")}
                   hidden={
@@ -595,6 +677,11 @@ export default function ConnectionDrawer(props) {
                         </Nowrap>
                         <Spacer />
                         <TinyButton
+                          onClick={() => submachine.send("drop")}
+                          hidden={resourceID !== resource.ID}
+                          icon="Delete"
+                        />
+                        <TinyButton
                           onClick={() => submachine.send("close resource")}
                           hidden={resourceID !== resource.ID}
                           icon="Close"
@@ -620,7 +707,8 @@ export default function ConnectionDrawer(props) {
 
       {!!chosenConnection && (
         <Grid item xs={xs}>
-          <Card sx={{ p: 1, height: "45vh", overflow: "auto" }}>
+          {!submachine.state.can("add") && <LinearProgress />}
+          <Card sx={{ p: 1, height: "40vh", overflow: "auto" }}>
             <Collapse in={submachine.state.can("close resource")}>
               <>
                 <TabMenu tabs={tabs} value={tab} onClick={setTab} />
@@ -759,7 +847,7 @@ export default function ConnectionDrawer(props) {
       {hasRecords && (
         <>
           <Grid item xs={xs}>
-            <Card sx={{ p: 1, height: "45vh", overflow: "auto" }}>
+            <Card sx={{ p: 1, height: "40vh", overflow: "auto" }}>
               <TabMenu
                 tabs={[{ label: "Columns" }, { label: "Data" }]}
                 value={col}
@@ -809,7 +897,7 @@ export default function ConnectionDrawer(props) {
 
       {!hasRecords && submachine.state.can("close resource") && (
         <Grid item xs={xs}>
-          <Card sx={{ p: 1, height: "45vh", overflow: "auto" }}></Card>
+          <Card sx={{ p: 1, height: "40vh", overflow: "auto" }}></Card>
         </Grid>
       )}
     </Grid>

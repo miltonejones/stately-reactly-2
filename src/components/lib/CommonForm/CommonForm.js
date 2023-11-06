@@ -9,6 +9,8 @@ export default function CommonForm({
   onChange,
   onSave,
   onCancel,
+  onDelete,
+  buttons,
   // onBind,
   // onConfigure,
 }) {
@@ -39,12 +41,33 @@ export default function CommonForm({
       ))}
       <Flex spacing={1}>
         <Spacer />
-        {!!onCancel && <Button onClick={onCancel}>cancel</Button>}
+        {!!onCancel && (
+          <Button size="small" onClick={onCancel}>
+            cancel
+          </Button>
+        )}
         {!!onSave && (
-          <Button disabled={disabled} variant="contained" onClick={onSave}>
+          <Button
+            size="small"
+            disabled={disabled}
+            variant="contained"
+            onClick={onSave}
+          >
             save
           </Button>
         )}
+        {!!onDelete && (
+          <Button
+            size="small"
+            disabled={disabled}
+            color="error"
+            variant="contained"
+            onClick={onDelete}
+          >
+            delete
+          </Button>
+        )}
+        {buttons}
       </Flex>
     </Stack>
   );

@@ -3,7 +3,7 @@ import SearchInput from "../../../styled/SearchInput";
 const exposedProps = {
   onPageChange: ["page"],
   onProgress: ["currentTime", "duration", "progress", "current_time_formatted"],
-  onCellClick: ["column", "row", "rows"],
+  onCellClick: ["column", "row", "rows", "ID"],
   onChange: ["value", "checked"],
 };
 

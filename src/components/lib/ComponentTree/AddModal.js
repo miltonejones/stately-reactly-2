@@ -2,6 +2,7 @@ import { Dialog, Button, TextField, Typography, Stack } from "@mui/material";
 import Flex from "../../../styled/Flex";
 import Spacer from "../../../styled/Spacer";
 import StateBar from "../../../styled/StateBar";
+import SubmitField from "../../../styled/SubmitField";
 
 export default function AddModal({ submachine }) {
   if (!submachine) return <i />;
@@ -44,18 +45,5 @@ export default function AddModal({ submachine }) {
         </Flex>
       </Stack>
     </Dialog>
-  );
-}
-
-function SubmitField({ onSubmit, ...props }) {
-  return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit();
-      }}
-    >
-      <TextField {...props} />
-    </form>
   );
 }

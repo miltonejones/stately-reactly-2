@@ -12,6 +12,5 @@ export const getApplications = async (resolve) => {
 
   const apps = await s3.listObjectsV2(params).promise();
 
-  console.log({ apps });
   return apps;
 };

@@ -8,10 +8,10 @@ import {
   CardMedia,
   Collapse,
   Dialog,
+  Divider,
   Grid,
   LinearProgress,
   Stack,
-  TextField,
   Typography,
 } from "@mui/material";
 import ComponentEditor from "../ComponentEditor/ComponentEditor";
@@ -38,6 +38,7 @@ import stateRead from "../../../util/stateRead";
 import ChipMenu from "../../../styled/ChipMenu";
 import Json from "../../../styled/Json";
 import PageTitle from "../PageTitle/PageTitle";
+import SubmitField from "../../../styled/SubmitField";
 
 function AppGrid({ appKeys, machine }) {
   return (
@@ -91,14 +92,22 @@ function AppList({ appKeys, machine }) {
           display: "grid",
           gridTemplateColumns: "40px 240px 400px 1fr 1fr ",
           alignItems: "center",
-          padding: "1px",
+          gap: "0.5rem",
         }}
       >
         <Box />
-        <Box>Name</Box>
-        <Box>File</Box>
-        <Box>Size</Box>
-        <Box>Date</Box>
+        <Nowrap variant="caption" bold>
+          Name
+        </Nowrap>
+        <Nowrap variant="caption" bold>
+          File
+        </Nowrap>
+        <Nowrap variant="caption" bold>
+          Size
+        </Nowrap>
+        <Nowrap variant="caption" bold>
+          Date
+        </Nowrap>
       </Box>
       {appKeys
         .filter((item) => !!item.content)
@@ -108,7 +117,7 @@ function AppList({ appKeys, machine }) {
               display: "grid",
               gridTemplateColumns: "40px 240px 400px 1fr 1fr ",
               alignItems: "center",
-              padding: "1px",
+              gap: "0.5rem",
             }}
           >
             <Box
@@ -119,6 +128,7 @@ function AppList({ appKeys, machine }) {
               <Avatar src={item.content.Photo} alt={item.content.Name} />
             </Box>
             <Nowrap
+              variant="body2"
               hover
               onClick={() =>
                 machine.send({
@@ -130,9 +140,9 @@ function AppList({ appKeys, machine }) {
               {item.content.Name}
             </Nowrap>
 
-            <Typography>{item.Key}</Typography>
-            <Typography>{item.Size}</Typography>
-            <Typography>
+            <Typography variant="body2">{item.Key}</Typography>
+            <Typography variant="body2">{item.Size}</Typography>
+            <Typography variant="body2">
               {moment(item.LastModified).format("DD MMM yyyy HH:mm")}
             </Typography>
           </Box>
@@ -143,6 +153,10 @@ function AppList({ appKeys, machine }) {
 
 function ApplicationList({ machine }) {
   const { appKeys } = machine.state.context;
+  const options = ["View as List", "View as Grid"];
+  if (machine.recycledApps.length) {
+    options.push("Recycle Bin");
+  }
   return (
     <Stack
       spacing={1}
@@ -175,7 +189,7 @@ function ApplicationList({ machine }) {
               <Spacer />
               <ChipMenu
                 value={machine.view}
-                options={["View as List", "View as Grid"]}
+                options={options}
                 onChange={(value) => {
                   machine.send({
                     type: "set context",
@@ -185,11 +199,25 @@ function ApplicationList({ machine }) {
                 }}
               />
             </Flex>
-            {!!appKeys && machine.view !== 1 && (
+
+            {!!appKeys && machine.view === 0 && (
               <AppList appKeys={appKeys} machine={machine} />
             )}
             {!!appKeys && machine.view === 1 && (
               <AppGrid appKeys={appKeys} machine={machine} />
+            )}
+            {!!appKeys && machine.view === 2 && (
+              <Card sx={{ p: 2, m: 1, width: 500 }}>
+                <Nowrap variant="body2">
+                  <b>Recycled apps</b>
+                </Nowrap>
+                <Divider />
+                {machine.recycledApps.map((f) => (
+                  <Flex sx={{ m: 1 }}>
+                    <TinyButton icon="Delete" /> {f.Name}
+                  </Flex>
+                ))}
+              </Card>
             )}
           </>
         </Collapse>
@@ -201,7 +229,8 @@ function ApplicationList({ machine }) {
                 title="Application Name"
                 description="Enter a name for the new application"
               >
-                <TextField
+                <SubmitField
+                  onSubmit={() => machine.send("done")}
                   autoComplete="off"
                   size="small"
                   value={machine.state.context.name}
@@ -235,21 +264,29 @@ function ApplicationList({ machine }) {
 
 export default function ComponentTree({ machine }) {
   // an object to represent expanded nodes in the treeview
-  const [expanded, setExpanded] = React.useState({});
-  const expand = (key) => {
-    setExpanded((old) => ({
-      ...old,
-      [key]: !old[key],
-    }));
+  // const [expanded, setExpanded] = React.useState({});
+
+  const { expandedNodes: expanded } = machine;
+
+  const expand = (name) => {
+    machine.send({
+      type: "expand node",
+      name,
+    });
+    // setExpanded((old) => ({
+    //   ...old,
+    //   [key]: !old[key],
+    // }));
   };
 
   // method to create a new component
-  const create = (componentID, order) =>
+  const create = (componentID, order) => {
     machine.send({
       type: "create",
       componentID,
       order,
     });
+  };
 
   // send message to bind a state value
   const bindText = (name, value) => {

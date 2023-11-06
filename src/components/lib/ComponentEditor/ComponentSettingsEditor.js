@@ -12,8 +12,6 @@ export const ComponentSettingsEditor = (props) => {
 
   const owner = page || appData;
 
-  // const { repeaterBindings } = useBinding(machine, component);
-
   if (page) {
     siblings = page.components.filter(
       (f) => f.componentID === component.componentID

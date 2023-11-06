@@ -107,7 +107,8 @@ export default function ComponentToolbar({ machine, handleSave }) {
               <b>Page:</b> {currentPage.PageName}
             </Typography>
           )}
-          <Box
+          <StateBar state={machine.state} />
+          {/* <Box
             sx={{
               flexGrow: 1,
               backgroundColor: (theme) => theme.palette.grey[300],
@@ -118,7 +119,7 @@ export default function ComponentToolbar({ machine, handleSave }) {
             <Typography variant="caption">
               <b>State:</b> {statePath(machine.state.value)}
             </Typography>
-          </Box>
+          </Box> */}
           {!!handleSave && (
             <>
               <ChipMenu

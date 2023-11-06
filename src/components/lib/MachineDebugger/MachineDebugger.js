@@ -3,36 +3,64 @@ import {
   Box,
   Button,
   Card,
-  Chip,
   Collapse,
   Dialog,
   Divider,
-  IconButton,
   LinearProgress,
   Snackbar,
   Stack,
-  Typography,
 } from "@mui/material";
 import Flex from "../../../styled/Flex";
 import Spacer from "../../../styled/Spacer";
 import Nowrap from "../../../styled/Nowrap";
 import statePath from "../../../util/statePath";
-import { ExpandLess, ExpandMore, Info } from "@mui/icons-material";
 import { StateTree } from "../StateTree/StateTree";
 import ChipMenu from "../../../styled/ChipMenu";
 import { TabList } from "../../../styled/TabList";
 import { TabButton } from "../../../styled/TabButton";
 import Json from "../../../styled/Json";
+import { useCode } from "../../../machines/codeMachine";
+import { TinyButton } from "../../../styled/TinyButton";
+import CodeModal from "./CodeModal";
+import { Code, ExpandLess, ExpandMore, Info } from "@mui/icons-material";
 
 export default function MachineDebugger({ machines }) {
   const [info, setInfo] = React.useState("");
   const [state, setState] = React.useState("");
   const [show, setShow] = React.useState(false);
 
+  const coder = useCode();
+
   const machineKeys = Object.keys(machines);
+  const actor = machines[state];
+
+  const controls = [
+    {
+      icon: <Info />,
+      label: "Info",
+      onClick: () => setInfo(state),
+    },
+    {
+      label: "Actions",
+      icon: <Code />,
+      disabled: !actor?.actions,
+      onClick: () =>
+        coder.send({
+          type: "load",
+          actions: actor.actions,
+        }),
+    },
+    {
+      label: show ? "Collapse" : "Expand",
+      icon: !show ? <ExpandMore /> : <ExpandLess />,
+      onClick: () => setShow(!show),
+    },
+  ];
 
   return (
     <>
+      {!!coder.machineActions && <CodeModal name={state} coder={coder} />}
+
       <Dialog open={!!info} onClose={() => setInfo("")}>
         <Box sx={{ p: 2, height: 480, overflow: "auto" }}>
           {!!machines[info] && (
@@ -46,29 +74,24 @@ export default function MachineDebugger({ machines }) {
           )}
         </Box>
       </Dialog>
-      <Snackbar open>
+      <Snackbar open={!coder.state.can("close") && !info}>
         <Card sx={{ p: 1, minWidth: 400, maxWidth: 700 }}>
           <Stack spacing={1}>
-            {/* <Typography variant="caption">Select machine:</Typography> */}
-            <Flex>
+            <Flex spacing={1}>
               <ChipMenu
+                limit={3}
                 onChange={(val) => setState(machineKeys[val])}
                 options={machineKeys}
                 value={machineKeys.indexOf(state)}
               />
               {!!state && (
                 <>
-                  <IconButton onClick={() => setInfo(state)}>
-                    <Info />
-                  </IconButton>
-                  <IconButton onClick={() => setShow(!show)}>
-                    {show ? <ExpandLess /> : <ExpandMore />}
-                  </IconButton>
+                  <ChipMenu value={2} options={controls} />
                 </>
               )}
             </Flex>
-            [ {JSON.stringify(state.history)}]
-            {!!state && <StatePanel show={show} attr={machines[state]} />}
+
+            {!!state && <StatePanel show={show} attr={actor} />}
           </Stack>
         </Card>
       </Snackbar>
@@ -112,7 +135,7 @@ function StatePanel({ attr, show }) {
           ))}
         </Box>
       </Collapse>
-
+      {/* <pre>{JSON.stringify(Object.keys(attr.actions), 0, 1)}</pre> */}
       <Nowrap variant="caption">
         Events in <b>{statePath(state.value)}</b> state:
       </Nowrap>
@@ -139,20 +162,6 @@ function StatePanel({ attr, show }) {
             />
           ))}
       </TabList>
-
-      {/* <Flex spacing={1} sx={{ p: 1, width: "100%", overflow: "auto" }}>
-        {state.nextEvents
-          .filter((name) => name.indexOf(".") < 0)
-          .map((eventName) => (
-            <Chip
-              onClick={() => send(eventName)}
-              key={eventName}
-              label={eventName}
-              size="small"
-              variant="outlined"
-            />
-          ))}
-      </Flex> */}
     </>
   );
 }

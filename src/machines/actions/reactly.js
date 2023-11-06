@@ -12,12 +12,19 @@ import stateReduce from "../../util/stateReduce";
 
 export const assignAppToKey = assign((context, event) => {
   const current = context.appKeys[context.key_index];
+  const content = event.data;
+  if (content?.isDeleted) {
+    return {
+      key_index: context.key_index + 1,
+      recycledApps: context.recycledApps.concat(content),
+    };
+  }
   return {
     appKeys: context.appKeys.map((app) => {
       return app.Key === current.Key
         ? {
             ...app,
-            content: event.data,
+            content,
           }
         : app;
     }),
@@ -291,11 +298,12 @@ export const autoNameCreatedComponent = assign((context) => {
 });
 
 export const openCreatedComponent = assign((context, event) => {
-  const { createdComponent, page, appData, Library } = context;
+  const { createdComponent, page, appData } = context;
+  const { componentID } = createdComponent;
 
-  const { Attributes } = Library.find(
-    (t) => t.ComponentName === createdComponent.ComponentType
-  );
+  // const { Attributes } = Library.find(
+  //   (t) => t.ComponentName === createdComponent.ComponentType
+  // );
 
   // const props = JSON.parse(Attributes);
 
@@ -321,6 +329,10 @@ export const openCreatedComponent = assign((context, event) => {
       appData,
       updatedPage,
       selectedComponent: createdComponent,
+      expandedNodes: {
+        ...context.expandedNodes,
+        [componentID]: true,
+      },
     };
   }
 
@@ -328,6 +340,10 @@ export const openCreatedComponent = assign((context, event) => {
   return {
     appData,
     selectedComponent: createdComponent,
+    expandedNodes: {
+      ...context.expandedNodes,
+      [componentID]: true,
+    },
   };
 });
 
@@ -342,18 +358,28 @@ export const modifyCreatedComponent = assign((context, event) => {
   };
 });
 
+export const incrementOrder = assign((context) => ({
+  defaultOrder: Number(context.defaultOrder) + 10,
+}));
+
+export const clearDefaultComponentParent = assign({
+  parentId: null,
+});
+
 export const assignCreatedComponent = assign((context, event) => {
-  const { appData, page } = context;
+  const { parentId, appData, page, defaultOrder } = context;
 
   return {
+    parentId: event.componentID || parentId,
     createdComponent: {
       ID: generateGuid(),
       pageID: page?.ID,
       // ComponentType: "Box",
       ComponentName: "New Component",
       appID: appData.ID,
-      componentID: event.componentID,
-      order: event.order || 100,
+      componentID: event.componentID || parentId,
+      order: event.order || defaultOrder,
+      defaultOrder: event.order || defaultOrder,
       styles: [],
       settings: [],
       events: [],
@@ -937,6 +963,7 @@ export const assignLibraryData = assign((_, event) => {
     out[key.ComponentName] = {
       icon: key.Icon,
       allowChildren: key.allowChildren,
+      settings: JSON.parse(key.Attributes),
     };
     return out;
   }, {});
@@ -1057,6 +1084,8 @@ export const resetAppState = assign({
   appKeys: null,
   key_index: 0,
   stateList: [],
+  recycledApps: [],
+  view: 0,
 });
 
 export const updateBoundState = assign((context, event) => {
@@ -1090,10 +1119,12 @@ export const updateAppState = assign((context, event) => {
 
   let prop;
 
-  if (!!key && options.item) {
+  if (!!key && options.item && options.item[key]) {
     prop = options.item[key];
+    // alert(JSON.stringify({ a: prop, c: options }));
   } else {
     prop = stateRead({ value, page, application: appData, options });
+    // alert(JSON.stringify({ b: prop, d: options, value }));
   }
 
   if (target.indexOf(".") < 0) {
@@ -1118,3 +1149,15 @@ export const updateAppState = assign((context, event) => {
     appData,
   };
 });
+
+export const assignApplicationDropMessage = assign((context) => ({
+  message: `Are you sure you want to delete application ${context.appData.Name}?`,
+  caption: "This action cannot be undone!",
+}));
+
+export const expandedNode = assign((context, event) => ({
+  expandedNodes: {
+    ...context.expandedNodes,
+    [event.name]: !context.expandedNodes[event.name],
+  },
+}));

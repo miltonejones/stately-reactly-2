@@ -38,7 +38,8 @@ function ComponentNode(props) {
   const { repeaterItems, repeaterBindings } = useBinding(
     machine,
     current,
-    true
+    true,
+    "ComponentPreview"
   );
 
   // get the list of child compoents for this component
@@ -53,7 +54,7 @@ function ComponentNode(props) {
     return (
       <Flex>
         <Error />
-        no definition for {current.ComponentType}
+        No definition for {current.ComponentType}
       </Flex>
     );
   }
@@ -109,7 +110,7 @@ function ComponentNode(props) {
     ? { outline: "dotted 1px gray" }
     : selected
     ? {
-        outline: `solid 2px green`,
+        outline: `solid 2px ${theme.palette.primary.main}`,
         position: "relative",
       }
     : {};
@@ -175,6 +176,7 @@ function ComponentNode(props) {
   }; //
 
   const faux = selected || childSelected(current.ID);
+  const libType = iconList[current.ComponentType];
 
   return (
     <Tag

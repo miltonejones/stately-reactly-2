@@ -193,6 +193,14 @@ export default function ComponentModal({ machine }) {
             >
               back
             </Button>
+            <Button
+              size="small"
+              variant="contained"
+              disabled={!machine.createdComponent.ComponentType}
+              onClick={() => machine.send("more")}
+            >
+              create and add
+            </Button>
             <Spacer />
             <Button size="small" onClick={() => machine.send("cancel create")}>
               cancel

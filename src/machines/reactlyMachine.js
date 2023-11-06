@@ -22,18 +22,23 @@ import * as actions from "./actions/reactly";
 import React from "react";
 const reactlyMachine = createMachine(
   {
-    /** @xstate-layout N4IgpgJg5mDOIC5QCcwEMDGAXANgTwGJYwsACDAewDsswAPLAbQAYBdRUABwtgEste1DiDqIAtACYAHAFYAzADopzKRIBsAdjVrVc7QBoQecQEY1AFhMLm5mcxkm5JgJxzpagL4fDqTLjwKkPy8VFCkaJycOLwYaALUBAAWFAC2YCzsSCDcfPFUwqIIkg5SChrmzlLOzjJqzhZShsZFlhIKmmpy8iaOJlLmXV4+6Nj4gRDBoeGR0bF5BFRgAO6knGgwGcI5wUJZhZImzBoKtrVqRxJHtU2mzHLHcv1qDoddcjZDIL6jAUECUxEojE4oIqARKCkUvxyNQAGa8KAAV2QIOomyy2zyBXEEnMGmc1jucgqtic5lkNwQGj6SmYPQ0TmcKgqEk+33840mYUBs1RYIhULIYAAbmAaOFsKD0VweDt8nsceYLApqjISmZ7Mo1JS1WoFDJnNSpFpzEdLFI2SMOX8QtyZsD5hBkBROKQRWKmGwtrKsQqirj3goTBoSjIJDJym5KVVFPcHGHDrYTJa-GMbQD7XNQZz-mE1jACH9pdkfaDsUVeswFMTDXJnI4av0NJSNOGynoG5GpCYDSmfjnbdMgVnqAOpvmwAs0MKEXF0l6MaXdqBCj01G05JvnOYJPU6a5GkZbrIg5pNzplOSBn3rRNc0PeXkx3n1pO0sgNguZbky36I1WdGccNyWkCQNCkQ9mjEQ4ZFKakdyJXETAqC1vC+K00zvQceQdbN0xfAtUGILAMBwdAqGLTFfxXRBkP6INE0OJk7nMPFKWgzUymQy5NyQlCb0wrkH1w0d8NWV8CERTgIDnIdKKXeUaIQYMKmscCGSvCQA21I8K04+CeLcSx+LQ9lBPvHCRyoZ9xILKSZNoOSTEyb85XLCQ+jaLRHlxNUXF1diYLg5C+ksOo6nkATfiwjNhz5GyJwIVAoF4WBaGQeSf2XEREC0mQGK6ZgagGLSQx0qCgq4hDeOMyoopsyz4rExL7NktK50yty-Wg9d8pcS4DVcXcXHMSkBircNzksesNBsHtPFMjDoqExqn2aiSMF8WhOt9JToNedoXCOBlKmDCR2PXPUjhMCRNxcY16rE1a8JigjJwAIxCCBSHa7avxLLLFJyitLoUW7HCVIq-O7SlbtKFRmHDd4HER2xHte4SrIS18FBwCg0G+lrpI6-6qOywopHXU8KhqJl8XqcraOkY4DU6ebZvkNHFtTZaLMzJqMYnXH8cJiSCYgHbqOBxwun1RxcWUY1mNG3SbtqdpN2YGw6mNJxUOGHmGv5tbBZxvGCdssAFHhVBMb5N1RRoWBwVSKISHnFyAa6pSejDdpKeJCCLHuO5KVC8xDsOCL7kpzp0ZW42XqEoXzdFmBrd4W3nuoB2PWdiE3e25zvUB8t6SrJU6x7ZQe3xORYdsPUUdVSotFu+O+bik3k7NkXLYz22J1zp2XZSQuPZL73pbUYNTwjbdY+eZww-6COZ6jmoY+0BaDf7J7E9E0309T-ubbAS3h6wWAFDWRFiFIWEKGQS-nboX6rbQWF0oACh7LWAEokpLSNl3JO94U59yFmfC+7onY3zQHfc+j9n6wKvpLcmtEDSlDcI4bsVwA6wzAhHU0BpIxL17NzPeGNs7WXWsfSBOMMCJDABgAA1qQE+78CDoKBoUNuJxKjI3sAaLoy9VbrljGGJwMg8TBg5h3bCB9aFHytifIWTCWHsM4VgOc3Di6LlLn6Q4ZgVRaWYBYBkdJiRhwkdWKRPZZEaHkZQ28CdQGHx7unMSBdqAenBHjYgPDyxTX1K4HQRCbqdEZspI4iggLhi1jUS46gNAKNio+MBg4hbeNdr4mgCgYBkB8YscUDk0AEAgL4hQIRhQUFYVbMyvNFHuOUZ4q2OSx55KwAUkgMJOklLIGUhANSKBWQyEEv04UyidBIVqMwN0xqKHAucNws03C3VYmku0LTsZeIxsUj0PSim5IGaQMphZkDOmQDfHAcRkEpAUI0kBGSPHgJxh07gAyjl9M+R6M5cQ0DDKoLUsZbAJl7VxCcdcAxK7yyVIaQKhwgzVCccGbQwY6Q73QobfeOy6HtP2Scw5hSfldP+ToggeA4DguBmId4sYZlvGQuuVw7E8SlFYoHYknk6z1C2Xbbuby9lCQOfk0VgyAUcJFpASSxM-qezJrw2i1IK73G3DYI4dJwxjVbNYQ0dw1SMi1pFFx5lmkvNaUKglIqiVittRKnRUqCYys+lQCWpMFJl3qBHCCeD1yqA1ZBRAeI2hFTWYao69h+U0N2da+84qFDivJWgJ1EAZWIioK691CrPV+i0mBasNg8SbjVNIGQOrQ36q6N0ZiWKnm4otbGmyCak1lNTTKygVB4RIlQDS1cegqyPBDMSJxWtKYq2aOSfKbg9D1G3JYMMlNo1KKbR8rpib7XJvbRAAgLoxQ-SwHgMisA+20RGu0RsQEbqPG7PXVWN0yiGnmYk2a+I63AIbSJS1WT3mEv6Yc1tkrU4yr3VQH6JBcwno9YYn2dgCTnDDOoXcWtDjNnvV5J9M8X1HBqMuvFKjm32o3f+0pQHpU7tAy-U9ylXDHFbPLYRw1yiBUUKSRWqLDg1xkHhxt+LCMke6YBx1wGKOcH3QAKQAMoAHkABy1GtLVH1BI8Mlxqh6DQxVVj8h2PUk43SbjpqmnpK-auv9vy7UCa3SJl2XaETInPmlI9E8DFTwpg+iMwYzrnAMrDR41hlC4lurdJkWlzA8dM3xtdXyhMpps06F01GMVXRKshWaUguidHYiklUDi6jgTAk2CLWMovmfXbF7dtnu0OdIFm20CnngRx6Fpfoqm6gDGywSNuu5tB0i0D2Qzu9XGd14wR6LhywCXKfqmwc4qFgUGo2IAktReX1jpH0PcYioJ2CsBivr1RZDSEGEZ55kWxtla+ZNq5M2phzapVBnNMHpbMrBj0JUQWwwofYnoPU3Y8SkjrCGRGchisCzafxizgm4T2eQLNzdxFczgjQFQDAYAcBJfkNO8dppNAZcqDqFQ1gduzQ1MyJUoPBU-uFfGojnbquw9u-DiDtpZUORc65Xa0slRWATDoTo5RLCacQK2LrOgQqVxkbiCnmTxy-ptQJjddme1w6swjlnsBpzs69pzimEElBi6ArUew1JKSdC65cUd2hyROBBydz9JXzvy8hwoDXooYRK+RHyCpVSRn1MeR+6hK7StO-Xa78+dOYd8iBSCvk4zoNudMEyNS8yDSlWZqb7QyL5B3G3EhFw0vXlU7jSr53Eee3h-h4esirOSaPYTwgOwa8wLMT6IdoCYdkL6ljpqfcTJDQF+-bL6nJfyvQ-L6S05Tnq9h+o9NMGVQNkvANwT+GdhHgHa1npwb2KqFuNG+D8bdqPe2yTVPycsQUdo4Pc56juhqzeQqK2GwI7YYnm1jYMxu4B9mZD181AsIiJEgJ8-loh3oURkBCBKlFhqlgU6kGkA898zsD8LtDl-9ADgDxRQDwC8Bo9RlY8wV48ddTAH0YV1kP9ZotZzpdI3AqwMszRNUdxYJWQ7dA98NkDf9DkEtXQfE0gaAKlnRuDodkAUgks6g2gdxwxahDQExyQLpbBI4wIzhDgPJkwWDECHd2CacFcuDSVeCsAkdL8cAzkBCksTQlBpBKZYJagPJy1dI6VZZLBjpOhF1Mtv8+NNp0BHI5sUgKAJhYQ8BFtKgJpqhKCiRuxcQw5tx2xKZbp6N-tUk1CRskCrVE0toK8BMDDUcjCPDa9J4iCih6wfUSECt1BNBWw2VwIlAGQJF7pzFnA3CCMcivDadkgeB0jIdSBD0xMFh6BPQ698iOJqQuIY5YjlBVRApngNYn1qgbojRkIGjwcmj2jytWj74k0ujJwEEsAKByA0jFsyj597ByQ0U7gKQ7DpAI4bBjQ+gQo-JrxEjzVkii9UjPDliYtVi3i-kqA0A0geiGB9iGQThK4wJ1Ax0DBdIqwjh+hDV6D7AZjwsHiTMNCUiliMDBMPi0TSBvjfj3pMBWFFseh7gwYKgVlYJygxD2IDRqwXANta4ftZAFiUjxZxIUQ0h0pd18TCCpZVxWJjhaZkIVB3gjh1ww5bo4lzFDUIxJc6hGTnjmS1hWT3ZkBwREhkdPx+juTaJbBLjcE3sGD6hKQhpplTQDNKYqhLBv81FXxk1vdoDfd4CcVWDG0rSYBk1cDQVWBb8tZcsgIVNSRrg7CYJjgPJppWs4Z9Yd9htHisYy8as206tQhnYoCrZ7T-dHT1D4pYzbZ4yvpbRYB3T8DPSuSMEEB3hHAVQLAdBZp6xZAhdlJO9dwVV6x7hDh1tZSpgcy3U8z-E2jasvoGsnAVQioMUdxZpWIG4qxqgdwpztBqzwJv9UTEofC-C8AsSfitdFVyxJB9x2h1xEZ5BVknFokxB54hysMNtqhawFy0jLZbSNzc09ozA8QwYGYbo6R7Bzx2Jh12wgIah7pNx+hrzXjbyL8sisTlhLYCSgII5hpqh8tbBqQqCKpkICRVAaznhNYegIynl3owBkFz5U5hYLZARSB6k8AkyfdYC-ccK8Kn4CKRYiLvoSKyL8yRkPTFsALjgcMBduxzhoL2IF8gwZFWzyhrpNx6pcL8LU1GKhxk0ZKMBkRUBxQyK7yYDalqLgFJK6LpKT4SKyl5LFK-kyKCy8g48NSSy6UiElBs9wx6ZwIahKT7A7Ewt6x+pLxbchsxgtLbZCLdLIg5KSVFgGBSKwBCAOKB1-YIxh0ip6xtU7DTRFA1QipWJuwwwnFtwJLaKfKGK-LXR9LAreiQqwr9EOdNSihq1SgIxZFUMzELA2U7h9Q4MUqewwJ8QETPKAhvL6KCYZK9KAUFBARYBKtQNFtJDJyGxwkaw4qoJFNzDgxREehXAWRMqpLfK+4+qdEBrIghqbNFgVhAQOLMclBjRcQKhzE6w70ZraC6h6VTRIknA7gVrtK1riL-L9KPRJsBVQQ1zfimE1T7ynt9gR1ShVBVBgwww1QtA6y0U9UY4uglRlBA4nrsqercq5KPrn4aEfrJxkyOL8RIT5rTrGNLrhd8pzgqg1Q7BjVjR31DYuqdL1q3r+qMavqc5sTz9kcwK9q5JiylVyrWIJo7hNAegVAxSSaihAS1UIIpSkMx1kbuqIBeqmbNqw9wL9rIhVLUyaLVqcrGa8r+rVbubAQTKpQCDzK+a6VKZUKIJGCKhq1jzoTkVnDtwrcBhsLNKsqFaYDgg0BogAAvAi3gMAtACAzWqih0-semwikIH2-2wO4OiAk2tEM2vIsqulcJQtSGcxMCaRQKO4NoHO40JKxGEXLwNCKgXwuAYQRpVOiykhfKSmFq2oWwWJWwiqFkRquotmENHQAfWui2jyKI6QYUwUy4SwQKEhIncxW9TQeQXuxE7ZffK1furcxwWCasR-KuOsWCNiOwywhiRwY6MweCVQjq07ZE54l0sAFevNJPWYxwakGRGeAM5oZlJuLWEORu+4Vsdst6GSqBTOc+LG1BeAVzfI8oDcUKSoKqjoCdWiP7ZFY4mw8CGFX+-uK++BV0ttETG+n2HLKOWOJieoaGrBfUSg38oLaCtBiBC2ABwea0kB3B6WMMCOYqckMNeE2GZrefWwaB98yoWm3fJIi+ofVRBhdOaBIeEB+BRBB+abRhsBsq2uNoNhsY+mZCLhpTFBzoXyUSwRqMpEsHFIjByRhhx2K+F3MUb6VBUgNIWADXGAJh1cFZasd4KdFwEU3SELfKSxcoVsTcck6h3uWhxhZhNhVNA9OcJxxAACoMMCB+vLeaGxDyIMRGQUlkf8BIs++3Ix54w-LAaJ8q8oY6gaYyYOL8pxBQhkLQDVbQIJ4fRnBXElWLQpyy37ANYSpUDragguly0km9VQep4vRp0vTdbB8jQpt7PUCKBfa9CCRwCe-KUkSxDLU0cGIZiHUfKzcZ51RWv4cDLASDSZuwEGkNGoNZfNQhZbEk6ke4OMGed29M4R3J0RzZmLMZsjXZnMa-Y9SZ-yARPTDeYctu3KXcfUG5h++5voDZ-J4jDonZtNPZu8F+SZ1wKwfEY+qJILaJSoOJ5QjLSmTVfRs1QxynV52FirETb5qTOTQplreDECdQPWACuBhAXFt8moaencc4FQGFlA-JK7abVOEfAZVpwczLGFDCgYE5oNcqoktehwXqeFcnBe1mwfP+ilsfZEEVv5NXUISZroY4HsVDI4nHLoU3OsMoC3WaK3DLRwPljg-JVWrMvkQpnBcwuo7eqG8o3SUGZwlwIIoHe47Jp0p48l-lqHY-T48UM-N1lJzVSmo3SMJC3KHcFUEdLSOsZQfOh1rQ53NAuAIApNLAkO5oUqiyswUoJanrXcHOtesaGRf2BCJa+QFJXNnV-JHQngj0SZ25k4PKGeeoQqOkNlNUdoHPeaKdXcNUDZ1E8VVprCkG5+gNmZY8ktUJZul22e1wWdm8ltDE9YvAMTBdgU-XY1uC4kY8hWPVWoAbRMBwH+1VmNdwvdloigXspNdmk9okqGWjOoue2GY4JsG6VwOMViVBp9oPAjeUkO9c9KSZ3cJZCGwqI7By1WM0asSoVuIqdjZgkNjMp8K+5NQpp+k4TmdQLjN4FjWeJKnQSXF2rmfD55p8LM8+TsiYRMt1rWCuWoKoKoMXUKSkxQJDdwbcYxZayDtg+8djvMrjy12tmIjoVZ1lsCPUbccofqGwUddQIC2SCcVpkMvUYempjLMekwL89epkUKfj9cHseW1NVpk0oD5+yaFuhkEFisG6UNYtYLAWm3ezl6pi-ylisVk0rvMqQlkMcewMlicFhkHOuE2CR5yOz2hm16-WnRMVoOIMdzhmU0Y0DLL8wMC8XrMe9cLQAL3W9LuSk+BSy5Iy0KsV9dpkGRfG9lFQOQxQVvWaFrPEFryr1GvWgK3pIKsgMipro4JQac2QFumKq9moMGUS+4Qd2oSmgbxWtG-Swa7dMV1tjWUKRGIdhkQKZQdoBCekC4yaPDyMry1LwL2S96mgT6rGr9xRiyt4AkHyOdFB986JEMcdim4uzUCrk7KOqroLjLtAF3TXNWocLL-zea1mCwFQcCcWsQYOIMIOVH6kZ+9qm7zqu7himOgQX23gAOjhIO7AsV2mM9iGiwOwdzvO4kOL1ZZGRsVCLwIAA */
+    /** @xstate-layout N4IgpgJg5mDOIC5QCcwEMDGAXANgTwGJYwsACDAewDsswAPLAbQAYBdRUABwtgEste1DiDqIAtACYAHAFYAzADopzKRIBsAdjVrVc7QBoQecQEY1AFhMLm5mcxkm5JgJxzpagL4fDqTLjwKkPy8VFCkaJycOLwYaALUBAAWFAC2YCzsSCDcfPFUwqIIkg5SChrmzlLOzjJqzhZShsZFlhIKmmpy8iaOJlLmXV4+6Nj4gRDBoeGR0bF5BFRgAO6knGgwGcI5wUJZhZImzBoKtrVqRxJHtU2mzHLHcv1qDoddcjZDIL6jAUECUxEojE4oIqARKCkUvxyNQAGa8KAAV2QIOomyy2zyBXEEnMGmc1jucgqtic5lkNwQGj6SmYPQ0TmcKgqEk+33840mYUBs1RYIhULIYAAbmAaOFsKD0VweDt8nsceYLApqjISmZ7Mo1JS1WoFDJnNSpFpzEdLFI2SMOX8QtyZsD5hBkBROKQRWKmGwtrKsQqirj3goTBoSjIJDJym5KVVFPcHGHDrYTJa-GMbQD7XNQQQnS7ppxpdkfaDsf6NOprCYJM4lbV6qdKT1mMxrOpqXoQ6bBt4vla0xN-nagVnqJzB6t1mACH9C5iS36xL0W8TDXJnI4av0NJTyzIynoN5GpCYDSmfmPbfneXkL1M1jAFmhhQi4ukvRji7tQIUemo2nIAJratzhcR5KUXFQ9zMBk9CkZRyQGM9rQHS8eQdUFbzCe8pzSZANnfGVcnnb9EAjFsdGccNyWkCQNDg8DDhkUpqXMS4ANxEwKgtHt2X7Lkr3Q0d0ywycCFQYgsAwHB0CoWdP3lEiEE4-og0TQ4mTucw8QYzUyk4ti3EsLikL48c0JHKhMInB9EU4CBX3zOSiK-EREGDCprDohkEIkANtSMW4mL01iiQ44yeL7X4UIzYc+Ss7CCFs+zaEckxMkIuVSwkPo2i0R5cTVFxdR0oKWL6Sw6jqeQTKi-jzLi4TrKnVAoF4WBaGQJzMr9XyoMcOwagGXyQ385oINK-TQqMyoaqs+qb0ahKkoc9rXy631FMXP8oMo+xqjcdca0pAYW3Dc5LHXDQbBPTwItTWqzMzBropEh8MF8Wh1uI1yinpWNWOrY8VBykxwIZPdpAq48rpDCNZsa+aMMW0SACMQggUhVs+gii2chSfq2isJCcYlzhqdVKWJ0oVGYcN3gcWnbHhl6BIs+LJwUHAKDQDGlrstacbnFzCikP8gwsVUmXxepRrc6RjgNTobqu+Qmbu88EaehaWewznud50SeYgL7hbcgC9wcQzlGNDTzEbM72gA5slUqBk+mZuqtaRnWOa5nmmoUeFUFZvk3VFGhYAUDBEjADAAGtSFhChkDDj1YAIE38cKNVFA4iNzmpcoLEbGtSnOACdHLc4mI9x7Yu1-jdb9g2YED3hg8R6hU4jqOY-jxPk+7rB08YNLvTx0tFaDCMI0uzROLkSnWL1KpLAZXEajJWvUK9oSfdb5uA6DsAQ7yIfI9iHAcCH0hEjQKgIGk5BwVSKISDfdLce6xSelsFVlHLABfE2UjoBSUuuZiLgpBuCOP0Gs28YrXm9o3X2+sj7txPp3Kg58o5oCvjfO+D8n4vxSG-T6Y8PwTz9D0VQ+piTXU0OSEolNmCaH1FuYM-Q4IOAQUOJBe8UEHzQbrY+TVz4kLIR-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-R3g1t6xK4KM+gIw1D9l0tTL7hDh-c5SNL0ZbR04pJPTeMtcnAwLLoli8LKSUjTRDTWJqglRNAKM6IJLXSEpcT8S8BSBNyCygTJBDl2g-xaZ5A3ALMtAg98QwLusVFfcGRwqgymosD4q9Sto8Rc8ZYqw6R7AK4wZ5B9xKIagoFbS5y7z6M+FGNlziquTfjFgVhsI9zKJLLtDe1bBqRVDVtOICRVAIFngnYaFZoUYwB4kT5m49Z-ZARSB9U8A5KajcC6jDVlrVqAsNqMYtqdrtL7V2LPdbTjhesT9jwyZcRwJrDp5LA3D-1HBq8ctjr8zTrD4tr1UzryBkRUBxQdqSqcDdVDqAk-rg51rAbIg-MQaMAwbk0dqdK8g6C0KGCxB0q1lZB3hwxpY6Iagg97ACVfIKhosIzEJfqVr-rEa0Egba0K1YrtTtqwBCBbqTN2hZALNuDqhAM907h9QBotJjwwwLN4EGaTrmbNrkbgaLVFgGAuaebkU-90L8a1Rzzyh3CLhLhrMxouxxaKNJaTxaJf0lrGaEb9YQbWa2lXFIhYBzsdNytPdww7BRc1wuUVxwwjdjdVBgwflot-abb5b7akbXRgbARXbSt+rHJ9LNo3g9w4JywNlWE1xzT-QWxRZXBNI6R1AnA7gI6mao6Wala2aPQulDEu44rwRCFULpEyrzNSgtlspzi1QtBkjgTudZsBclRlAj0y67aeYHaq6naa6U4sFYquypx5LbrFDKx14tIvliYdwbiVByZvFNQtBR61qK7FaY7q6aBa7Z6G7err5E7ARbq17c87h55AdiYAIwZYx8RuFziUqVAD6AbK6T6nayCT4b7IgobFKjrbbD7x7o6UagGOaVhAQsapQBjcahj8b878N+gqJXBip+1ayh1r8axtBD1uJ2qFB4aoGIAcDgg8FeAAAvNa3gcotASosBg6+i88Ch06kIGh6IBhx9Jh7opBtEFBlu7W2Cf8dI5sBQoFHSeRWiR4WGMk8saCnLQLaSFKYgaSbASAOuyyfY5AFIdParVB0sfG6sAkfKQHeoXEEMXuqsE8awACNe7QN5cMWadR9+VvbR2gc6i5AxoxqgD3ZO1tPCjQ00Q-Zqw3FLNwKCaWQCy4OiUh63DkTxzR7vWOXxvRhQOOXgfBQENhmGjh1JjJ9Jnx3RipXJ-JyIYR2SUR9HVu94AkYGQ0IpAYA0Xu6-N1bQWoBbIjZMecuDcNacOgNYB+WKvE0q7W+kC2I2tcKE54XyBiXpyq54dsEjaBLwHsIJwLeALIfpMRvGj1NOjJMMWoWwAVaEsaE05ieoMiWiLhfoaXQ5tBkBfZABGsmBSwBiD1CfVhZQqW1wGCsAF5sx-qUoFcBkdcNcJibSPB54VSKsdp-oRLZEholSgbdE5ikFhp9C3yUoUubeq8voOkRsYK-UFreoKsYmWoYFkG8JDuIJc+UFnqLQFUckIl+wEl3JdrAXAlIBJkAGEOul7FtuRlylHBWFBOZpKZFlxSQydl62UkkoUllLIh-l+4foIyddEV0xVuURWeqZXBfBKJW+e+R+LpOVn6YjN1NKxhOwBkexoVJQNK4O00dcbKXV6FFxCxJnTjCAK1n8EXQjUc9Seoexg0c8skpq0nYar16pMVk+SZRJPZnfBgnoGkb5fOWeE5K5lIgMF1-smsQWo0+N9BYOZNtOGJBpOJOZFNwNtyMwPULNrQHNphQne4FURbdyeMXyMthlpNupI14gcZ01tIWAFAmABt4EizdoHu-dQ4BbXyhAF+qwJE8oEmndLSftpsvue5NBZxad20oMWiRwLJJUG6PFEPWmAClkMiDQOlgwrAad-G8ofDRbK-aJsaDK9oVLP9WQOoR4R9oQ8tC1RXNAF9twFeYjIpbdL9xAeR6m+ocDRLFYwZh8i9fQkDnzFvP1wLAN3F9NnPKqawhLAjHOxcP+UkK8iMd4LSWiYDjY1c4rLTZnMcVvLAKradk8cfLcasMicYya5oF7fUfC9sR13p5Jx0hcx89Ep9hnZNPDyAdjyI1NrWojmoE4dLJsOoUyvNld43IpcNs9uMDJKT9FmTzDuT7DhT+9JXf19j2VwjoY0CKwfEaCXlUnAi0oBx2maBUWRYtF5SyzzFtYl4sIJUlj+z-D9j27R7ad-FgkBoJrJwaBR4ZdyoE9ijOwHQZeEcxjlo+nJPFOFPV4sbSDtd850mVWLoFQRoGEzt-qBwbaF2WfdDzq2TsLhPZjkQvI5NT-KAbjroY4E8VrSMofLoCAtcMoRJ2A8keA9r7Jnwsr0g1AtSlEVFaIgy7KUE1hVwGoHu8sCAisa-bQgBOQn6shwgqzrr+T9blc-r8QnFtNoY3nTyL5XUM0KMPJViFUczYNYkoNArvr8tNouAYolDLolh5oF7sFnQP7wKndBR-qY6IpfmkKVReQcVRb8HZokHuNd4q1T47j9sE4XqDJeoWr1Vk2tUBrNcG6Jhfjh0izoZzr54jEoq+dF9hxi2Q8rSY8o5IPabgDo4bdOCPzul7qzMlU7M3zH07n-8oA0bo00mI3ckUDXpwqGwBwcsSXjM1smXh78UOKhXzt7L2bPb+QPlYTDhasIBNpztOluClh+ejqbju3soM52ryPcmlLM0BRPRY0Cjf7VkHHi5bFvzadopPUUkZeIHN4H7YMM2nQG-IhtWK7xitme76Sxy2So95sb9WoKoKoYA8qIX3PP8dwZRPZSieyh9TStTrb+Vngyq9wNsHQENSmNl4ti6CYizWmILm3ELjCbq7CF9i4vUCMrQACiYnl8QEMAlukLhGWKE3+5uF96c44O0s564y5hial6wMTOj9Iq3tfo+vx10S6yD6c9hEaALzsOf-U4kUT9ebFA0a8s-6B-+yP5zsx1FoMcGDLFNDGhoEb9ciOnVqrHoian-KhjA2BqHw0a6aDGtzUg6wkryeIQVnRFIz9oLAigPoEH3xYYD7AMAiegAzQDs1VaZAHaqgKOBKBAqsgC5laT5SSBNO3KO4BbmtJqhmeSmLhgrQv4o046btSDlj0djlRaYlPBkAxGUDrIZSOiLBpCRIFwDT6HUPRnPTSDCDpu+UJRJLhqp8oQwDWKoFwIL5MR96ctcul-2PqwNUCIDTgJB384ACfkxDTbKAJwEDAgwcEYfDZVOZtUUmYwXgfbR4YCBaG-DKHpUUg5HIleO-C5uDDkZrJgU6VemJuHM5KY0myODJjowv6SpUBV0dhKJWjJOxzKYCPRK2G0CyANwwaS7r4ICCpDvGmTCpv4xfyGNIO1YB4MRiqAesQCy7BbHE32hHoCoTzNRqUzSHlNMhjGKptfEBCoDfIuQkUnlHpj2MgKB+UoboHc7cQvAQAA */
     id: "reactly",
 
     initial: "before load",
 
     context: {
+      machineName: "Reactly",
       path: "library",
       appTab: 0,
       pageTab: 0,
       componentTab: 0,
       componentData: null,
       preview: true,
+      defaultOrder: 100,
+      expandedNodes: {},
+      view: 0,
+      recycledApps: [],
     },
 
     states: {
@@ -46,23 +51,41 @@ const reactlyMachine = createMachine(
 
                 states: {
                   "fire application events": {
-                    invoke: {
-                      src: "invokeAppLoad",
+                    states: {
+                      "check for events": {
+                        always: [
+                          {
+                            target: "call event handler",
+                            cond: "application has events",
+                          },
+                          "#reactly.editing application.editing page.load page.fire page events",
+                        ],
+                      },
+
+                      "call event handler": {
+                        invoke: {
+                          src: "invokeAppLoad",
+                        },
+
+                        on: {
+                          complete: [
+                            {
+                              target:
+                                "#reactly.editing application.editing page.load page.page data loaded",
+                              cond: "no page has loaded",
+                              actions: "reassignAppData",
+                            },
+                            {
+                              target:
+                                "#reactly.editing application.editing page.load page.fire page events",
+                              actions: "reassignAppData",
+                            },
+                          ],
+                        },
+                      },
                     },
 
-                    on: {
-                      complete: [
-                        {
-                          target: "page data loaded",
-                          cond: "no page has loaded",
-                          actions: "reassignAppData",
-                        },
-                        {
-                          target: "fire page events",
-                          actions: "reassignAppData",
-                        },
-                      ],
-                    },
+                    initial: "check for events",
                   },
 
                   "page data loaded": {
@@ -81,7 +104,17 @@ const reactlyMachine = createMachine(
                     states: {
                       "pause for events": {
                         after: {
-                          1500: "send event message",
+                          500: [
+                            {
+                              target: "send event message",
+                              cond: "page has events",
+                            },
+                            {
+                              target:
+                                "#reactly.editing application.editing page.load page.page data loaded",
+                              // actions: () => alert("huh!!"),
+                            },
+                          ],
                         },
                       },
 
@@ -314,12 +347,24 @@ const reactlyMachine = createMachine(
                         target: "choose component name",
                         actions: "autoNameCreatedComponent",
                       },
+
                       "auto create": {
                         target:
                           "#reactly.editing application.editing page.editing component",
                         actions: [
                           "autoNameCreatedComponent",
                           "openCreatedComponent",
+                        ],
+                      },
+
+                      more: {
+                        target: "choose component type",
+                        internal: true,
+                        actions: [
+                          "incrementOrder",
+                          "autoNameCreatedComponent",
+                          "openCreatedComponent",
+                          "assignCreatedComponent",
                         ],
                       },
                     },
@@ -432,7 +477,10 @@ const reactlyMachine = createMachine(
 
               create: {
                 target: ".create component",
-                actions: "assignCreatedComponent",
+                actions: [
+                  "clearDefaultComponentParent",
+                  "assignCreatedComponent",
+                ],
               },
 
               "bind state": {
@@ -563,6 +611,15 @@ const reactlyMachine = createMachine(
           "drop event": {
             actions: "dropEvent",
           },
+
+          "drop app": {
+            target: "delete selected application",
+            actions: "assignApplicationDropMessage",
+          },
+
+          "expand node": {
+            actions: "expandedNode",
+          },
         },
       },
 
@@ -652,6 +709,26 @@ const reactlyMachine = createMachine(
 
         initial: "initialize library",
       },
+
+      "delete selected application": {
+        states: {
+          confirm: {
+            on: {
+              yes: "kill app",
+              no: "#reactly.editing application",
+            },
+          },
+
+          "kill app": {
+            invoke: {
+              src: "dropApp",
+              onDone: "#reactly.before load",
+            },
+          },
+        },
+
+        initial: "confirm",
+      },
     },
 
     on: {
@@ -664,21 +741,32 @@ const reactlyMachine = createMachine(
     guards: {
       "event contains no nav info": (_, event) =>
         !event.application?.navigation,
+      "application has events": (context) => {
+        const { appData } = context;
+        const eventType = "onApplicationLoad";
+        const invoked = appData.events?.filter((f) => f.event === eventType);
+
+        return !!invoked.length;
+      },
+      "page has events": (context) => {
+        const { page } = context;
+        if (!page) return false;
+        const eventType = "onPageLoad";
+        const invoked = page.events?.filter((f) => f.event === eventType);
+
+        return !!invoked.length;
+      },
       "page is loading": (context) => {
         const loadOK =
           context.appLoading &&
           !(!!context.page && !context.page.components.length);
 
-        const { appData } = context;
-        const eventType = "onApplicationLoad";
-        const invoked = appData.events?.filter((f) => f.event === eventType);
-
-        return loadOK && !!invoked.length;
+        return loadOK;
       },
       "no page has loaded": (context) => !context.page,
       "more keys": (context) => context.key_index < context.appKeys.length,
-      "no unsaved component changes": (context) =>
-        !context.selectedComponent?.dirty,
+      // "no unsaved component changes": (context) =>
+      //   !context.selectedComponent?.dirty,
     },
     actions,
   }
@@ -766,6 +854,13 @@ export const useReactly = () => {
         return await getComponent(selectedComponent.ComponentType);
       },
 
+      dropApp: async (context) => {
+        await commitApplication({
+          ...context.appData,
+          isDeleted: true,
+        });
+      },
+
       createNewApp: async (context) => {
         const ID = generateGuid();
         const newApp = {
@@ -806,7 +901,7 @@ export const useReactly = () => {
         const type = invoker.state.can("append") ? "append" : "load";
         console.log("INVOKE %c%s", "color:lime", eventType, type, state.value);
         const invoked = appData.events.filter((f) => f.event === eventType);
-        if (!invoked.length) return;
+        if (!invoked.length) return alert("No application events");
 
         invoker.send({
           type,
@@ -961,7 +1056,7 @@ export const useReactly = () => {
   };
 
   const machineList = {
-    Reactly: { state, send, states: reactlyMachine.states },
+    Reactly: { actions, state, send, states: reactlyMachine.states },
     "Event Handler": invoker,
     "Data Binder": binder,
     "Script Handler": clientScript,

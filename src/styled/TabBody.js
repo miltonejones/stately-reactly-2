@@ -5,10 +5,14 @@ export default function TabBody({
   fullWidth,
   in: open,
   children,
+  ...props
 }) {
   return (
     <Collapse orientation="horizontal" in={open}>
-      <Box sx={{ width: "100%", minWidth: fullWidth ? "100%" : minWidth }}>
+      <Box
+        sx={{ width: "100%", minWidth: fullWidth ? "100%" : minWidth }}
+        {...props}
+      >
         {children}
       </Box>
     </Collapse>

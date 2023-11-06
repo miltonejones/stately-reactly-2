@@ -1,4 +1,5 @@
 import invokeDynamo from "../../connector/invokeDynamo";
+import invokeMySQL from "../../connector/invokeMySQL";
 import invokeResource from "../../connector/invokeResource";
 import { findMatches } from "../../util/findMatches";
 import stateRead from "../../util/stateRead";
@@ -12,6 +13,23 @@ const dataExec = async (context) => {
   const connection = application.connections.find(
     (f) => f.ID === resource.connectionID
   );
+
+  if (connection.type === "mysql") {
+    const data = await invokeMySQL(connection, resource);
+    const packaged = {
+      ...application,
+      resourceData: {
+        [target]: data,
+        key: target,
+        rows: data,
+      },
+    };
+    return packaged;
+    // return {
+    //   columns: objectKeys(res),
+    //   records: res,
+    // };
+  }
 
   if (connection.type === "dynamo") {
     let item = stateRead({
@@ -67,24 +85,25 @@ const dataExec = async (context) => {
     return application;
   }
 
-  Object.keys(terms).map((term) => {
-    console.log({ term, value: terms[term] });
-    const param = stateRead({
-      value: terms[term],
-      page,
-      application,
-      options,
+  !!terms &&
+    Object.keys(terms).map((term) => {
+      console.log({ term, value: terms[term] });
+      const param = stateRead({
+        value: terms[term],
+        page,
+        application,
+        options,
+      });
+      console.log({ term, param });
+      resource.values = resource.values.map((value) =>
+        value.key === term
+          ? {
+              ...value,
+              value: param || value.value,
+            }
+          : value
+      );
     });
-    console.log({ term, param });
-    resource.values = resource.values.map((value) =>
-      value.key === term
-        ? {
-            ...value,
-            value: param || value.value,
-          }
-        : value
-    );
-  });
 
   const data = await invokeResource(connection, resource);
   const rows = resolveRows(data, resource.node.split("/"));

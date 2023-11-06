@@ -2,11 +2,11 @@ import React from "react";
 import { Drawer, Card, styled } from "@mui/material";
 
 const Backless = styled(Card)(({ open }) => ({
-  height: open ? "fit-content" : 0,
-  transition: "height 0.5s linear",
+  height: "fit-content", // open ? "fit-content" : 0,
+  transition: "bottom .5s linear",
   position: "fixed",
   top: "auto",
-  bottom: 0,
+  bottom: open ? 0 : "-100%",
   right: 0,
   width: "100vw",
   backgroundColor: "aliceblue",

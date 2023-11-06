@@ -1,4 +1,5 @@
 const objectKeys = (array) => {
+  // alert(JSON.stringify(array));
   const object = array.reduce((out, node) => {
     Object.keys(node).map((key) => {
       out[key] = key;

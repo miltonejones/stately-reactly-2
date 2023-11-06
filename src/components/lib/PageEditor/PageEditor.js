@@ -16,11 +16,10 @@ import {
   Code,
   Delete,
   Description,
-  Save,
   Settings,
 } from "@mui/icons-material";
 import Spacer from "../../../styled/Spacer";
-import { TinyButton } from "../../../styled/TinyButton";
+import { MachineButton, TinyButton } from "../../../styled/TinyButton";
 import CommonForm from "../CommonForm/CommonForm";
 import { TabList } from "../../../styled/TabList";
 import { TabButton } from "../../../styled/TabButton";
@@ -28,6 +27,7 @@ import EventList from "../EventList/EventList";
 import TabBody from "../../../styled/TabBody";
 import Warning from "../../../styled/Warning";
 import Json from "../../../styled/Json";
+import DropModal from "../ComponentTree/DropModal";
 
 const fields = [
   {
@@ -63,6 +63,7 @@ const AppEditor = (props) => {
     fields: appFields,
     record: machine.appData,
     disabled: false,
+    onDelete: () => machine.send("drop app"),
     onChange: (field, value) => {
       machine.send({
         type: "update",
@@ -74,6 +75,7 @@ const AppEditor = (props) => {
 
   return (
     <>
+      <DropModal machine={machine} />
       <Flex baseline>
         <Flex>
           <TinyButton icon={Description} />
@@ -81,12 +83,7 @@ const AppEditor = (props) => {
         </Flex>
         <Spacer />
 
-        {/* <IconButton disabled={!machine.appData.dirty} onClick={handleSave}>
-          <Save />
-        </IconButton> */}
-        <IconButton disabled>
-          <Close />
-        </IconButton>
+        <MachineButton machine={machine} message="home" icon="Close" />
       </Flex>
       <Flex sx={{ mb: 2, pt: 1, borderBottom: 1, borderColor: "divider" }}>
         <PageTabs machine={machine} value={machine.appTab} tabType="appTab" />
@@ -175,12 +172,7 @@ const PageEditor = (props) => {
         </Flex>
         <Spacer />
 
-        {/* <IconButton disabled={!machine.page.dirty} onClick={handleSave}>
-          <Save />
-        </IconButton> */}
-        <IconButton onClick={() => machine.send("navigate")}>
-          <Close />
-        </IconButton>
+        <MachineButton machine={machine} message="navigate" icon="Close" />
       </Flex>
       <Flex sx={{ mb: 2, pt: 1, borderBottom: 1, borderColor: "divider" }}>
         <PageTabs value={machine.pageTab} machine={props.machine} />

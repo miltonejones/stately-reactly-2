@@ -70,6 +70,14 @@ pre.code::before {
   padding: 4px 0;
 }
 
+pre.code.eval::before {
+  content: "🏁 Rewrite code   ";
+}
+
+pre.code.busy::before {
+  content: "⌛ Writing code...   ";
+}
+
 pre.code.clicked::before {
   content: "📋 Copied!   ";
 }

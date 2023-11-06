@@ -9,6 +9,7 @@ export const RyDataGrid = ({
   selectedRowIcon,
   selected_indicator_col,
   children,
+  selectedProp,
   ...props
 }) => {
   if (!props.bindings) return <>no bindings detected</>;
@@ -20,8 +21,8 @@ export const RyDataGrid = ({
   const json = JSON.stringify(rowItems, 0, 2);
 
   const handleChangePage = (event, column, row, index) => {
-    // alert(column);
     invokeEvent(event, "onCellClick", {
+      ID: row[selectedProp],
       column,
       ...row,
       row: index,
@@ -103,6 +104,7 @@ export const RyDataGrid = ({
 };
 
 function parseProp(value) {
+  if (!value) return null;
   if (["string", "number"].some((f) => typeof value === f)) {
     return value;
   }

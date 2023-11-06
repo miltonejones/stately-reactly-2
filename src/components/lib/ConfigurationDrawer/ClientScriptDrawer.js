@@ -2,6 +2,7 @@ import React from "react";
 import {
   Button,
   Card,
+  Chip,
   Divider,
   Grid,
   Stack,
@@ -18,6 +19,7 @@ import { PanelHeader } from "./ConnectionDrawer";
 import { red } from "@mui/material/colors";
 import Warning from "../../../styled/Warning";
 import CodePane from "./CodePane";
+import TabBody from "../../../styled/TabBody";
 
 function ClientScriptNode({ machine, submachine, node, scriptID, handleSave }) {
   return (
@@ -70,6 +72,7 @@ export default function ClientScriptrawer(props) {
   const ref = React.useRef(null);
   const [innerText, setInnerText] = React.useState("");
   const { submachine } = props;
+  const can = (str) => submachine.state.can(str);
 
   const handleSave = () => {
     submachine.send({
@@ -90,6 +93,7 @@ export default function ClientScriptrawer(props) {
   const { scriptID, scope } = submachine.state.context;
   const { page = [], application = [] } = submachine.scriptProps;
   const combined = [...page, ...application];
+  const scriptProp = combined.find((f) => f.ID === scriptID);
 
   const nodes = {
     page,
@@ -104,7 +108,6 @@ export default function ClientScriptrawer(props) {
 
   const isValid = (ref) => !!nodes[scope].some((item) => item.ID === ref.ID);
 
-  const scriptProp = combined.find((f) => f.ID === scriptID);
   const referers = props.machine.appEvents.filter(
     (f) => f.action.target === scriptID
   );
@@ -117,6 +120,13 @@ export default function ClientScriptrawer(props) {
 
   const height = submachine.expanded ? "80vh" : "40vh";
 
+  const services = {
+    rewrite: "Auto-generate cleaner code",
+    stop: "Stop generating code",
+    accept: "Accept auto-generated code change",
+    decline: "Disgard auto-generated code",
+  };
+
   return (
     <>
       <Grid
@@ -127,16 +137,8 @@ export default function ClientScriptrawer(props) {
         <Grid item xs={3}>
           <Stack spacing={1} sx={{ p: 1, height, overflow: "auto" }}>
             <PanelHeader
-              onAdd={
-                submachine.state.can("add")
-                  ? () => submachine.send("add")
-                  : null
-              }
-              onClose={
-                !submachine.state.can("cancel")
-                  ? null
-                  : () => submachine.send("cancel")
-              }
+              onAdd={can("add") ? () => submachine.send("add") : null}
+              onClose={!can("cancel") ? null : () => submachine.send("cancel")}
             >
               <b> {scope} Scripts</b>
             </PanelHeader>
@@ -206,6 +208,43 @@ export default function ClientScriptrawer(props) {
                   </Stack>
                 )}
 
+                <Nowrap bold variant="body2">
+                  AI services
+                </Nowrap>
+
+                <Flex>
+                  <Flex
+                    spacing={0.5}
+                    sx={{
+                      backgroundColor: (theme) => theme.palette.grey[400],
+                      borderRadius: (theme) => theme.spacing(2),
+                      padding: 0.25,
+                    }}
+                  >
+                    {Object.keys(services).map((word) => (
+                      <Chip
+                        disabled={!can(word)}
+                        size="small"
+                        color={can(word) ? "primary" : "default"}
+                        label={word}
+                        onClick={() => submachine.send(word)}
+                        key={word}
+                      />
+                    ))}
+                  </Flex>
+                  <Spacer />
+                </Flex>
+
+                <Stack>
+                  {Object.keys(services)
+                    .filter((key) => submachine.state.can(key))
+                    .map((key) => (
+                      <Nowrap variant="caption" key={key}>
+                        <b>{key}</b> - {services[key]}
+                      </Nowrap>
+                    ))}
+                </Stack>
+
                 {!!references.length && (
                   <Stack spacing={1}>
                     <Nowrap bold variant="body2">
@@ -232,12 +271,21 @@ export default function ClientScriptrawer(props) {
         )}
         {/*  contentEditable */}
         <Grid item xs={submachine.expanded ? 9 : 6}>
-          {submachine.state.can("close script") && (
+          {can("close script") && !!scriptProp && (
             <Card sx={{ height, overflow: "auto", m: 1 }}>
-              <CodePane setInnerText={setInnerText}>{scriptProp.code}</CodePane>
+              <Stack direction="row">
+                <TabBody fullWidth in={!["stream", "accept"].some(can)}>
+                  <CodePane setInnerText={setInnerText}>
+                    {scriptProp.code}
+                  </CodePane>
+                </TabBody>
+                <TabBody fullWidth in={["stream", "accept"].some(can)}>
+                  <CodePane>{submachine.gptCode}</CodePane>
+                </TabBody>
+              </Stack>
             </Card>
           )}
-          {submachine.state.can("ok") && (
+          {can("ok") && (
             <Stack>
               <Warning>There was an error saving the script</Warning>
               <Flex sx={{ p: 2 }}>

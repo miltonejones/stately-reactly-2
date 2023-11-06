@@ -293,7 +293,12 @@ function BindingDialog(props) {
 
 const ComponentEditor = (props) => {
   const { machine, component } = props;
-  const { repeaterBindings } = useBinding(machine, component);
+  const { repeaterBindings } = useBinding(
+    machine,
+    component,
+    false,
+    "ComponentEditor"
+  );
   if (!component) return <PageEditor {...props} />;
   const { componentTab } = machine;
   const { selectedSetting, componentData } = machine.state.context;

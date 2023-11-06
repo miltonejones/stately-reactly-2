@@ -8,6 +8,7 @@ function invokeDynamo(connection, resource, item) {
     secretAccessKey: connection.secretkey,
   });
 
+  // PUT - save record body
   if (resource.method === "PUT") {
     return new Promise((resolve, reject) => {
       const Item = restoreObjectLabels(item);
@@ -27,6 +28,7 @@ function invokeDynamo(connection, resource, item) {
     });
   }
 
+  // DELETE - delete record by ID
   if (!!item && item.filterKey && resource.method === "DELETE") {
     return new Promise((resolve, reject) => {
       const params = {
@@ -46,6 +48,7 @@ function invokeDynamo(connection, resource, item) {
     });
   }
 
+  // SCAN - get all records
   return new Promise((resolve, reject) => {
     const params = {
       TableName: resource.tablename,
