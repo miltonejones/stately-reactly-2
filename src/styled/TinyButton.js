@@ -8,9 +8,9 @@ export const TinyButton = ({ icon: Icon, hidden, ...props }) => {
     return (
       <IconButton
         {...props}
-        sx={{ width: 18, height: 18, opacity: hidden ? 0 : 1 }}
+        sx={{ width: 18, height: 18, opacity: hidden ? 0 : 1, ...props.sx }}
       >
-        <Tiny sx={{ width: 16, height: 16 }} />
+        <Tiny sx={{ width: 16, height: 16, ...props.sx }} />
       </IconButton>
     );
   }
@@ -33,11 +33,13 @@ export const MachineButton = ({
   machine,
   message,
   payload,
+  hide,
   icon: smiley,
   ...props
 }) => {
   const icon = machine.state.can(message) ? smiley : "Error";
   if (!machine.state.can(message)) {
+    if (hide) return <i />;
     return <CircularProgress size={16} color="error" />;
   }
   return (

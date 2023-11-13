@@ -1,4 +1,4 @@
-import { Card, Chip, Divider, Typography, Stack } from "@mui/material";
+import { Card, Divider, Typography, Stack } from "@mui/material";
 import {
   Add,
   Close,
@@ -10,12 +10,10 @@ import {
 } from "@mui/icons-material";
 import { MachineButton, TinyButton } from "../../../styled/TinyButton";
 import ChipMenu from "../../../styled/ChipMenu";
-import Spacer from "../../../styled/Spacer";
 import AddModal from "../ComponentTree/AddModal";
 import ClientStateDrawer from "./ClientStateDrawer";
 import ClientScriptrawer from "./ClientScriptDrawer";
 import ConnectionDrawer from "./ConnectionDrawer";
-import statePath from "../../../util/statePath";
 import Flex from "../../../styled/Flex";
 import BacklessDrawer from "../../../styled/BacklessDrawer";
 import DropModal from "../ComponentTree/DropModal";

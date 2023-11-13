@@ -2,7 +2,6 @@ import React from "react";
 import {
   Button,
   Dialog,
-  IconButton,
   Stack,
   Switch,
   TextField,
@@ -11,9 +10,7 @@ import {
 import Flex from "../../../styled/Flex";
 import { STYLEBIT } from "../../../constants";
 import Spacer from "../../../styled/Spacer";
-import { Settings } from "@mui/icons-material";
 import IconSelect from "../../../styled/IconSelect";
-import { TinyButton } from "../../../styled/TinyButton";
 import TextIcon from "../../../styled/TextIcon";
 import { TabList } from "../../../styled/TabList";
 import { TabButton } from "../../../styled/TabButton";

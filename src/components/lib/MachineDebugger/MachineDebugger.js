@@ -20,9 +20,10 @@ import { TabList } from "../../../styled/TabList";
 import { TabButton } from "../../../styled/TabButton";
 import Json from "../../../styled/Json";
 import { useCode } from "../../../machines/codeMachine";
-import { TinyButton } from "../../../styled/TinyButton";
 import CodeModal from "./CodeModal";
 import { Code, ExpandLess, ExpandMore, Info } from "@mui/icons-material";
+import { TinyButton } from "../../../styled/TinyButton";
+import JsonTree from "../../../styled/JsonTree";
 
 export default function MachineDebugger({ machines }) {
   const [info, setInfo] = React.useState("");
@@ -48,6 +49,7 @@ export default function MachineDebugger({ machines }) {
         coder.send({
           type: "load",
           actions: actor.actions,
+          services: actor.services,
         }),
     },
     {
@@ -61,8 +63,8 @@ export default function MachineDebugger({ machines }) {
     <>
       {!!coder.machineActions && <CodeModal name={state} coder={coder} />}
 
-      <Dialog open={!!info} onClose={() => setInfo("")}>
-        <Box sx={{ p: 2, height: 480, overflow: "auto" }}>
+      <Dialog maxWidth="xl" open={!!info} onClose={() => setInfo("")}>
+        <Box sx={{ p: 2, height: 480, width: 800, overflow: "auto" }}>
           {!!machines[info] && (
             <StateTree
               root
@@ -100,15 +102,17 @@ export default function MachineDebugger({ machines }) {
 }
 
 function StatePanel({ attr, show }) {
+  const [open, setOpen] = React.useState({});
   const { state, send } = attr;
   const [pre, setPre] = React.useState(null);
   const activities = state.nextEvents.filter((name) => name.indexOf(".") > 0);
   return (
     <>
-      <Dialog open={!!pre}>
+      <Dialog maxWidth="xl" open={!!pre}>
         <Stack sx={{ p: 2 }}>
-          <Box sx={{ width: 400, height: 400, overflow: "auto" }}>
-            <Json>{JSON.stringify(pre, 0, 2)}</Json>
+          <Box sx={{ width: 800, height: 400, overflow: "auto", p: 2 }}>
+            <JsonTree open={open} setOpen={setOpen} value={pre} />
+            {/* <Json>{JSON.stringify(pre, 0, 2)}</Json> */}
           </Box>
           <Flex>
             <Spacer />
@@ -116,8 +120,9 @@ function StatePanel({ attr, show }) {
           </Flex>
         </Stack>
       </Dialog>
+
       <Divider />
-      <Collapse in={show}>
+      <Collapse in={show && !pre}>
         <Box sx={{ maxHeight: 400, overflow: "auto" }}>
           {Object.keys(state.context).map((key) => (
             <Flex sx={{ mb: 1 }}>

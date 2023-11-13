@@ -1,4 +1,4 @@
-export const stateValue = (prop) => {
+export const stateValue = (prop, oppose) => {
   let response = prop.Type === "number" ? Number(prop.Value) : prop.Value;
   if (prop.Type === "object") {
     try {
@@ -6,7 +6,7 @@ export const stateValue = (prop) => {
     } catch (ex) {}
   }
   if (prop.Type === "boolean") {
-    response = Boolean(prop.Value);
+    response = oppose ? !Boolean(prop.Value) : Boolean(prop.Value);
   }
   return response;
 };

@@ -2,17 +2,15 @@ import { TableRowsOutlined } from "@mui/icons-material";
 import { useMachine } from "@xstate/react";
 import { assign, createMachine } from "xstate";
 import invokeResource from "../connector/invokeResource";
-import generateGuid from "../util/generateGuid";
 import { findMatches } from "../util/findMatches";
 import invokeDynamo from "../connector/invokeDynamo";
 import describeDynamo from "../connector/describeDynamo";
 import resolveNode from "../util/resolveNode";
 import invokeMySQL, { getTable, getTables } from "../connector/invokeMySQL";
-import objectKeys from "../util/objectKeys";
-import encrypt from "../util/encrypt";
+import { connectionActions } from "./actions/connection";
 const connectionMachine = createMachine(
   {
-    /** @xstate-layout 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-EDmDMxsM0Lg-BOAyAACM6QFPIUU6xtLQ0ypqIBijwHQOsPYYxljbGvH8N8bQC94MURoQ-W2a8GQNiPqrMZQU0ps4KESPWQjrN-0JhcAAMzwKsnozGABWbg2GyUYIQTQcAL16EKLvCUEUogKFyOsUUthJQrtyAfMyuR+R6Z1oW8cxnTNNHM1Z3ANneiEHQKgJz-TuX91gqcX++lUjOe9FIUwGI9h1ixGajdPtpW3OEJjaaJoZzdCqhAapsBhDDHQI1oaGyarmI43w4psKKvF2q4uCDJCGgNaay1-o7X7IKtGhJxpfxml1y+Ry5KKqYgdt3GFbEqgH05fMGLdERR5CmqUaFp8YaExDdq8RerbWJutca0Y2bXXCm9a47+vtxGrvzhqyNu7T3UHNce9U9xpj5sCMW9JqtK3lI6ChFyd9Kh+SISTRhiUYhJDHHc9EM51yhj5TIfVTj0zagE51BDqTTnwSSgkBC-QVYInbQie2Sy2cOmJClPwc7Mzwv6wqaW6StmZM7XUvEZCYJdvMXnWiYyl5ih1nCrenn-aIsYBM2ZoxMkEsOdgDJ46xljg7fyJSyQiJViryOMdpIzpkowzKwXP9l2ajXaa0TyxrUPuboG-7V3ej6l8IW+gIRy34PKVOFkKytb8verCqKCRx9Mhc4PlSkLDvNE8cq5FzXpHtd2aSzJ2Q3oqw2HbUINC3mDLyG9FbyCjFAyrD7On5JX2+d3JLVPZhd9BOg6g5-WDnyw9L16TE0wdZjhJGAfI+CqJGdWC7gsMwjgLhJYgHATgM44Pjq2AcYZ6azi7jBlvR9QgbCG6pZ+g4Lopk0jpFvxeuhJAiHS9udEGRHTM+rFZWQZh9DExWCrt9gEq0otHoP3ArOKGhAfm7PMJ6ipN-mIAzIPJli3KVsPN7pnsXLfmAPft-GkB2u2I6IGPPjLNqnAToBpBCBYGsNEDYD2N+iUq3gZu3gVLZLgW0l6vkHLhXsUA3qsOQTkBAqYKsGtr5ruIAW3sgqwW5LfOwYtOBIoqoLIIkHuIdKIKKLTrCJtD-jEIdDCjYpgRfL1P1hHCNmDqNHIRWDoLmtwRKLwQDEcNtJEIrBvAhPoFEKoLAugeVoYeUoOqWpYQBEYHJnIHkMoRZCpqkIYA6LyOBOBJOs6BIcwVIdUl3oEcpPMOBNkAfNnJZB5ntj-PEavIxMlOBJBGnt4Y7kwc7ikQsrfGBk-EYlBukUvGZFuDkScPEFpAUZerLvIGFEapkFIJIEkTUQiqWl3jRtgvRhwlwsQvAIPtvpejyKvMhGPvBMQXAUUEIMUQMVIN-jmqMbxrUUwvUaQBQJAC0T-GEN6MUExIUElM6FsfsYrCVuqnQYKGgT+hgU7sceMZ3mgKYc9p1gsWOg-pevjNkIKOEYYKoB6AZMId6BFNeOvMxFYBFEcZVv8RXFUkYrUjqKCSIkscxPHKEUXteBEYiG6sZCbrJm0SMc3tMqrvzv4Z3oys8lcZesdsZInhKJYIlD0TuD6CUM6D2CsGnJicXHKsRJyXoDsQcHELCMGOBPBOQYaj6BEvWEGCZEcJKf7BGqgpycqT6FIruCIW3IIPHlZPFKsIfl3FINEPodxr8ZVvxpRo-JyclOiMUQzPvGZDYD5oUPFHuIkFZEcLEMUHqUgm6YJg0WYc0YseCb-MXgan6ZAaKCsMXglG8diB5lGU5DGVRkJrRiJpwkxqxuvomXgUMYonGryNeMhkUBmRIuluKBBLeruARoyVukgtntFqgJZtZnnrKTtBCMmUUJBJYFWNtMtHyPWfEMlI3nIPmeOK7nVmNvdv7iOUbj6PvlpDAcfjlteFyHyMdCdhpBHiuT9ljP9huYDqWsDlNmYS9oSSAVYaYCSpAWYPuUfuQYPDyX9DINnGtleS7r9sNuueNv7pNpuaRi+SOWoqvI2iqWUf3OoY+v+asIBfIFWGhPjhMDqJydnBEFEFmpeP0QAszoKOpGaZ2GYImtSowURpIX2aDsOVWRwZevWPHMhF5nIGFNnJERuCoHLmcPLteNEHWJMt2T7kgn7kDp6foArFmpBM6jmlKEKlkLyUcDECcIYMvvYEAA */
+    /** @xstate-layout N4IgpgJg5mDOIC5QGMD2A7dZkBcCWGAxADaoCGEA2gAwC6ioADqrHvhgyAB6IAsAjADYAdAE4ArONEBmQdN6SATP0XiANCACeiALT9xADhH8A7OJOLpEk9PmKAvvY1pM2duhLkq-ekhDNWd04eBGkpYV5qQRNRRWp4g2pbDW0EPWl+A2FLUSTBJPF+Xl5BR2cMLFwCdGEXSvcAAgBbVAgyYga8WAbURjAPZFJYMBpfJhY2auDEWWF+ahkVGMVBWOpFFN0VTLETfIMDURMDg3FSpxA6t2raiuuMZtb2zu7e-sJhnAarqoxRzgCkw4fhCikUojmgmUhyMJ3kvE2aUKigixWoZyiolEAhMZUud1+NR+jRabQ6XR6fRqeAgxDAhAoVDoAImQRBugy1DEUME-FEcl44Ns0kROhMJi5vAsvLyUpOeOJN0VD1JzwpbxqkEm6Cg3wJ7kIgxYYD1rkJ-z8gLZoBCOlsIhM8wMJRkSWxElFkWkwhiRSMvFEiXEqnO5TN7lu4eqjzJL0p-WEWvwOtN9WqHzAXwATnBUABXLPIEbMy2sqbshAGPlifnSRQ4qFHEVaXSqfgRcUh2S8vlhBX6pUDlVPcmvKmJiDa3XKjx5xhtHDFsb+MvAm2IcEiaGnXjSRJQoyIvniH11orxcTowSnftRjCRtPD2Pq8dJvApmcMiBM5dW8vrhAoRPdZ+SERRTkES8DE9AwUWoIQzj3ahnSxaRcQuGcH3udAYzVMcEzfD8hw8YZkBzHALXGQJ-24RAzi3KVg1EXtilUI8JFPZRInRK8bww4isMJXDR3jTVJ2TadiMICAs16SiV2otdaLSfQ92EcQFEEAMBCEGRoJbBAzGEa9zGoGIBAOagFFvR8iWI4S4w1Ccp1TbDhBzChNENVAmiaNh5L-JTbXtGsTGKQQtOxQwTEReRhD3MKq34eFkNDfE7zsjKHJfAjxPfSSMtuXy2FcoTkAACzIHU4GkjAwGEd8ADdUAAa3qzCZ2y-CxJcjqfL8r5OoqqqYFgBAmtQZAyHcUYAtXdBplCCKIhlGJxUdOIolFfQ4OYvZEkDKt6wcfjCs61URKcwjdRzWB80LekjWGBpbvuos5sUhaKzCuZ62YowgOFI9rwhIxMgsY5VCkUQbLc86R0c188pTV6CyLQg5wXJcWU+xbYN4H0rPmKV62KGKDIEAmijMOtkRsAwwthwlBJJBGcp6iSXtzNHHrpMgsw+oEvoArSTzOWJwXrPdlHUAzjhMYR1j5SJHSiPZ0LDWyWejC7EdylzUYejNs25h7BetZTLEsH1+SlcVicDREwq5Cw92iFZVexJmI3h59uucznDfRmS5JLKihcW-gdvU+JkLBVQA30RE0WMy9ijrcKwg19Ktd9vDRID-Kubunn3LATzvOKiiw4UiOK2Vrk7EDPZ9ibI9wJPZR1sOXgGeiAxvcHLLdfZwuUdNosy4rxdYGr395sj+IUT5Z1gxUD3m1SKOimMix8YMTkpBOzW4fskf-eu4u3vqjyIC8xlzZokIVGQ4QUOSwV97Mo94JPIQkkUBYbiMg0p9WHmzC+yMboTxvuXO+tRyrYBalfHmDQcCaD6IQR+QVEDJUvG-KsAhgxmVsOTLerF1JHAEPyd0A9Tq5zPhAgul8g6wM8ggpBKCHpoIwfSSgPgcZ1wAslVY2R4I2EAYkaQJCjyXnbMUKs4grBRwWGYQe9486XSRgbGBU94EwC+HfdAZAWh6mIHmJo6BYC1SwA1dAzU2raw0Ywv2zCoFcMnrfTQwgDENCMSY1AZiLFWPGvYya01qizRroFYWykhByA7NEcWvdVinFkdeN+e9sTnnWOKdRmVbJdTcTokuD0ioDQ8SaYa1VrEQDqnYhx7UBKaL1hzIurDyklVYd8SqNTQnNSmjNOg2DYkhCOHBJIKhpawSUWQ3B60xEWEyC-Bmxx8lOJwufYpgddEzxNqUosDRPgSVqfUiajiwGFK2VddxHS9mVKOZmE5-TwlDNoCMxaMgUQyCOLyWQMgbCy1SKcE84oQKXhAnIaQ6yWmjxYboxkRdFxZiaIaXpMAPn13BCeH5TopDwjCE7HYewo4SBKCobSMKXH5xuSU6+whEUpmRai2AZBGrY1LLjLF4pjImRAgosyggf5YkVseA4thYJWVAc06lWj9Y7IOfVRlupmWGiqkWYgmLhFCHkchf6CxVA0ydgICIqze4aTCOYY+OdT7gNcU5ZVpUDRTXQBqrVykdCJDfpYMIAL4J8hiKKQ4CspQSqIUUC1VK7U0vHI6z81SMXRIXt9CE+h0QH1yPkCVm9dASBEL3PYcRHT6EKLwKNVymEOu-EXT8rL2XuuflkfI4s+RYn0AouZaRigEwPglaI6IFBrPobait9rY3VvHoqtFI0OXhwtiER0W49yCn5CsJWQLdA2AVnuIolheQCB9eW7CRSq2TkndfNVrqwCaqTVygCwYTwA1OBYeIxxDiehNdiaRxbcixAEEeoS1zx1nugVOuts7a7ztwbuHtB9IKOmWButIPZIS5EKOvZiXth3M1hf7bpjAcw6AqkgjhyBkGdXQZghtuD91v3dFneExRRQrHbIYBmgYJCWBVtnS5x6gMJnw4R4jZHSPkfspRvhAjOVCLiTyDs0jILENkAzUUhhIS8jg72WIthxAAdZmOgTMCGgEbAERxBInfH+NMTgMgAAjOkpzbHnKaWdWVrSy6KuM0J8zLUfGZj8ZoYx1m7MOZeYMyJwzb0ycbRYeKMRgxtmvBkDYBlPXti0oAlYvcFCJHrHpnWlbxwuAAGZ4BRT0WzAArNwfjZKMEIJoOA1GVKFD-hKCKUQFC5HWKKWwkp0O5EAWZX90rXPRrlZlUr5XUBVZqyHer6BUDNbFGEb1B9YKnDwfpVIeglGUNMBiPYdYsRluwz7Nzo9MbTSqcRboVUICVNgMIYY6AHtDXRTVOpTmwkXJleN9zV3FxOuqHd17j3nv9De-ZBNcAwsRL+JF+ed6PXJRiDbaRu4wrYgTqpoyl5S3yFLQza1vHAOFYTIDm7GVQcPdYU9l7tOjMw8c-VZzGyNknvHJT4HGAafg4Zw85ncO3nLahFyDjKh+SIVXbj8XkhjgdeiKS-LT4Y0JhK2VpoDz5sNaa1FqDCAKUon7tjrNkhJCIlEcGoo0jl3JRhmdoeo61eTc19rurhBFvNZEd6KsNgv1CDQj1gy8hvRHAQoxQMqw+yO+cf9y785ruPZsazn7LmGHx-9tzunwuIvvP10-RApwshWQfVIIoZMESpYSSAzIUolhWv5DCoY+UU8NNaunuGLedS54R-npH0XWy5AiBIcV+hFE5paxkAhVlDh1kSPXxwFxFsQDgJwGcgiDd6AOKCrdZxdxg2-qloQNhd5Wt3GcBXdCT7MxpHSTfhekRnDftLTIQYMiOm2oUCEVlZBmH0MTCsCrpsuTrEjEotNvmhD6HvlpG7PMJ2noL-mIAzOYFjlWOtsAZzgmHfmAA-jgmkNIu2I6IGMojLHuGhKpgGD6JLGrDYD2Dxn9s7hNmPAVLZHgaMroCUFyJBEHsUFHqsAgTkPtkAjvsULprHgUnxqASwTzjUF4uwYtOBFkDMspkkDCO+qlpKFHpKnkOKFiAcKNhnkwe5pfH1FXLIT0jOvANJlvgeqnLwQGADEcNtJEIrJ-AhGmkBNfjajhhdpAnSjzAoRWEYCiLILbnINeBZClqkIYA6LyIApIIkBYMxJgfxm0ueqXPITYY-vMOBNkIAr3JZJ1lXlvOBD2oxFEOsHbtChIRzmkTIR0l4qJg8hJkEcIoKvkYlEUVpCUdBq4fIGFEWpkFIJIKkdIfCoqnot4pZoFgEkEpYtYXOjkXJokH7oQSQZ2kUEIG-FKIKFIL-vumMQZukaBvSk0aQBQJAG0XEglL9GhKcGZMXkhvoMPgsGSpXvWOITfudpntsu0romgOYd0sztcY2vWNkIKMpjlqoB6AZKYAkhFNeB-MxFYBFEcS7g0bsnAPstfI8jgCcqCYgMxI3HIHkFCZkNEUScxLypMsToKqMbUbhn8RkWUo6syoSYbjbsZLXhKJYIlL0ZWBpD6CUM6D2CsB3OicwXGsRByXoNsQcHELCAlokKYKKIWj6EovWEGCZEcJKe5o6qwhyQlj6EkruKsFHGCEKtXlZPFKsAflHFINEIYSOlIccR5riSZmZkghyclOiDsQzAAmZDYL1oUPFAlGcPWFmg7t8U7q6RiYJqZsJr5kmRYa0dkfgXgr7gWoGeKJPjoCsL7glCdlIJEFpHqaPAmV6RZv5lZoEjZvZmvumRwYbsXpkvEkIAzIQQKfmQkutuKBBFnBfuWf7BrtNrNrgLVr0LKTtKmmEBkCUMGDuttMtHyLyPkPBP8mEcOQXNzjOHznTtOccBCLmWYLAYfggdeFyHyG2J-N-pBNuU5Lubdg0PdvzpDhYSCU2RAaYCaiefvnAUfjtkfNyX9DIL3Kjg+VzonkDnuS+WDnThDvBUzh9osZBo-ogYApknEOBOsLCFYKprECBQGGBVWGhJBerhgFNlrt0vNj6fWI3HqvEHIGFL3JSQgMoMbpIJBFKkYBIjUTGXHsYQnljI9j6foArLupBM2vulKEGlkDyUcDECcIYM3hMDqByb3BEFELupeAMYQl-oKOpGaZ2GYCuidI4EAA */
     id: "connection",
 
     initial: "idle",
@@ -398,358 +396,161 @@ const connectionMachine = createMachine(
 
         return (
           ["dynamo", "mysql"].some((f) => chosenConnection.type === f) &&
-          !context.columnList
+          !context.columnList?.length
         );
       },
       "no connections are present": (_, event) => !event.connections?.length,
     },
-    actions: {
-      assignConnections: assign((_, event) => {
-        const connectionProps = {
-          resources: event.resources,
-          connections: event.connections,
-        };
-        // const firstConnection = event.connections[0];
-        // const connectionID = firstConnection?.ID;
-        return {
-          connectionProps,
-          // connectionID,
-          // chosenConnection: firstConnection,
-        };
-      }),
-
-      assignFirstConnection: assign((context) => {
-        const { connections } = context.connectionProps;
-        const firstConnection = connections[0];
-        const connectionID = firstConnection?.ID;
-        return {
-          connectionID,
-          chosenConnection: firstConnection,
-        };
-      }),
-
-      assignSelectedConnection: assign((context, event) => {
-        const { connections } = context.connectionProps;
-        const connectionID = event.ID;
-        const chosenConnection = connections.find((c) => c.ID === connectionID);
-
-        return {
-          connectionID,
-          chosenConnection,
-        };
-      }),
-
-      assignStateProps: assign((_, event) => ({
-        stateProps: event.attr,
-      })),
-      assignSelectedResource: assign((context, event) => {
-        const { resources } = context.connectionProps;
-        const resourceID = event.ID;
-        const chosenResource = resources.find((c) => c.ID === resourceID);
-        return {
-          resourceID,
-          chosenResource,
-        };
-      }),
-
-      assignConnectionDropMessage: assign((context) => ({
-        message: `Are you sure you want to delete connection ${context.chosenConnection.name}?`,
-        caption: "This action cannot be undone!",
-      })),
-
-      assignResourceDropMessage: assign((context) => ({
-        message: `Are you sure you want to delete resource ${context.chosenResource.name}?`,
-        caption: "This action cannot be undone!",
-      })),
-
-      dropCurrentResource: assign((context, event) => {
-        return {
-          dirty: true,
-          message: null,
-          caption: null,
-          chosenResource: null,
-          connectionProps: {
-            ...context.connectionProps,
-            resources: context.connectionProps.resources.filter(
-              (res) => res.ID !== context.resourceID
-            ),
-          },
-        };
-      }),
-
-      dropCurrentConnection: assign((context, event) => {
-        return {
-          dirty: true,
-          message: null,
-          caption: null,
-          chosenConnection: null,
-          connectionProps: {
-            ...context.connectionProps,
-            connections: context.connectionProps.connections.filter(
-              (res) => res.ID !== context.connectionID
-            ),
-            resources: context.connectionProps.resources.filter(
-              (res) => res.connectionID !== context.connectionID
-            ),
-          },
-        };
-      }),
-
-      assignEncryptedProp: assign((context, event) => {
-        const chosenConnection = {
-          ...context.chosenConnection,
-          [event.name]: null,
-          config: {
-            ...context.chosenConnection.config,
-            [event.name]: encrypt(event.value),
-          },
-        };
-
-        return {
-          dirty: true,
-          chosenConnection,
-          connectionProps: {
-            ...context.connectionProps,
-            connections: context.connectionProps.connections.map((res) =>
-              res.ID === chosenConnection.ID ? chosenConnection : res
-            ),
-          },
-        };
-      }),
-
-      updateSelectedConnection: assign((context, event) => {
-        const { connections } = context.connectionProps;
-
-        const chosenConnection = connections.find(
-          (c) => c.ID === context.connectionID
-        );
-
-        const updatedConnection = {
-          ...chosenConnection,
-          [event.name]: event.value,
-        };
-
-        return {
-          dirty: true,
-          connectionProps: {
-            ...context.connectionProps,
-            connections: context.connectionProps.connections.map((res) =>
-              res.ID === chosenConnection.ID ? updatedConnection : res
-            ),
-          },
-        };
-      }),
-
-      updateSelectedResource: assign((context, event) => {
-        const { resources } = context.connectionProps;
-        const chosenResource = resources.find(
-          (c) => c.ID === context.resourceID
-        );
-
-        const updatedResource = {
-          ...chosenResource,
-          [event.name]: event.value,
-        };
-
-        return {
-          dirty: true,
-          connectionProps: {
-            ...context.connectionProps,
-            resources: context.connectionProps.resources.map((res) =>
-              res.ID === chosenResource.ID ? updatedResource : res
-            ),
-          },
-        };
-      }),
-      clearSelectedConnection: assign({
-        connectionID: null,
-        resourceID: null,
-        tableList: null,
-      }),
-      clearSelectedResource: assign({ resourceID: null, tableList: null }),
-      assignClose: assign({
-        connectionProps: { resources: [], connections: [] },
-      }),
-      assignClean: assign({
-        dirty: false,
-      }),
-      clearTestResult: assign({
-        testResponse: null,
-      }),
-      assignTables: assign((_, event) => ({
-        tableList: event.data,
-      })),
-      assignColumns: assign((_, event) => ({
-        columnList: event.data,
-      })),
-      assignTestResult: assign((_, event) => ({
-        testResponse: event.data,
-      })),
-      appendConnection: assign((context) => {
-        const ID = generateGuid();
-        const newConnection = {
-          ID,
-          type: "rest",
-          root: "",
-          name: context.name,
-        };
-        return {
-          dirty: true,
-          connectionID: ID,
-          connectionProps: {
-            ...context.connectionProps,
-            connections:
-              context.connectionProps.connections.concat(newConnection),
-          },
-        };
-      }),
-      appendResource: assign((context) => {
-        const ID = generateGuid();
-        const newResource = {
-          ID,
-          connectionID: context.connectionID,
-          name: context.name,
-          path: "",
-          method: "GET",
-          format: "rest",
-          node: "",
-          appID: "",
-          transform: "",
-          body: null,
-          values: [],
-          columns: [],
-          events: [],
-        };
-        return {
-          dirty: true,
-          resourceID: ID,
-          connectionProps: {
-            ...context.connectionProps,
-            resources: context.connectionProps.resources.concat(newResource),
-          },
-        };
-      }),
-      appendTerm: assign((context, event) => {
-        const { resources } = context.connectionProps;
-        const chosenResource = resources.find(
-          (c) => c.ID === context.resourceID
-        );
-        const updatedResource = {
-          ...chosenResource,
-          values: chosenResource.values.concat({
-            key: context.name,
-            value: "",
-          }),
-        };
-        return {
-          dirty: true,
-          connectionProps: {
-            ...context.connectionProps,
-            resources: context.connectionProps.resources.map((res) =>
-              res.ID === chosenResource.ID ? updatedResource : res
-            ),
-          },
-        };
-      }),
-      assignNewName: assign((_, event) => ({
-        name: event.name,
-      })),
-    },
+    actions: connectionActions.actions,
   }
 );
 
 export const useConnection = (handleClose, handleUpdate) => {
+  /**
+   * Executes a resource based on the given context.
+   * @param {Object} context - The execution context.
+   * @param {string} context.resourceID - The ID of the resource to execute.
+   * @param {string} context.connectionID - The ID of the connection to use.
+   * @param {Object} context.stateProps - The state properties.
+   * @param {Object} context.connectionProps - The connection properties.
+   * @returns {Object} - The result of the resource execution.
+   */
+  async function executeResource(context) {
+    const { resourceID, connectionID, stateProps, connectionProps } = context;
+
+    const { resources, connections } = connectionProps;
+
+    const chosenConnection = connections.find((c) => c.ID === connectionID);
+    const chosenResource = resources.find((c) => c.ID === resourceID);
+
+    if (chosenConnection.type === "mysql") {
+      const res = await invokeMySQL(
+        chosenConnection,
+        chosenResource,
+        chosenResource.page || 1
+      );
+      return {
+        columns: Object.keys(res.rows[0]),
+        records: res.rows,
+        count: res.count,
+      };
+    }
+
+    if (chosenConnection.type === "dynamo") {
+      return await invokeDynamo(
+        chosenConnection,
+        chosenResource,
+        stateProps[chosenResource.body]
+      );
+    }
+
+    let body;
+
+    if (!chosenResource.bodyType || chosenResource.bodyType === "JSON") {
+      let json = chosenResource.body;
+      const regex = /"{([^}]+)}"/g;
+      const matches = findMatches(regex, json);
+
+      if (matches) {
+        matches.map((term) => {
+          const [fullText, innerText] = term;
+          const param = stateProps[innerText];
+          json = json.replace(fullText, JSON.stringify(param));
+        });
+      }
+
+      body =
+        chosenResource.bodyType === "JSON"
+          ? json
+          : stateProps[chosenResource.body];
+    }
+
+    return await invokeResource(chosenConnection, chosenResource, null, body);
+  }
+  /**
+   * Retrieves table data based on the given context.
+   * @param {Object} context - The context object containing resourceID, connectionID, and connectionProps.
+   * @returns {Promise} - A promise that resolves to the table data.
+   */
+  async function getTableData(context) {
+    const { resourceID, connectionID, connectionProps } = context;
+    const { resources, connections } = connectionProps;
+
+    // Find the chosen connection and resource based on their IDs
+    const chosenConnection = connections.find((c) => c.ID === connectionID);
+    const chosenResource = resources.find((c) => c.ID === resourceID);
+
+    if (chosenConnection.type === "mysql") {
+      // Invoke the MySQL connector to get the table data
+      const res = await getTable(chosenConnection, chosenResource);
+      return res.rows;
+    }
+
+    if (chosenConnection.type === "dynamo") {
+      // Invoke the DynamoDB connector to get the table data
+      const res = await invokeDynamo(chosenConnection, chosenResource);
+      const items = resolveNode(res, ["Items"]);
+      return items.columns;
+    }
+  }
+
+  /**
+   * Retrieves tables from a chosen connection based on the connection ID.
+   * If the chosen connection is of type "mysql", it invokes the getTables method from the MySQL connector.
+   * Otherwise, it invokes the describeDynamo method from the DynamoDB connector.
+   * @param {Object} context - The context object containing the connectionProps and connectionID.
+   * @returns {Promise} - A promise that resolves with the tables from the chosen connection.
+   */
+  async function retrieveTables(context) {
+    const { connections } = context.connectionProps;
+    const chosenConnection = connections.find(
+      (c) => c.ID === context.connectionID
+    );
+
+    if (chosenConnection.type === "mysql") {
+      return await getTables(chosenConnection);
+    }
+
+    return await describeDynamo(chosenConnection);
+  }
+
+  /**
+   * Asynchronously updates the "connections" property in the context object with the given connections.
+   * @param {Object} context - The context object to update.
+   * @param {Array} connections - The connections to update the context with.
+   */
+  async function updateConnections(context, connections) {
+    await handleUpdate("connections", context.connectionProps.connections);
+  }
+
+  /**
+   * Asynchronously updates the "resources" in the given context's connection properties.
+   * @param {Object} context - The context object.
+   * @returns {Promise} A promise that resolves when the update is complete.
+   */
+  async function updateResources(context) {
+    const resources = context.connectionProps.resources;
+    return handleUpdate("resources", resources);
+  }
+
+  const services = {
+    sendClose: async () => handleClose(),
+    testResource: executeResource,
+    describeTable: getTableData,
+    describeResource: retrieveTables,
+    sendConnectionUpdate: updateConnections,
+    sendResourceUpdate: updateResources,
+  };
   const [state, send] = useMachine(connectionMachine, {
-    services: {
-      sendClose: async () => handleClose(),
-      testResource: async (context) => {
-        const { resourceID, connectionID, stateProps, connectionProps } =
-          context;
-        const { resources, connections } = connectionProps;
-        const chosenConnection = connections.find((c) => c.ID === connectionID);
-        const chosenResource = resources.find((c) => c.ID === resourceID);
-
-        if (chosenConnection.type === "mysql") {
-          const res = await invokeMySQL(chosenConnection, chosenResource);
-          return {
-            columns: objectKeys(res),
-            records: res,
-          };
-        }
-
-        if (chosenConnection.type === "dynamo") {
-          return await invokeDynamo(
-            chosenConnection,
-            chosenResource,
-            stateProps[chosenResource.body]
-          );
-        }
-
-        let body;
-
-        if (!chosenResource.bodyType || chosenResource.bodyType === "JSON") {
-          let json = chosenResource.body;
-          const regex = /"{([^}]+)}"/g;
-          const matches = findMatches(regex, json);
-
-          if (matches) {
-            matches.map((term) => {
-              const [fullText, innerText] = term;
-              const param = stateProps[innerText];
-              json = json.replace(fullText, JSON.stringify(param));
-            });
-          }
-
-          body =
-            chosenResource.bodyType === "JSON"
-              ? json
-              : stateProps[chosenResource.body];
-        }
-
-        return await invokeResource(
-          chosenConnection,
-          chosenResource,
-          null,
-          body
-        );
-      },
-
-      describeTable: async (context) => {
-        const { resourceID, connectionID, connectionProps } = context;
-        const { resources, connections } = connectionProps;
-        const chosenConnection = connections.find((c) => c.ID === connectionID);
-        const chosenResource = resources.find((c) => c.ID === resourceID);
-        if (chosenConnection.type === "mysql") {
-          const res = await getTable(chosenConnection, chosenResource);
-          return res;
-        }
-        if (chosenConnection.type === "dynamo") {
-          const res = await invokeDynamo(chosenConnection, chosenResource);
-          const items = resolveNode(res, ["Items"]);
-          return items.columns;
-        }
-      },
-      describeResource: async (context) => {
-        const { connections } = context.connectionProps;
-        const chosenConnection = connections.find(
-          (c) => c.ID === context.connectionID
-        );
-        if (chosenConnection.type === "mysql") {
-          return await getTables(chosenConnection);
-        }
-        return await describeDynamo(chosenConnection);
-      },
-      sendConnectionUpdate: async (context) =>
-        handleUpdate("connections", context.connectionProps.connections),
-      sendResourceUpdate: async (context) =>
-        handleUpdate("resources", context.connectionProps.resources),
-    },
+    services,
   });
 
   return {
     state,
     send,
     ...state.context,
+    actions: connectionActions.actions,
+    services,
     states: connectionMachine.states,
   };
 };

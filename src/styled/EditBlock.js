@@ -1,4 +1,4 @@
-import { Card, Stack, Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import Spacer from "./Spacer";
 import Flex from "./Flex";
 

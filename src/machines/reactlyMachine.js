@@ -4,7 +4,6 @@ import { useMachine } from "@xstate/react";
 import { getComponent } from "../connector/getComponent";
 import { getPathData } from "../connector/getPageData";
 import { setComponent } from "../connector/setComponent";
-import { getApplications } from "../connector/getApplications";
 import { getApplication } from "../connector/getApplication";
 import { useClientState } from "./clientStateMachine";
 import { useClientScript } from "./clientScriptMachine";
@@ -20,9 +19,10 @@ import { commitApplication } from "../connector/commitApplication";
 import * as actions from "./actions/reactly";
 
 import React from "react";
+import getDynamoApplicationList from "../connector/getDynamoApplicationList";
 const reactlyMachine = createMachine(
   {
-    /** @xstate-layout N4IgpgJg5mDOIC5QCcwEMDGAXANgTwGJYwsACDAewDsswAPLAbQAYBdRUABwtgEste1DiDqIAtACYAHAFYAzADopzKRIBsAdjVrVc7QBoQecQEY1AFhMLm5mcxkm5JgJxzpagL4fDqTLjwKkPy8VFCkaJycOLwYaALUBAAWFAC2YCzsSCDcfPFUwqIIkg5SChrmzlLOzjJqzhZShsZFlhIKmmpy8iaOJlLmXV4+6Nj4gRDBoeGR0bF5BFRgAO6knGgwGcI5wUJZhZImzBoKtrVqRxJHtU2mzHLHcv1qDoddcjZDIL6jAUECUxEojE4oIqARKCkUvxyNQAGa8KAAV2QIOomyy2zyBXEEnMGmc1jucgqtic5lkNwQGj6SmYPQ0TmcKgqEk+33840mYUBs1RYIhULIYAAbmAaOFsKD0VweDt8nsceYLApqjISmZ7Mo1JS1WoFDJnNSpFpzEdLFI2SMOX8QtyZsD5hBkBROKQRWKmGwtrKsQqirj3goTBoSjIJDJym5KVVFPcHGHDrYTJa-GMbQD7XNQQQnS7ppxpdkfaDsf6NOprCYJM4lbV6qdKT1mMxrOpqXoQ6bBt4vla0xN-nagVnqJzB6t1mACH9C5iS36xL0W8TDXJnI4av0NJTyzIynoN5GpCYDSmfmPbfneXkL1M1jAFmhhQi4ukvRji7tQIUemo2nIAJratzhcR5KUXFQ9zMBk9CkZRyQGM9rQHS8eQdUFbzCe8pzSZANnfGVcnnb9EAjFsdGccNyWkCQNDg8DDhkUpqXMS4ANxEwKgtHt2X7Lkr3Q0d0ywycCFQYgsAwHB0CoWdP3lEiEE4-og0TQ4mTucw8QYzUyk4ti3EsLikL48c0JHKhMInB9EU4CBX3zOSiK-EREGDCprDohkEIkANtSMW4mL01iiQ44yeL7X4UIzYc+Ss7CCFs+zaEckxMkIuVSwkPo2i0R5cTVFxdR0oKWL6Sw6jqeQTKi-jzLi4TrKnVAoF4WBaGQJzMr9XyoMcOwagGXyQ385oINK-TQqMyoaqs+qb0ahKkoc9rXy631FMXP8oMo+xqjcdca0pAYW3Dc5LHXDQbBPTwItTWqzMzBropEh8MF8Wh1uI1yinpWNWOrY8VBykxwIZPdpAq48rpDCNZsa+aMMW0SACMQggUhVs+gii2chSfq2isJCcYlzhqdVKWJ0oVGYcN3gcWnbHhl6BIs+LJwUHAKDQDGlrstacbnFzCikP8gwsVUmXxepRrc6RjgNTobqu+Qmbu88EaehaWewznud50SeYgL7hbcgC9wcQzlGNDTzEbM72gA5slUqBk+mZuqtaRnWOa5nmmoUeFUFZvk3VFGhYAUDBEjADAAGtSFhChkDDj1YAIE38cKNVFA4iNzmpcoLEbGtSnOACdHLc4mI9x7Yu1-jdb9g2YED3hg8R6hU4jqOY-jxPk+7rB08YNLvTx0tFaDCMI0uzROLkSnWL1KpLAZXEajJWvUK9oSfdb5uA6DsAQ7yIfI9iHAcCH0hEjQKgIGk5BwVSKISDfdLce6xSelsFVlHLABfE2UjoBSUuuZiLgpBuCOP0Gs28YrXm9o3X2+sj7txPp3Kg58o5oCvjfO+D8n4vxSG-T6Y8PwTz9D0VQ+piTXU0OSEolNmCaH1FuYM-Q4IOAQUOJBe8UEHzQbrY+TVz4kLIR-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-R3g1t6xK4KM+gIw1D9l0tTL7hDh-c5SNL0ZbR04pJPTeMtcnAwLLoli8LKSUjTRDTWJqglRNAKM6IJLXSEpcT8S8BSBNyCygTJBDl2g-xaZ5A3ALMtAg98QwLusVFfcGRwqgymosD4q9Sto8Rc8ZYqw6R7AK4wZ5B9xKIagoFbS5y7z6M+FGNlziquTfjFgVhsI9zKJLLtDe1bBqRVDVtOICRVAIFngnYaFZoUYwB4kT5m49Z-ZARSB9U8A5KajcC6jDVlrVqAsNqMYtqdrtL7V2LPdbTjhesT9jwyZcRwJrDp5LA3D-1HBq8ctjr8zTrD4tr1UzryBkRUBxQdqSqcDdVDqAk-rg51rAbIg-MQaMAwbk0dqdK8g6C0KGCxB0q1lZB3hwxpY6Iagg97ACVfIKhosIzEJfqVr-rEa0Egba0K1YrtTtqwBCBbqTN2hZALNuDqhAM907h9QBotJjwwwLN4EGaTrmbNrkbgaLVFgGAuaebkU-90L8a1Rzzyh3CLhLhrMxouxxaKNJaTxaJf0lrGaEb9YQbWa2lXFIhYBzsdNytPdww7BRc1wuUVxwwjdjdVBgwflot-abb5b7akbXRgbARXbSt+rHJ9LNo3g9w4JywNlWE1xzT-QWxRZXBNI6R1AnA7gI6mao6Wala2aPQulDEu44rwRCFULpEyrzNSgtlspzi1QtBkjgTudZsBclRlAj0y67aeYHaq6naa6U4sFYquypx5LbrFDKx14tIvliYdwbiVByZvFNQtBR61qK7FaY7q6aBa7Z6G7err5E7ARbq17c87h55AdiYAIwZYx8RuFziUqVAD6AbK6T6nayCT4b7IgobFKjrbbD7x7o6UagGOaVhAQsapQBjcahj8b878N+gqJXBip+1ayh1r8axtBD1uJ2qFB4aoGIAcDgg8FeAAAvNa3gcotASosBg6+i88Ch06kIGh6IBhx9Jh7opBtEFBlu7W2Cf8dI5sBQoFHSeRWiR4WGMk8saCnLQLaSFKYgaSbASAOuyyfY5AFIdParVB0sfG6sAkfKQHeoXEEMXuqsE8awACNe7QN5cMWadR9+VvbR2gc6i5AxoxqgD3ZO1tPCjQ00Q-Zqw3FLNwKCaWQCy4OiUh63DkTxzR7vWOXxvRhQOOXgfBQENhmGjh1JjJ9Jnx3RipXJ-JyIYR2SUR9HVu94AkYGQ0IpAYA0Xu6-N1bQWoBbIjZMecuDcNacOgNYB+WKvE0q7W+kC2I2tcKE54XyBiXpyq54dsEjaBLwHsIJwLeALIfpMRvGj1NOjJMMWoWwAVaEsaE05ieoMiWiLhfoaXQ5tBkBfZABGsmBSwBiD1CfVhZQqW1wGCsAF5sx-qUoFcBkdcNcJibSPB54VSKsdp-oRLZEholSgbdE5ikFhp9C3yUoUubeq8voOkRsYK-UFreoKsYmWoYFkG8JDuIJc+UFnqLQFUckIl+wEl3JdrAXAlIBJkAGEOul7FtuRlylHBWFBOZpKZFlxSQydl62UkkoUllLIh-l+4foIyddEV0xVuURWeqZXBfBKJW+e+R+LpOVn6YjN1NKxhOwBkexoVJQNK4O00dcbKXV6FFxCxJnTjCAK1n8EXQjUc9Seoexg0c8skpq0nYar16pMVk+SZRJPZnfBgnoGkb5fOWeE5K5lIgMF1-smsQWo0+N9BYOZNtOGJBpOJOZFNwNtyMwPULNrQHNphQne4FURbdyeMXyMthlpNupI14gcZ01tIWAFAmABt4EizdoHu-dQ4BbXyhAF+qwJE8oEmndLSftpsvue5NBZxad20oMWiRwLJJUG6PFEPWmAClkMiDQOlgwrAad-G8ofDRbK-aJsaDK9oVLP9WQOoR4R9oQ8tC1RXNAF9twFeYjIpbdL9xAeR6m+ocDRLFYwZh8i9fQkDnzFvP1wLAN3F9NnPKqawhLAjHOxcP+UkK8iMd4LSWiYDjY1c4rLTZnMcVvLAKradk8cfLcasMicYya5oF7fUfC9sR13p5Jx0hcx89Ep9hnZNPDyAdjyI1NrWojmoE4dLJsOoUyvNld43IpcNs9uMDJKT9FmTzDuT7DhT+9JXf19j2VwjoY0CKwfEaCXlUnAi0oBx2maBUWRYtF5SyzzFtYl4sIJUlj+z-D9j27R7ad-FgkBoJrJwaBR4ZdyoE9ijOwHQZeEcxjlo+nJPFOFPV4sbSDtd850mVWLoFQRoGEzt-qBwbaF2WfdDzq2TsLhPZjkQvI5NT-KAbjroY4E8VrSMofLoCAtcMoRJ2A8keA9r7Jnwsr0g1AtSlEVFaIgy7KUE1hVwGoHu8sCAisa-bQgBOQn6shwgqzrr+T9blc-r8QnFtNoY3nTyL5XUM0KMPJViFUczYNYkoNArvr8tNouAYolDLolh5oF7sFnQP7wKndBR-qY6IpfmkKVReQcVRb8HZokHuNd4q1T47j9sE4XqDJeoWr1Vk2tUBrNcG6Jhfjh0izoZzr54jEoq+dF9hxi2Q8rSY8o5IPabgDo4bdOCPzul7qzMlU7M3zH07n-8oA0bo00mI3ckUDXpwqGwBwcsSXjM1smXh78UOKhXzt7L2bPb+QPlYTDhasIBNpztOluClh+ejqbju3soM52ryPcmlLM0BRPRY0Cjf7VkHHi5bFvzadopPUUkZeIHN4H7YMM2nQG-IhtWK7xitme76Sxy2So95sb9WoKoKoYA8qIX3PP8dwZRPZSieyh9TStTrb+Vngyq9wNsHQENSmNl4ti6CYizWmILm3ELjCbq7CF9i4vUCMrQACiYnl8QEMAlukLhGWKE3+5uF96c44O0s564y5hial6wMTOj9Iq3tfo+vx10S6yD6c9hEaALzsOf-U4kUT9ebFA0a8s-6B-+yP5zsx1FoMcGDLFNDGhoEb9ciOnVqrHoian-KhjA2BqHw0a6aDGtzUg6wkryeIQVnRFIz9oLAigPoEH3xYYD7AMAiegAzQDs1VaZAHaqgKOBKBAqsgC5laT5SSBNO3KO4BbmtJqhmeSmLhgrQv4o046btSDlj0djlRaYlPBkAxGUDrIZSOiLBpCRIFwDT6HUPRnPTSDCDpu+UJRJLhqp8oQwDWKoFwIL5MR96ctcul-2PqwNUCIDTgJB384ACfkxDTbKAJwEDAgwcEYfDZVOZtUUmYwXgfbR4YCBaG-DKHpUUg5HIleO-C5uDDkZrJgU6VemJuHM5KY0myODJjowv6SpUBV0dhKJWjJOxzKYCPRK2G0CyANwwaS7r4ICCpDvGmTCpv4xfyGNIO1YB4MRiqAesQCy7BbHE32hHoCoTzNRqUzSHlNMhjGKptfEBCoDfIuQkUnlHpj2MgKB+UoboHc7cQvAQAA */
+    /** @xstate-layout N4IgpgJg5mDOIC5QCcwEMDGAXANgTwGJYwsACDAewDsswAPLAbQAYBdRUABwtgEste1DiDqIAtACYA7AA4AbADoAnMykAWJQEYlGpXIlyANCDzjNMmZoUXZagMwqArJs12JAX3fHUmXHgWQ-LxUUKRonJw4vBhoAtQEABYUALZgLOxIINx8cVTCogiSUgYKdmrMzHJSjo56UkrGpoUuzGoKckqySnYV3Wpyap7e6Nj4ARBBIWERUTG5BFRgAO6knGgw6cLZQUKZBZKaqgpqNXJyqhKqjkYmZsx2UqUy-c6Hdo49g14gPqP+gQIpuFItFYoIqARKMlkvxyNQAGa8KAAV2QYOom0y21y+XEEjU9QUFTsZR0H00ahkjkaiCk5mszBcUjs2mYzyUHm+vz840moWBs3REKhMLIYAAbmAaGFsODMVweDs8ns8f02kolDVzJpzo4ZJUaQhTgpanSZFIBqo1OYhj8RjyAcF+TNQfMIMgKJxSBKpUw2FtFTiVYV8T0FJpquZHBJHOo3IaZN1SpHo4cTppbdyxo6gS65uCCO7PdNOPKsoHwbiQ8VFIyJDo5Nc9CdqbcEC1mESDHS7FVHOV3pn7dmJoDnSD8-F6GsqBBSFQKBA0v6sRXdqB9kzHCbLnIHBJNNdoxJDWJD3IrPXGz3Wmy7EPfCO+SXBbleWPVuswAQAWXsZXgzPB4JGUeQ3GYWo1H6KRDWKbdmQvBw40sWoHz+d8nRfV1wQwqY1hgBY0HFJFYmXDIFRyACN0QFw9SJNQDw6d5mT0U8XAkEDe2kNk02ZGM0IdUdMIFbDqFw0J8O-VJkA2FcKKVKtY07ORExjSkJBkaQLDYiCZAUOkGPuNxrQ0GQBKfD8RMnKhxM-AjUGILAMBwdAqD-NdlWo9tKTaFprWYFR7igmC2zPXT9IpS4SXxCklDMrlh3+ITcwnIVbMkghkU4CBSJLdzKPXEQaPUJQiVkZkfI4+wbiaMK6IMqLjNi+LhkfJLnystKcwkr9Muy3LgUYTRyPLArPKKhAOMOZR1B1So3gGNiXCsfRWhJM4dV7RxzPayy8y65KevssAoF4WBaGQfKFODDjtxcd4Av7NxpGuHT6sioyYtMnbbM6t9urs78spy2hSHO0irqDLyz30O6OQgjU3C0HRDXsTsY3Oa0tCkVpzx+gG-pwgGMowHxaEhqiJrPCM7FKBj60sHjNM0U9mW3DTrRUiMrljfHDqw6z0t6gAjYI53B8m5NG67oZ1EoJBZMpzk1ZxLENBW9LZZgYx6ZxtZOPmOv2-7+ckhQcAoNA5wy4GIal-9CoKeRlOKGMAr3BjtENVwKWOa98SqDT9U5Vr0IJ42idNr9zct63eqtiAKcdmiSW3ZxjP1c1ArUb2MfaEkKn6OLmRtBK2t+iOxOJ6OLatwGFERVABaFb1JRoWAFAwBIwAwABrUh4QoZBW99WACCT8aCgY9UcZjHUpAtbXWyabR7HaPQHj0AYdQYw29tSk3nzN2u45gBveCbwnqBH9vO+7vuB6Hm+sDHoaRodyfEAJUqpoXlkVN7NrdWhljgVAjHqd4eoqh72EpXGy1cz4n3ro3MAzdcjPw7jEHAOBn6kASGgWcLlkCQhSJEEgZEAxjSrLReCzxWjyC0AYBW3sVCa0cAFVo7DGT1CkDAlKr5I5HxrrHZBF9UFXyoBgzuaBsG4PwYQsAxCoRkPJsNShMsJouE0iaMouMqiUlVurSojw9QEgjM8Cwzg+HjgEVXKOiCRFmxQYDDBJDkgqIoauKhwY5bbkbPoaQe4LwQWXjRdkCgdYWhJJoBW6htplzDvzCRQsHF1ycWIlxPpb5rGRMQR+w8skvwIHQCWYAFBoHhBdAAFFwgAlAQLMu1YEH0ER+Y+jjo7OMklInJeTB4FLbi-Ce1CGKKA5Bec0h5ozOHVmUNoJxrTFE0geB48TQ6CSNi0uxQjUmnzKV0r8PS0C5NQf01xJSsCkXKZUxRNSKj1MaRXLZ8D7FlKQekpu3TCkd16acp+3y37qKhpoqCbQBgaDKJpdkZwjG+w4oyTUGp1DmjWXacu4dnkpLeR0s+Xce79yQaU8e9sPJVgtCBUyusQndFqN7fQtN3gK0PGYheEFrFoNaZhdpaTo54ofoSy5tBx5qK8RogohwdTKHhQMZkjIyh0oVqUaMLJ+x0lZaix5GLbEvJ2WUgGyjqC+khBbYgwzgyYxNN0FS0hrQGF7N7VQtMORu0epcbs7LkkIL1fzA1iwaAKBgGQX1vpSAgzQIWQ1ChgjigoL3MpmqklwKxbZYN-rA1wncYa6UYaEDRooNZdIZqvIdEUFE8oep5oXhPG2NeshzhuBxs9OZHqk1epTaQrNWAA0kAzdwP1ZAw0-mQB6ZAChIixH6ckBQCbNnauTfqjt-bu1BsXSGnNeaC1sCLVTfEftQz9EVgHToS1OzaE6GqjaOMdQtsxW2hdmal3ptTQO2I4a8BwG3fsHoDKPbvBZP0esdhTwEj0lBSFZRzAKw1HIG9c670+tXf659obX2kBPpAPqINPHyWBeKuknZ7D1HKOUK9MZUbFCJJ0e4NQWSBQ+LB0SOq2nR3vX230ndEMvsuWh2OGHRazk-TRZs1gLCHH0JpW8MhyMgQCo2mjrI2UJI2fvODrz20PvY8hsNPGrYYeRFQfjicSXeK8hxaQpRWgElTtGKk0nKNyfJIFGDSmLLNNU7q9TbGkOcZQ9x9DEASFUERCiVAgn2yAKeNUMorK2SLRrVSUoCsS06GtDZ5z6zXP8MY-OhDGnvN5a42gHTS4AueilGDLAeAXKwDCy4PQoF6y6Qk+Jw0bh9LOCqDoZk7wkUMcFvB58z6OMFd80V-zBAyuSMcmOGrxmxU0VeNYZ15R6HaA4q1kCkZOtWZ63oPrB0POsc7cNrzhXisYcmxg2rOhOwVBkCSewLQNSniTLoRrPQ4nnAzC5ppWX+tqaO0urTqHxuXYAFIAGUADyAA5MLHEOT6TrPdmlDggOhQPD-KkrQcZWn-SHNFiTZ3ZYGx+IbwO-O8YC5QILSJUSoPOlV7D0tcOIEsCBWMEYIwGFUJFWZmtg4MTcA4bW+J9uH2Y2fQHmmfPafG0WUsc3WfthLUt5wtQ+x7hZqFQj4Z+yUlkBYXcCtxecrwix3Lp2TudtG+d6nCI6dN0M06ML4ETEltcHxKB6Pap2D0loSzD2yhzK+Bl37NiScA8t8dinY2qfvlIJD2H070AQGoPgH8o5SAACtYAYiV5TAo3FOx6iitBGsHwWF6QtDoCka19AWg1YlJ57nJfesG5x63-bbf+YT0nmHDdUCoNoAwCNix4cNuOPTSkiZujC9PGGHoGl9dVBJL2JQpvtlt88zH2XIP48AkT9Dgf8Ih+kBH1gSEBCMBgBwbn7dtV6zWCYU4HQBhIKtiL0bhkB5scQVMqHoTspm5pHodtHkuooiOsVphM+gsBQGFmIKVNcCtlBJUPYB1qeJBMoKshJijgMOlkAZlhHv9mAR3gVgEMOk-CfDAZxgQO+rNu-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-wvExhFfOsFPbHU8YkO52H88OFJfufMR66cv-7lAhEfPFGXACEDD3bnn3eHsw8SEDe9H1EvVChsduBWDNbdCajEfFCFElAhFItXBrRk8a+xGDFyVkDVe68HhlQhKnB44227vYEEgcTFnEgmNQ8Pdb71m6dKk8n6dqlONNDje8veFe9Xh3ElzvCoyNUqSGR9AfDuoq8uulew8bepkdrpnucdCPA-kvD+IKwQSYEYOVAN7rTknRgxu2XPpScctpx7k+Vbn+W1QfAE95H6gtiaOQ+U2q9B9UVN-QX0WwU+bwUt917WA5Vnoezr3MuPQ5V6zphctZ+89qbj8YkOXIY32z8wePTdBlGaj2pQesFmKAarKgplAxvlVrCVUXTueAbtY6zsIaQOC5VWilAxPmgBRM4m-HrtDzEjusDOabPUrx2OAfBRkLxdQvxSAgDtruKkUIg2ANhb9kkL1VBIjVnDI1deqqOEiyEmQVQYUoUACv5AgydBOurQcCrgImDXVdevlPmhVFJCBxXA6sBLK0Exjwp6wVRXWrhxZz1UDg-QAVovHuyXARWoUaoP7gFqUgt4TTQup42KyGcGw39WLDjlcAoxzuNrJJg8CJ71AqQeoJQeHX4bnM-aYAAOoZwvBWBcWevWphYEQEtBtw9LBhCiwGDc9Q6ygswWfTDSGdzQigfAhX2wozE1WPnGAbdE1D4gTgd3V2t4NkZEN5GYDYEFPXnaQDKWeoRBvYC6waAEY21M9OvH0RSs9QeoTwfg3iHeM5G59CBmQwTaH90hvLP9JU1NbF86EYmWCH4hqY1AuEukC0CYL4YJCBGSQy5AoEUaiNgQ-gjSO0AAy0sucvlFnra2VRsgOIVQDoP73KGmCLGVAXxrY3saONhS-g5TjSw0H0ttBtUX5lYCRiFxUBDJCmuhGOYM5TmmzCRLTxxgmh86iyPcLrAaYxMuwZwDkEjG7YANm8Dwnphs3yZYCHc3pQzvWEeBVMamjCNbOR1+ZzNTu6kE4JrRFqgj1mZzLZjsxwQTCGhSdZ6O8P2oRgvh+RB1F-WjBnAjcm8F2gfUhbWRoW40dIoBCPSDtuBJQxXh718iphRktIlwPoE8CeAgAA */
     id: "reactly",
 
     initial: "before load",
@@ -37,8 +37,19 @@ const reactlyMachine = createMachine(
       preview: true,
       defaultOrder: 100,
       expandedNodes: {},
-      view: 0,
+      view: 1,
       recycledApps: [],
+      columnsOpen: 3,
+      clientLib: {
+        application: {},
+        page: {},
+        event: {},
+        parameters: {},
+        // registrations: {},
+        resources: {},
+        modals: {},
+        setups: {},
+      },
     },
 
     states: {
@@ -60,6 +71,40 @@ const reactlyMachine = createMachine(
                           },
                           "#reactly.editing application.editing page.load page.fire page events",
                         ],
+
+                        // states: {
+                        //   "ping invoker": {
+                        //     invoke: {
+                        //       src: "getInvokerLoadState",
+                        //       onDone: {
+                        //         target: "wait for invoker",
+                        //         actions: "assignInvokerState",
+                        //       },
+                        //     },
+                        //   },
+
+                        //   "wait for invoker": {
+                        //     after: {
+                        //       500: [
+                        //         {
+                        //           // target: "ping invoker",
+                        //           cond: "event invoker is not ready",
+                        //         },
+                        //         {
+                        //           target:
+                        //             "#reactly.editing application.editing page.load page.fire application events.call event handler",
+                        //           cond: "application has events",
+                        //         },
+                        //         {
+                        //           target:
+                        //             "#reactly.editing application.editing page.load page.fire page events",
+                        //         },
+                        //       ],
+                        //     },
+                        //   },
+                        // },
+
+                        // initial: "ping invoker",
                       },
 
                       "call event handler": {
@@ -242,18 +287,34 @@ const reactlyMachine = createMachine(
 
                       "edit events": {
                         entry: assign({ componentTab: 2 }),
-
-                        // on: {
-                        //   "event action": {
-                        //     target: "edit events",
-                        //     actions: "upsertEvent",
-                        //     internal: true,
-                        //   },
-                        // },
                       },
 
                       "edit JSON": {
                         entry: assign({ componentTab: 3 }),
+
+                        states: {
+                          readonly: {
+                            on: {
+                              "edit json": "free text",
+                            },
+
+                            description: `Component JSON is viewable but cannot be edited`,
+                          },
+
+                          "free text": {
+                            on: {
+                              done: {
+                                target: "readonly",
+                                actions: ["applyJSON"],
+                              },
+                              "cancel js": "readonly",
+                            },
+
+                            description: `User is editing component JSON`,
+                          },
+                        },
+
+                        initial: "readonly",
                       },
                     },
 
@@ -433,6 +494,7 @@ const reactlyMachine = createMachine(
                   "clearComponent",
                   "assignStateList",
                   "assignAppLoading",
+                  "resetApplicationClientLib",
                 ],
                 internal: true,
               },
@@ -455,13 +517,18 @@ const reactlyMachine = createMachine(
 
               "update app": [
                 {
-                  // target: "editing page",
+                  target: "editing page",
                   actions: "reassignAppData",
                   cond: "event contains no nav info",
                 },
                 {
-                  // target: "editing page",
-                  actions: ["assignNavEvent", "assignAppLoading"],
+                  target: "editing page",
+                  actions: [
+                    "assignNavEvent",
+                    "clearComponent",
+                    "assignStateList",
+                    "assignAppLoading",
+                  ],
                   internal: true,
                 },
               ],
@@ -500,57 +567,6 @@ const reactlyMachine = createMachine(
 
             description: `Import page data from matching MySQL application to the current page.`,
           },
-
-          // "configuring application": {
-          //   invoke: {
-          //     src: "loadConfigurationMachine",
-          //     onDone: "editing application configuration",
-          //   },
-          // },
-
-          // "editing application configuration": {
-          //   on: {
-          //     "configure application": {
-          //       target: "configuring application",
-          //       actions: "assignConfigurationType",
-          //     },
-
-          //     quit: [
-          //       {
-          //         target: "editing page.editing component",
-          //         cond: "component ID is specified",
-          //         actions: [
-          //           "assignComponent",
-          //           "assignComponentProps",
-          //           "assignBindings",
-          //           "assignStateList",
-          //         ],
-          //       },
-          //       {
-          //         target: "editing page.load page",
-          //         cond: "no component is selected",
-          //       },
-          //       {
-          //         target:
-          //           "editing page.editing component.component data loaded",
-          //       },
-          //     ],
-
-          //     commit: {
-          //       target: "editing application configuration",
-          //       internal: true,
-          //       actions: "assignConfigurationUpdate",
-          //     },
-
-          //     "event action": {
-          //       target: "editing application configuration",
-          //       internal: true,
-          //       actions: "upsertEvent",
-          //     },
-          //   },
-
-          //   description: `Application is only listening for events from the configuration machine.`,
-          // },
 
           "configure data bindings": {
             invoke: {
@@ -591,7 +607,7 @@ const reactlyMachine = createMachine(
 
         on: {
           home: {
-            target: "before load",
+            target: "before load.load app keys",
             actions: "resetAppState",
           },
 
@@ -629,43 +645,21 @@ const reactlyMachine = createMachine(
             invoke: {
               src: "getAppKeys",
               onDone: {
-                target: "load app data",
+                target: "load app data.apps loaded",
                 actions: "assignAppKeys",
               },
             },
+
+            description: `Load application list from dynamoDb`,
           },
 
           "load app data": {
             states: {
-              "load current key": {
-                invoke: {
-                  src: "getAppKey",
-                  onDone: {
-                    target: "get next key",
-                    actions: "assignAppToKey",
-                  },
-                },
-              },
-
-              "get next key": {
-                always: [
-                  {
-                    target: "load current key",
-                    cond: "more keys",
-                  },
-                  "apps loaded",
-                ],
-              },
-
               "apps loaded": {
                 on: {
                   open: {
-                    target: "#reactly.editing application.editing page",
-                    actions: [
-                      "assignDataFromKey",
-                      "assignStateList",
-                      "assignAppLoading",
-                    ],
+                    target: "#reactly.load application json",
+                    actions: ["assignDataFromKey"],
                   },
 
                   "new app": "enter application name",
@@ -683,6 +677,8 @@ const reactlyMachine = createMachine(
                   done: "save new app",
                   "cancel new app": "apps loaded",
                 },
+
+                description: `Display new application form.`,
               },
 
               "save new app": {
@@ -693,7 +689,8 @@ const reactlyMachine = createMachine(
               },
             },
 
-            initial: "load current key",
+            initial: "apps loaded",
+            description: `Display application list`,
           },
 
           "initialize library": {
@@ -704,10 +701,13 @@ const reactlyMachine = createMachine(
                 actions: "assignLibraryData",
               },
             },
+
+            description: `Load component library from dynamoDb`,
           },
         },
 
         initial: "initialize library",
+        description: `No application has been loaded`,
       },
 
       "delete selected application": {
@@ -729,6 +729,20 @@ const reactlyMachine = createMachine(
 
         initial: "confirm",
       },
+
+      "load application json": {
+        invoke: {
+          src: "getAppKey",
+          onDone: {
+            target: "editing application.editing page",
+            actions: [
+              "assignAppDataFromDb",
+              "assignStateList",
+              "assignAppLoading",
+            ],
+          },
+        },
+      },
     },
 
     on: {
@@ -739,6 +753,8 @@ const reactlyMachine = createMachine(
   },
   {
     guards: {
+      "event invoker is not ready": (context) =>
+        !context.invokerLoadState && !!context.appLoading,
       "event contains no nav info": (_, event) =>
         !event.application?.navigation,
       "application has events": (context) => {
@@ -765,16 +781,16 @@ const reactlyMachine = createMachine(
       },
       "no page has loaded": (context) => !context.page,
       "more keys": (context) => context.key_index < context.appKeys.length,
-      // "no unsaved component changes": (context) =>
-      //   !context.selectedComponent?.dirty,
     },
     actions,
   }
 );
 
 export const useReactly = () => {
+  // sets/reads current config type being edited, if any
   const [configurationType, setConfigurationType] = React.useState("");
 
+  // helper function to handle UPDATE callback from configuration machines
   const handleConfigUpdate = (node, value, scope = "application") => {
     send({
       type: "commit configuration",
@@ -784,21 +800,32 @@ export const useReactly = () => {
     });
   };
 
+  // helper function to handle QUIT callback from configuration machines
+  const handleConfigQuit = (ID) =>
+    send({
+      type: "quit",
+      ID,
+    });
+
+  // invoker handles application/page/component/data events
   const invoker = useInvoke(
-    (app) => {
+    (app, lib) => {
       send({
         type: "complete",
         application: app,
+        clientLib: lib,
       });
     },
-    (app) => {
+    (app, lib) => {
       send({
         type: "update app",
         application: app,
+        clientLib: lib,
       });
     }
   );
 
+  // table binder manages component data bindings
   const binder = useTableBinder((bindings) =>
     send({
       type: "close bind",
@@ -806,220 +833,358 @@ export const useReactly = () => {
     })
   );
 
-  const clientScript = useClientScript(
-    (ID) =>
-      send({
-        type: "quit",
-        ID,
-      }),
-    handleConfigUpdate
-  );
-  const connection = useConnection(() => send("quit"), handleConfigUpdate);
-  const clientState = useClientState(() => send("quit"), handleConfigUpdate);
+  // app configuration machines handle advanced properties of the app
+  const clientScript = useClientScript(handleConfigQuit, handleConfigUpdate);
+  const connection = useConnection(handleConfigQuit, handleConfigUpdate);
+  const clientState = useClientState(handleConfigQuit, handleConfigUpdate);
 
   const configMachines = {
     connection,
     clientState,
     clientScript,
   };
-  const [state, send] = useMachine(reactlyMachine, {
-    services: {
-      getData: async () => {
-        return await getDemoData();
-      },
-      getLibraryData: async () => {
-        return await getComponents();
-      },
-      getAppKey: async (context) => {
-        const current = context.appKeys[context.key_index];
-        return await getApplication(current.Key);
-      },
-      getAppKeys: async () => {
-        return await getApplications();
-      },
-      getDataFromPath: async (context) => {
-        return await getPathData(context.path);
-      },
-      loadComponent: async (context) => {
-        const { Library, selectedComponent, componentData } = context;
-        const local = Library.find(
-          (f) => f.ComponentName === selectedComponent.ComponentType
-        );
-        if (
-          local &&
-          componentData?.ComponentName !== selectedComponent.ComponentType
-        ) {
-          return local;
-        }
-        return await getComponent(selectedComponent.ComponentType);
-      },
 
-      dropApp: async (context) => {
-        await commitApplication({
-          ...context.appData,
-          isDeleted: true,
-        });
-      },
+  /** ----------------------------------------------------------------- */
+  /** MACHINE SERVICES */
+  /** ----------------------------------------------------------------- */
+  /**
+   * Asynchronously retrieves demo data using the imported `getDemoData` method.
+   * @returns {Promise} A promise that resolves with the demo data.
+   */
+  async function retrieveDemoData() {
+    return await getDemoData();
+  }
 
-      createNewApp: async (context) => {
-        const ID = generateGuid();
-        const newApp = {
-          ID,
-          Name: context.name,
-          path: context.name.toLowerCase().replace(/\s/g, "-"),
-          HomePage: "",
-          Photo: "",
-          PagePath: "",
-          events: [],
-          scripts: [],
-          pages: [],
-          connections: [],
-          components: [],
-          resources: [],
-          themes: [],
-          state: [],
-        };
-        await commitApplication(newApp);
-        return ID;
-      },
+  /**
+   * Asynchronously gets components using the imported `getComponents` method from the `connector_getComponents` module.
+   * @returns {Promise} A promise that resolves to the components.
+   */
+  async function getComponentsAsync() {
+    // Await the result of the `getComponents` method call and return it
+    return await getComponents();
+  }
 
-      loadDataBindingMachine: async (context) => {
-        const bound = context.selectedComponent.settings.find(
-          (f) => f.SettingName === "bindings"
-        );
+  /**
+   * Retrieves the application using the current key from the context.
+   * @param {Object} context - The context object.
+   * @returns {Promise} - A promise that resolves to the application.
+   */
+  async function getApplicationFromContext(context) {
+    const currentKey = context.currentKey;
+    const application = await getApplication(currentKey);
+    return application;
+  }
 
-        binder.send({
-          type: "load",
-          bindings: bound?.SettingValue || "{}",
-        });
-      },
+  /**
+   * Retrieves a list of applications from a DynamoDB database
+   * and returns a stripped version of the data.
+   * @returns {Promise<Array>} A promise that resolves to an array of stripped application objects.
+   */
+  async function getStrippedApplications() {
+    // Define a helper function to strip unnecessary data from an object
+    const stripObject = (obj) => {
+      // Extract the values of each key-value pair in the object
+      const keys = Object.keys(obj);
+      // Create a new object with only the first value of each key-value pair
+      const strippedObj = keys.reduce((stripped, key) => {
+        stripped[key] = Object.values(obj[key])[0];
+        return stripped;
+      }, {});
+      return strippedObj;
+    };
 
-      invokeAppLoad: async (context) => {
-        const { appData, page, resourceData, setupData } = context;
-        if (!invoker.state.can("load")) return;
-        const eventType = "onApplicationLoad";
-        const type = invoker.state.can("append") ? "append" : "load";
-        console.log("INVOKE %c%s", "color:lime", eventType, type, state.value);
-        const invoked = appData.events.filter((f) => f.event === eventType);
-        if (!invoked.length) return alert("No application events");
+    // Retrieve the list of applications from the DynamoDB database
+    const db = await getDynamoApplicationList();
 
-        invoker.send({
-          type,
-          eventType,
-          events: invoked,
-          page,
-          options: {},
-          application: appData,
-          resourceData,
-          setupData,
-        });
-      },
+    // Strip unnecessary data from each application object in the database
+    const strippedItems = db.map(stripObject);
 
-      invokePageLoad: async (context) => {
-        const { appData, page, resourceData, setupData } = context;
-        if (!invoker.state.can("load"))
-          return alert(JSON.stringify(invoker.state.value));
-        const eventType = "onPageLoad";
-        const type = invoker.state.can("append") ? "append" : "load";
-        console.log("INVOKE %c%s", "color:lime", eventType, type, state.value);
-        const invoked = page.events.filter((f) => f.event === eventType);
-        if (!invoked.length) return;
+    return strippedItems;
+  }
 
-        invoker.send({
-          type,
-          eventType,
-          events: invoked,
-          page,
-          options: {},
-          application: appData,
-          resourceData,
-          setupData,
-        });
-      },
+  /**
+   * Retrieves page data based on the given context path.
+   * @param {Object} context - The context object containing the path.
+   * @returns {Promise} - A promise that resolves to the page data.
+   */
+  async function getPageDataByPath(context) {
+    // Retrieving page data using the getPathData method and the context path
+    const pageData = await getPathData(context.path);
 
-      invokeComponentResources: async (context) => {
-        const { page, appData } = context;
-        const bound = page.components.find((f) =>
-          f.settings.some((s) => s.SettingName === "bindings")
-        );
-        const args = reduceSettings(bound.settings);
-        const json = JSON.parse(args.bindings);
+    return pageData;
+  }
 
-        const resource = appData.resources.find(
-          (f) => f.ID === json.resourceID
-        );
+  /**
+   * Retrieves the component from the library or fetches it from the connector.
+   * @param {Object} context - The context object containing the library, selected component, and component data.
+   * @returns {Promise<Object>} - The component object.
+   */
+  async function loadComponent(context) {
+    const { Library, selectedComponent, componentData } = context;
 
-        const connection = appData.connections.find(
-          (f) => f.ID === resource.connectionID
-        );
-        const data = await invokeResource(connection, resource);
-        return {
-          key: json.resourceID,
-          rows: resolveRows(data, resource.node.split("/")),
-        };
-      },
+    // Find the component in the local library
+    const local = Library.find(
+      (f) => f.ComponentName === selectedComponent.ComponentType
+    );
 
-      loadConfigurationMachine: async (context) => {
-        const machine = configMachines[context.configurationType];
-        if (!machine)
-          return alert(`No machine for "${context.configurationType}" `);
-        const { state = [], scripts = [] } = context.page || {};
-        console.log({ app: context.appData });
-        machine.send({
-          type: "load",
-          state,
-          scripts,
-          appState: context.appData.state,
-          appScripts: context.appData.scripts,
-          resources: context.appData.resources,
-          connections: context.appData.connections,
-          resourceData: context.resourceData,
-          setupData: context.setupData,
-        });
-        return true;
-      },
+    // If the component is found in the local library and the component data is not the same as the selected component type,
+    // return the local component
+    if (
+      local &&
+      componentData?.ComponentName !== selectedComponent.ComponentType
+    ) {
+      return local;
+    }
 
-      commitComponentDefinition: async (context) => {
-        const { componentData } = context;
-        const component = {
-          ...componentData,
-          Attributes: JSON.stringify(componentData.Attributes),
-        };
-        return await setComponent(component);
-      },
-    },
-  });
+    // Fetch the component from the connector
+    return await getComponent(selectedComponent.ComponentType);
+  }
 
-  const configureApp = (type) => {
-    const { appData, setupData, resourceData, page } = state.context;
-    const machine = configMachines[type];
+  /**
+   * This function commits an application with the given context.
+   * It sets the isDeleted property to true in the appData object.
+   * @param {Object} context - The context object.
+   * @returns {Promise} - A promise that resolves when the application is committed.
+   */
+  async function commitApplicationWithDeletedFlag(context) {
+    const appDataWithDeletedFlag = {
+      ...context.appData,
+      isDeleted: true,
+    };
+    await commitApplication(appDataWithDeletedFlag);
+  }
 
+  /**
+   * Creates a new application with the given context.
+   * @param {Object} context - The context object containing the application details.
+   * @param {string} context.name - The name of the application.
+   * @returns {Promise<string>} - A promise that resolves to the ID of the newly created application.
+   */
+  async function createApplication(context) {
+    // Generate a unique ID for the new application
+    const ID = generateGuid();
+
+    // Create a new application object with the given context
+    const newApp = {
+      ID,
+      Name: context.name,
+      path: context.name.toLowerCase().replace(/\s/g, "-"),
+      HomePage: "",
+      Photo: "",
+      PagePath: "",
+      events: [],
+      scripts: [],
+      pages: [],
+      connections: [],
+      components: [],
+      resources: [],
+      themes: [],
+      state: [],
+    };
+
+    // Commit the new application to the database
+    await commitApplication(newApp);
+
+    // Return the ID of the newly created application
+    return ID;
+  }
+
+  /**
+   * Asynchronously loads bindings for a selected component.
+   * @param {Object} context - The context object containing the selected component and its settings.
+   */
+  async function loadDataBindingMachine(context) {
+    // Find the 'bindings' setting for the selected component
+    const bound = context.selectedComponent.settings.find(
+      (setting) => setting.SettingName === "bindings"
+    );
+
+    // Send a message to the binder with the type 'load' and the bindings value
+    binder.send({
+      type: "load",
+      bindings: bound?.SettingValue || "{}",
+    });
+  }
+
+  async function invokeEventList(context, eventType, eventOwner, css) {
+    const { appData, page, clientLib } = context;
+
+    // Check if the invoker state can load
+    if (!invoker.state.can("load")) {
+      return;
+    }
+
+    // Determine the type based on the invoker state
+    const type = invoker.state.can("append") ? "append" : "load";
+
+    // Filter the appData events for the specified eventType
+    const invoked = eventOwner.events.filter((f) => f.event === eventType);
+
+    // If no events are invoked, return
+    if (!invoked.length) {
+      return;
+    }
+
+    // Log the invocation details
+    console.log(
+      "INVOKE %c%s",
+      `border:${css};color:lime`,
+      eventType,
+      type,
+      state.value
+    );
+    // Send the invocation details to the invoker
+    invoker.send({
+      type,
+      eventType,
+      events: invoked,
+      options: {},
+      application: appData,
+      page,
+
+      clientLib,
+    });
+  }
+
+  /**
+   * Asynchronously invokes an application load event.
+   * @param {Object} context - The context object containing appData, page and clientLib
+   */
+  async function invokeApplicationLoad(context) {
+    invokeEventList(
+      context,
+      "onApplicationLoad",
+      context.appData,
+      "solid 1px lime"
+    );
+  }
+
+  /**
+   * Asynchronously invokes a function based on the given context.
+   * @param {Object} context - The context object containing appData, page and clientLib
+   */
+  async function invokePageLoad(context) {
+    invokeEventList(context, "onPageLoad", context.page, "dotted 1px lime");
+  }
+
+  /**
+   * Retrieves data from a resource and resolves rows based on the resource's node path.
+   * @param {Object} context - The context object containing page and appData.
+   * @returns {Object} - An object containing the key and rows.
+   */
+  async function invokeComponentResources(context) {
+    const { page, appData } = context;
+
+    // Find the component with the "bindings" setting
+    const bound = page.components.find((component) =>
+      component.settings.some((setting) => setting.SettingName === "bindings")
+    );
+
+    // Reduce the settings of the bound component
+    const args = reduceSettings(bound.settings);
+
+    // Parse the bindings argument as JSON
+    const json = JSON.parse(args.bindings);
+
+    // Find the resource with the matching ID
+    const resource = appData.resources.find(
+      (resource) => resource.ID === json.resourceID
+    );
+
+    // Find the connection with the matching ID
+    const connection = appData.connections.find(
+      (connection) => connection.ID === resource.connectionID
+    );
+
+    // Invoke the resource using the connection
+    const data = await invokeResource(connection, resource);
+
+    // Resolve rows based on the resource's node path
+    const rows = resolveRows(data, resource.node.split("/"));
+
+    return {
+      key: json.resourceID,
+      rows: rows,
+    };
+  }
+
+  /**
+   * This function takes a context object and performs some operations based on its properties.
+   * @param {Object} context - The context object containing configuration and data.
+   * @returns {boolean} - Returns true if the operations are successful.
+   */
+  async function loadConfigurationMachine(context) {
+    // Get the machine based on the configuration type
+    const machine = configMachines[context.configurationType];
+
+    // If no machine is found, display an alert and return
+    if (!machine) {
+      alert(`No machine for "${context.configurationType}"`);
+      return false;
+    }
+
+    // Destructure the page object from the context, defaulting to empty arrays
+    const { state = [], scripts = [] } = context.page || {};
+
+    // Log the appData property of the context object
+    console.log({ app: context.appData });
+
+    // Send a message to the machine with relevant data
     machine.send({
       type: "load",
-      state: page?.state,
-      scripts: page?.scripts,
-      appState: appData.state,
-      appScripts: appData.scripts,
-      resources: appData.resources,
-      connections: appData.connections,
-      resourceData: resourceData,
-      setupData: setupData,
+      state,
+      scripts,
+      appState: context.appData.state,
+      appScripts: context.appData.scripts,
+      resources: context.appData.resources,
+      connections: context.appData.connections,
+      resourceData: context.resourceData,
+      setupData: context.setupData,
     });
 
-    setConfigurationType(type);
-  };
+    // Return true to indicate successful operations
+    return true;
+  }
 
+  /**
+   * Updates a component in the context using the given data.
+   * @param {Object} context - The context object.
+   * @returns {Promise} - A promise that resolves when the component is updated.
+   */
+  async function commitComponentDefinition(context) {
+    // Destructure the componentData from the context object
+    const { componentData } = context;
+
+    // Create a new component object with the updated attributes
+    const component = {
+      ...componentData,
+      Attributes: JSON.stringify(componentData.Attributes),
+    };
+
+    // Call the setComponent method from the connector module to update the component
+    return await setComponent(component);
+  }
+
+  // helper function for components to invoke events
   const invokeEvent = (events, eventType, options, e) => {
-    const { page, appData, resourceData, setupData } = state.context;
+    const { page, appData, clientLib } = state.context;
+
     if (!events) return;
     const invoked = events
       .filter((f) => f.event === eventType)
       .filter((f) => f.action.type !== "setState");
+    const setters = events
+      .filter((f) => f.event === eventType)
+      .filter((item) => item.action.type === "setState");
 
-    const setters = events.filter((item) => item.action.type === "setState");
-    // console.log({ setters, options });
+    // console.log({ invoked, setters, appData });
+
+    if (!appData) return;
+
+    let updatedClientLib = clientLib;
 
     if (setters.length) {
+      // console.log({ setters: setters.length });
       setters.map((step) => {
         send({
           type: "update state",
@@ -1027,13 +1192,23 @@ export const useReactly = () => {
           step,
         });
       });
+
+      // console.log({ setters });
+      updatedClientLib = setters.reduce((out, step) => {
+        const up = actions.getUpdatedAppState(state.context, {
+          options,
+          step,
+        }).clientLib;
+        return {
+          ...out,
+          ...up,
+        };
+      }, clientLib);
+
+      // console.log({ updatedClientLib });
     }
 
     if (!invoked.length) return;
-    if (!appData) {
-      return alert("Could not invoke event because application is not ready.");
-    }
-    console.log({ options });
     invoker.send({
       type: "load",
       eventType,
@@ -1041,12 +1216,61 @@ export const useReactly = () => {
       events: invoked,
       options,
       application: appData,
-      resourceData,
-      setupData,
+      clientLib: updatedClientLib,
       e,
     });
   };
 
+  const services = {
+    getData: retrieveDemoData,
+    getLibraryData: getComponentsAsync,
+    getAppKey: getApplicationFromContext,
+    getAppKeys: getStrippedApplications,
+    getDataFromPath: getPageDataByPath,
+    loadComponent: loadComponent,
+    dropApp: commitApplicationWithDeletedFlag,
+    createNewApp: createApplication,
+    loadDataBindingMachine,
+    invokeAppLoad: invokeApplicationLoad,
+    invokePageLoad,
+    invokeComponentResources,
+    loadConfigurationMachine,
+    commitComponentDefinition,
+    getInvokerLoadState: async () => true, // invoker.state.can("load"),
+    invokeEvent,
+  };
+
+  const [state, send] = useMachine(reactlyMachine, { services });
+
+  // launches one of the configuration machines to edit some
+  // advanced property of the application
+  const configureApp = (type) => {
+    const { appData, setupData, resourceData, page, clientLib } = state.context;
+    const {
+      state: appState,
+      scripts: appScripts,
+      resources,
+      connections,
+    } = appData;
+
+    // send current app state to the selected config machine
+    configMachines[type].send({
+      type: "load",
+      state: page?.state,
+      scripts: page?.scripts,
+      appState,
+      appScripts,
+      resources,
+      connections,
+      resourceData,
+      setupData,
+      clientLib,
+    });
+
+    setConfigurationType(type);
+  };
+
+  // helper function to change context values
   const setContext = (name, value) => {
     send({
       type: "set context",
@@ -1054,9 +1278,9 @@ export const useReactly = () => {
       value,
     });
   };
-
+  // machine list to pass to the debugger
   const machineList = {
-    Reactly: { actions, state, send, states: reactlyMachine.states },
+    Reactly: { actions, state, send, states: reactlyMachine.states, services },
     "Event Handler": invoker,
     "Data Binder": binder,
     "Script Handler": clientScript,

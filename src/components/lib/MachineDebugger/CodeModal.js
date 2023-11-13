@@ -15,7 +15,7 @@ import {
   Typography,
 } from "@mui/material";
 import Flex from "../../../styled/Flex";
-import { ArrowBack, Code, CopyAll, CopyAllRounded } from "@mui/icons-material";
+import { ArrowBack, Code, CopyAll } from "@mui/icons-material";
 import StateBar from "../../../styled/StateBar";
 import TabBody from "../../../styled/TabBody";
 import TabMenu from "../../../styled/TabMenu";
@@ -24,15 +24,30 @@ import Columns from "../../../styled/Columns";
 import { MachineButton, TinyButton } from "../../../styled/TinyButton";
 import Spacer from "../../../styled/Spacer";
 import CodePane from "../ConfigurationDrawer/CodePane";
+import ChipMenu from "../../../styled/ChipMenu";
 
 export default function CodeModal({ name, coder }) {
   const can = (str) => coder.state.can(str);
+  const { machineActions, machineServices, codeType } = coder;
+  const available = [
+    { label: "Actions", actions: machineActions },
+    { label: "Services", actions: machineServices },
+  ].filter((f) => !!f.actions);
+  const actionList = [machineActions, machineServices][codeType];
+
   const checkCode = (name, check, code) => {
     coder.send({
       type: !!check ? "check" : "view",
       name,
-      code: code || coder.machineActions[name].assignment.toString(),
+      code: code || codeOf(actionList[name]).toString(),
     });
+  };
+
+  const codeOf = (method) => {
+    if (method.assignment) {
+      return method.assignment;
+    }
+    return method;
   };
 
   const OUTER_WIDTH = ["view", "nag", "yes"].some(can) ? 640 : 960;
@@ -135,8 +150,18 @@ export default function CodeModal({ name, coder }) {
               sx={{ height: 540, overflow: "auto", width: INNER_WIDTH, p: 2 }}
             >
               <Flex spacing={1}>
+                <ChipMenu
+                  options={available.map((f) => f.label)}
+                  value={codeType}
+                  onChange={(val) =>
+                    coder.send({
+                      type: "set code type",
+                      codeType: val,
+                    })
+                  }
+                />
                 <Nowrap variant="body2">
-                  Actions in the <b>{name}</b> state machine
+                  in the <b>{name}</b> state machine[{codeType}]
                 </Nowrap>
                 <Chip
                   size="small"
@@ -172,18 +197,15 @@ export default function CodeModal({ name, coder }) {
                   Select
                 </Nowrap>
               </Columns>
-              {Object.keys(coder.machineActions).map((action) => (
+              {Object.keys(actionList).map((action) => (
                 <Columns columns="300px 120px 80px 1fr" key={action}>
                   <Flex spacing={1}>
                     <TinyButton icon="Code" />
                     <Nowrap
-                      muted={
-                        typeof coder.machineActions[action].assignment ===
-                        "object"
-                      }
+                      muted={typeof codeOf(actionList[action]) === "object"}
                       onClick={() =>
-                        typeof coder.machineActions[action].assignment !==
-                          "object" && checkCode(action)
+                        typeof codeOf(actionList[action]) !== "object" &&
+                        checkCode(action)
                       }
                       variant="body2"
                       hover
@@ -191,22 +213,18 @@ export default function CodeModal({ name, coder }) {
                       {action}
                     </Nowrap>
                   </Flex>
-                  <Nowrap variant="body2">
-                    {coder.machineActions[action].assignment.toString().length}b
-                  </Nowrap>
+                  {!!codeOf(actionList[action]) && (
+                    <Nowrap variant="body2">
+                      {codeOf(actionList[action]).toString().length}b
+                    </Nowrap>
+                  )}
                   <TinyButton
-                    disabled={
-                      typeof coder.machineActions[action].assignment ===
-                      "object"
-                    }
+                    disabled={typeof codeOf(actionList[action]) === "object"}
                     icon="Launch"
                     onClick={() => checkCode(action, true)}
                   />
                   <Switch
-                    disabled={
-                      typeof coder.machineActions[action].assignment ===
-                      "object"
-                    }
+                    disabled={typeof codeOf(actionList[action]) === "object"}
                     size="small"
                     checked={coder.selectedItems.includes(action)}
                     onChange={() =>

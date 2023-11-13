@@ -16,7 +16,7 @@ export const ComponentStylesEditor = (props) => {
 
   const { component, machine } = props;
   const { componentData } = machine.state.context;
-  const bit = componentData?.Styles || 0;
+  const bit = componentData?.Styles || props.bit || 0;
   const validKeys = Object.keys(STYLEBIT).filter(
     (key) => !!displayItems[STYLEBIT[key]] && !!(bit & STYLEBIT[key])
   );
@@ -24,6 +24,9 @@ export const ComponentStylesEditor = (props) => {
     <>
       {validKeys.map((key, index) => {
         const settingGroup = displayItems[STYLEBIT[key]];
+        if (!settingGroup) {
+          return <>No setting for key {STYLEBIT[key]}</>;
+        }
         return (
           <Stack sx={{ mt: 2 }} spacing={1}>
             <Flex onClick={() => swapBit(STYLEBIT[key])}>
@@ -38,10 +41,12 @@ export const ComponentStylesEditor = (props) => {
               <Spacer />
               <TinyButton
                 icon={
-                  settingGroup.some((setting) =>
-                    component.styles.some(
-                      (opt) => opt.Key === setting.title && !!opt.Value
-                    )
+                  settingGroup.some(
+                    (setting) =>
+                      component.styles &&
+                      component.styles.some(
+                        (opt) => opt.Key === setting.title && !!opt.Value
+                      )
                   )
                     ? Close
                     : index === 0 || !!(bits & STYLEBIT[key])
@@ -56,10 +61,12 @@ export const ComponentStylesEditor = (props) => {
               in={
                 index === 0 ||
                 !!(bits & STYLEBIT[key]) ||
-                settingGroup.some((setting) =>
-                  component.styles.some(
-                    (opt) => opt.Key === setting.title && !!opt.Value
-                  )
+                settingGroup.some(
+                  (setting) =>
+                    component.styles &&
+                    component.styles.some(
+                      (opt) => opt.Key === setting.title && !!opt.Value
+                    )
                 )
               }
             >
@@ -68,6 +75,7 @@ export const ComponentStylesEditor = (props) => {
                   <Grid item xs={setting.xs || 12}>
                     {" "}
                     <ComponentInput
+                      machine={machine}
                       setting={setting}
                       key={setting.title}
                       component={component}

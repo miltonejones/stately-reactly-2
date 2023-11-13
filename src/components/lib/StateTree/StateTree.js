@@ -10,6 +10,10 @@ const capitalize = (str) => str?.replace(/_/g, " ");
 export const StateTree = ({ machine, root, offset = 0 }) => {
   const stateKeys = machine.states;
   const eventKeys = !machine.on ? [] : Object.keys(machine.on);
+  console.log({ machine: machine.machine });
+
+  const { initial } = machine.machine ?? {};
+
   return (
     <Li offset={offset}>
       {!root && (
@@ -54,7 +58,7 @@ export const StateTree = ({ machine, root, offset = 0 }) => {
             Machine ID: {machine.id}
           </Nowrap>
           <Nowrap small muted>
-            Initial state: <b>{JSON.stringify(Object.keys(stateKeys)[0])}</b>
+            Initial state: <b>{initial}</b>
           </Nowrap>
           <Nowrap wrap>{machine.description}</Nowrap>
         </Stack>

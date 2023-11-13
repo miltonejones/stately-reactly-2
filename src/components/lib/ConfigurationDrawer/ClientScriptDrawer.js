@@ -16,7 +16,6 @@ import { TinyButton } from "../../../styled/TinyButton";
 import { Close, Code, Save } from "@mui/icons-material";
 import EditBlock from "../../../styled/EditBlock";
 import { PanelHeader } from "./ConnectionDrawer";
-import { red } from "@mui/material/colors";
 import Warning from "../../../styled/Warning";
 import CodePane from "./CodePane";
 import TabBody from "../../../styled/TabBody";
@@ -69,7 +68,6 @@ function ClientScriptNode({ machine, submachine, node, scriptID, handleSave }) {
 }
 
 export default function ClientScriptrawer(props) {
-  const ref = React.useRef(null);
   const [innerText, setInnerText] = React.useState("");
   const { submachine } = props;
   const can = (str) => submachine.state.can(str);
@@ -98,12 +96,6 @@ export default function ClientScriptrawer(props) {
   const nodes = {
     page,
     application,
-  };
-
-  const openReferer = (ID) => {
-    props.machine.send({
-      type: "quit",
-    });
   };
 
   const isValid = (ref) => !!nodes[scope].some((item) => item.ID === ref.ID);
@@ -273,9 +265,16 @@ export default function ClientScriptrawer(props) {
         <Grid item xs={submachine.expanded ? 9 : 6}>
           {can("close script") && !!scriptProp && (
             <Card sx={{ height, overflow: "auto", m: 1 }}>
-              <Stack direction="row">
-                <TabBody fullWidth in={!["stream", "accept"].some(can)}>
-                  <CodePane setInnerText={setInnerText}>
+              <Stack direction="row" fullWidth sx={{ width: "100%" }}>
+                <TabBody
+                  tabProps={{
+                    className: "full-collapse",
+                    sx: { width: "100%", height: "100%", overflow: "auto" },
+                  }}
+                  sx={{ width: "100%", height: "100%", overflow: "auto" }}
+                  in={!["stream", "accept"].some(can)}
+                >
+                  <CodePane sx={{ width: "100%" }} setInnerText={setInnerText}>
                     {scriptProp.code}
                   </CodePane>
                 </TabBody>

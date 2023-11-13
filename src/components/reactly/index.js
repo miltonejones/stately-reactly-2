@@ -43,11 +43,12 @@ import { RyPagination } from "./RyPagination/RyPagination";
 import { RyList } from "./RyList/RyList";
 import Marquee from "react-fast-marquee";
 import { RyInfoCard } from "./RyInfoCard/RyInfoCard";
+import { ChipMenu } from "../../styled";
 
 const generate =
   (Component) =>
   ({ children, type, faux, ...props }) => {
-    const isModalType = ["Collapse", "Dialog", "Drawer"].some(
+    const isModalType = ["Collapse", "Dialog", "Drawer", "Snackbar"].some(
       (f) => type === f
     );
     const pretend = isModalType && faux;
@@ -58,7 +59,7 @@ const generate =
       : { width: "fit-content", minWidth: 100, maxWidth: "30vw" };
     return (
       <Tag {...props} {...opener} sx={{ ...props.sx, ...sx }}>
-        <>{children}</>
+        {children}
       </Tag>
     );
   };
@@ -71,11 +72,79 @@ const RyMarquee = ({ children, ...props }) => {
   return <Marquee {...props}>{children}</Marquee>;
 };
 
+const RySnackbar = ({ children, faux, ...props }) => {
+  const Tag = faux ? Card : Snackbar;
+  const opener = !faux ? {} : { open: true, elevation: 0 };
+  const sx = !faux
+    ? {}
+    : { width: "fit-content", minWidth: 300, maxWidth: "30vw" };
+
+  return (
+    <Tag {...props} {...opener} sx={{ ...props.sx, ...sx }}>
+      <Box>{children}</Box>
+    </Tag>
+  );
+};
+
+const RyBreadcrumbs = ({
+  children,
+  crumbs,
+  invokeEvent,
+  getStateValue,
+  ...props
+}) => {
+  const bread = !crumbs ? [] : JSON.parse(crumbs);
+  const handleClick = (event, value) => {
+    invokeEvent(event, "onCrumbClick", {
+      value,
+    });
+  };
+  return (
+    <>
+      <Breadcrumbs {...props}>
+        {bread.map((c) => {
+          const Tag = c.type === "Link" ? Link : Typography;
+          return (
+            <Tag
+              sx={{ cursor: "pointer" }}
+              onClick={(e) => handleClick(e, c.value)}
+              variant={c.variant}
+              key={c.label}
+            >
+              {!c.binding ? c.label : getStateValue(c.binding)}
+            </Tag>
+          );
+        })}
+      </Breadcrumbs>
+    </>
+  );
+};
+
+const RxChipMenu = ({ invokeEvent, ...props }) => {
+  const options = props.options?.split(","); // ["left", "right"];
+  const handleClick = (event, value) => {
+    invokeEvent(event, "onChipChange", {
+      value,
+    });
+  };
+  return (
+    <Box sx={{ width: "fit-content" }}>
+      <ChipMenu
+        {...props}
+        options={options}
+        onChange={(val) => handleClick(null, val)}
+        value={Number(props.value)}
+      />
+    </Box>
+  );
+};
+
 export const Library = {
   Typography: generate(Typography),
   Box: generate(Box),
   AudioPlayer: RyAudioPlayer,
   Button: RyButton,
+  ChipMenu: RxChipMenu,
   IconButton: RyIconButton,
   Avatar: generate(Avatar),
   Badge: generate(Badge),
@@ -84,7 +153,7 @@ export const Library = {
   Pagination: RyPagination,
   Drawer: generate(Drawer),
   AppBar: generate(AppBar),
-  Breadcrumbs: generate(Breadcrumbs),
+  Breadcrumbs: RyBreadcrumbs, //generate(Breadcrumbs),
   Link: generate(Link),
   Collapse: generate(Collapse),
   Divider: generate(Divider),
@@ -108,7 +177,7 @@ export const Library = {
   Stack: generate(Stack),
   Skeleton: generate(Skeleton),
   Rating: generate(Rating),
-  Snackbar: generate(Snackbar),
+  Snackbar: RySnackbar,
   Tooltip: generate(Tooltip),
   Select: generate(Select),
   Paper: generate(Paper),

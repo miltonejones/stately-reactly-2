@@ -5,15 +5,30 @@ import ChipMenu from "../../../styled/ChipMenu";
 import { TinyButton } from "../../../styled/TinyButton";
 import Warning from "../../../styled/Warning";
 
+export const predicateDef = {
+  is: (field, value) => `${field} = '${value}'`,
+  "is not": (field, value) => `${field} <> '${value}'`,
+  contains: (field, value) => `${field} LIKE '%${value}%'`,
+  "starts with": (field, value) => `${field} LIKE '${value}%'`,
+  "ends with": (field, value) => `${field} LIKE '%${value}'`,
+  "is greater than": (field, value) => `${field} > ${value}`,
+  "is less than": (field, value) => `${field} < ${value}`,
+};
+
+export const conditionDef = {
+  "is null": (field) => `${field} IS NULL`,
+  "is not null": (field) => `${field} IS NOT NULL`,
+};
+
+export const clauseDef = {
+  ...predicateDef,
+  ...conditionDef,
+};
+
 const operators = ["or", "and"];
-const predicates = [
-  "is",
-  "is not",
-  "contains",
-  "is greater than",
-  "is less than",
-];
-const conditions = ["is null", "is not null"];
+const predicates = Object.keys(predicateDef);
+const conditions = Object.keys(conditionDef);
+
 export default function PredicateList({ resource, onChange, onDrop }) {
   const ises = [...predicates, ...conditions];
 

@@ -1,7 +1,7 @@
 import { assign } from "xstate";
 
 /**
- * This function takes two parameters, "_" and "event".
+ * This function takes two params, "_" and "event".
  * It returns an object with the following properties:
  * - bindingData: an object with properties resourceID, bindings, typeMap, and columnMap.
  *   - resourceID: the value of event.ID.
@@ -72,7 +72,7 @@ const assignFieldAlias = (context, event) => {
 };
 
 /**
- * This function takes two parameters, but only uses the second parameter.
+ * This function takes two params, but only uses the second parameter.
  * It returns an object with a single property "selectedProp" whose value is the "prop" property of the event parameter.
  *
  * @param {*} _ - The first parameter, which is not used in the function.
@@ -191,6 +191,28 @@ export const binderActions = {
         },
       };
     }),
+
+    assignTypeMap: assign((context, event) => {
+      const { bindingData } = context;
+      const { typeMap } = bindingData;
+
+      const updatedTypeMap = {
+        ...typeMap,
+        [event.field]: {
+          ...typeMap[event.field],
+          [event.name]: event.value,
+        },
+      };
+      const updatedData = {
+        ...bindingData,
+        typeMap: updatedTypeMap,
+      };
+
+      return {
+        bindingData: updatedData,
+      };
+    }),
+
     assignFieldBinding: assign((context, event) => {
       const { field } = event;
       const { bindingData } = context;

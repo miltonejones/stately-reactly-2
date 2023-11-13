@@ -1,11 +1,8 @@
-import { Slider, Stack } from "@mui/material";
+import { Slider } from "@mui/material";
 import { TinyButton } from "../../../styled/TinyButton";
-import Nowrap from "../../../styled/Nowrap";
-
-const sortByOrder = (a, b) => (a.order > b.order ? 1 : -1);
 
 const OrderSlider = ({ ticks, value, onChange }) => {
-  const handleSliderChange = (event, newValue) => {
+  const handleSliderChange = (_, newValue) => {
     onChange && onChange(newValue);
   };
 
@@ -15,7 +12,7 @@ const OrderSlider = ({ ticks, value, onChange }) => {
 
   const marks = ticks.sort((a, b) => (a.value > b.value ? 1 : -1));
 
-  function valuetext(value, icon) {
+  function valuetext(_, icon) {
     return <TinyButton icon={icon} />;
   }
 

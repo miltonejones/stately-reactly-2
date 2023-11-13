@@ -35,24 +35,40 @@ const assignOvertime = assign((context) => {
  * @param {Object} event - Event object.
  * @returns {Object} - Session object with assigned event properties.
  */
-const assignEventProps = assign((_, event) => {
-  // Hydrate event using utility function
-  const settings = eventHydrate(event);
+const assignEventProps = assign((context, event) => {
+  // Hydrate event to append any pre/post events from data events
+  const hydratedEventSession = eventHydrate(event);
+  const { clientLib } = hydratedEventSession;
+
+  // data and component props from the application
+  const { resourceData, setupData } = context;
 
   // Log starting new session with number of events
   console.log(
-    "%cStarting new session with %d events",
+    "%cStarting new '%s' session with %d event%s",
     "color:red;font-weight:600;border:solid 2px magenta;padding:2px",
-    settings.events.length
+    event.eventType,
+    hydratedEventSession.events.length,
+    hydratedEventSession.events.length === 1 ? "" : ""
   );
 
   // Return session object with assigned event properties
   return {
-    ...settings,
+    ...hydratedEventSession,
     event_index: 0,
-    ignore: false,
+
+    // if true, errors will be ignored
+    ignoreErrors: false,
+
+    // keeping a record for future functionality, maybe
     memory: [],
+
+    // overtime is deprecated
     overtime: [],
+
+    // preserve resource and setup data in case it gets passed as NULL or EMPTY
+    resourceData: clientLib.resources || event.resourceData || resourceData,
+    setupData: clientLib.setups || event.setupData || setupData,
   };
 });
 
@@ -64,11 +80,11 @@ const assignEventProps = assign((_, event) => {
  */
 const appendEventProps = assign((context, event) => {
   // Hydrate the event object using a utility function
-  const settings = eventHydrate(event);
+  const hydratedEventSession = eventHydrate(event);
 
-  // Concatenate the existing settings to the overtime property in the context object
+  // Concatenate the existing events to the overtime property in the context object
   return {
-    overtime: context.overtime.concat(settings),
+    overtime: context.overtime.concat(hydratedEventSession),
   };
 });
 
@@ -105,21 +121,26 @@ function updateApplication(context, event) {
   }
 
   const application = event.data;
-
-  // Check if page exists in context
-  if (!context.page) {
+  if (application.clientLib) {
     return {
-      application,
+      ...application,
     };
   }
-
-  // Find the page in the application based on the page ID in the context
-  const page = application.pages.find((p) => p.ID === context.page.ID);
-
   return {
     application,
-    page,
   };
+  // // Check if page exists in context
+  // if (!context.page) {
+
+  // }
+
+  // // Find the page in the application based on the page ID in the context
+  // const page = application.pages.find((p) => p.ID === context.page.ID);
+
+  // return {
+  //   application,
+  //   page,
+  // };
 }
 
 /**
@@ -164,10 +185,14 @@ export const invokeActions = {
   actions: {
     assignProblem: assign(assignProblem),
     updateApplication: assign(updateApplication),
-    initIgnore: assign({ ignore: false }),
+    initIgnore: assign({ ignoreErrors: false }),
     toggleIgnore: assign((_, event) => ({
-      ignore: event.ignore,
+      ignoreErrors: event.ignoreErrors,
     })),
+    stripApplication: assign((context) => {
+      const { navigation, ...application } = context.application;
+      return { application };
+    }),
     incrementEvent: assign((context) => ({
       event_index: context.event_index + 1,
     })),

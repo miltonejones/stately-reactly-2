@@ -1,23 +1,36 @@
-import { Card, Stack, TextField, Typography } from "@mui/material";
+import { Card, Stack, Typography } from "@mui/material";
 import EditBlock from "../../../styled/EditBlock";
 import SearchInput from "../../../styled/SearchInput";
-import Spacer from "../../../styled/Spacer";
 import Flex from "../../../styled/Flex";
 import ParamSelect from "../ComponentEditor/ParamSelect";
 import React from "react";
 import ChipMenu from "../../../styled/ChipMenu";
 import Json from "../../../styled/Json";
 import Warning from "../../../styled/Warning";
+import CommonForm from "../CommonForm/CommonForm";
+import Columns from "../../../styled/Columns";
+import Nowrap from "../../../styled/Nowrap";
 
 const DataExecEdit = ({ machine, editor, appData }) => {
-  const ref = React.useRef();
   const { resources } = appData;
   const { currentEvent } = editor;
-  const { target, terms = {} } = currentEvent.action;
+  const { target, terms = {}, predicates = [], pageNum } = currentEvent.action;
 
   const resource = resources.find((f) => f.ID === target);
 
   const isJSON = !resource?.bodyType || resource?.bodyType === "JSON";
+
+  const formProps = [
+    {
+      title: "page",
+      xs: 6,
+    },
+    {
+      title: "size",
+      alias: "Page size",
+      xs: 6,
+    },
+  ];
 
   return (
     <Card sx={{ p: 2 }}>
@@ -45,6 +58,7 @@ const DataExecEdit = ({ machine, editor, appData }) => {
             }}
           />
         </EditBlock>
+
         {!!resource?.values.length && (
           <>
             <EditBlock
@@ -79,6 +93,78 @@ const DataExecEdit = ({ machine, editor, appData }) => {
                 ))}
               </Stack>
             </EditBlock>
+          </>
+        )}
+
+        {resource?.method === "SELECT" && (
+          <>
+            <EditBlock title="Page" description="Page number of the request">
+              <ParamSelect
+                eventType={currentEvent.event}
+                label="Page"
+                name="pageNum"
+                onChange={(e) => {
+                  editor.send({
+                    type: "set event action",
+                    name: e.target.name,
+                    value: e.target.value,
+                  });
+                }}
+                value={pageNum}
+                machine={machine}
+              />
+            </EditBlock>
+
+            {!!resource?.predicates.length && (
+              <>
+                <EditBlock
+                  title="Conditions"
+                  description="Set the conditions to fulfill the data request"
+                >
+                  <Stack spacing={1}>
+                    {resource.predicates.map((pred, k) => (
+                      <Stack key={k}>
+                        <Columns columns="20% 20% 1fr">
+                          <Nowrap>{pred.property}</Nowrap>
+                          <Nowrap>{pred.condition}</Nowrap>
+
+                          <ParamSelect
+                            eventType={currentEvent.event}
+                            name="predicates"
+                            onChange={(e) => {
+                              editor.send({
+                                type: "set event action",
+                                name: e.target.name,
+                                value: predicates.some(
+                                  (f) => f.property === pred.property
+                                )
+                                  ? predicates.map((f) =>
+                                      f.property === pred.property
+                                        ? { ...f, operand: e.target.value }
+                                        : f
+                                    )
+                                  : predicates.concat({
+                                      ...pred,
+                                      operand: e.target.value,
+                                    }),
+                              });
+                            }}
+                            value={
+                              !predicates[k]
+                                ? pred.operand
+                                : predicates[k].operand
+                            }
+                            machine={machine}
+                          />
+                        </Columns>
+                        {/* {pred.operand} */}
+                      </Stack>
+                    ))}
+                  </Stack>
+                </EditBlock>
+                {/* <pre>{JSON.stringify(currentEvent.action, 0, 2)}</pre> */}
+              </>
+            )}
           </>
         )}
 

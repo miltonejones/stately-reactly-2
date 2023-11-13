@@ -13,9 +13,12 @@ import findMaxNumber from "../../../util/findMaxNumber";
 import useBinding from "../../../hooks/useBinding";
 
 export default function ComponentNav(props) {
-  const { components, component: currentComponent, send } = props;
+  const { components, component: currentComponent } = props;
   const items = components.sort((a, b) => (a.order > b.order ? 1 : -1));
 
+  if (!props.iconList) {
+    return <>Icon list did not load</>;
+  }
   return (
     <>
       {items.map((component) => (
@@ -32,7 +35,6 @@ export default function ComponentNav(props) {
 const ComponentChild = (props) => {
   const {
     componentList,
-    components,
     component,
     currentComponent,
     send,
@@ -43,7 +45,6 @@ const ComponentChild = (props) => {
     iconList = {},
     ml = 1,
   } = props;
-  const items = components.sort((a, b) => (a.order > b.order ? 1 : -1));
   const selectComponent = (ID) => {
     send({
       type: "edit",

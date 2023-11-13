@@ -27,3 +27,18 @@ export const eventTypes = [
     description: "Data starts loading.",
   },
 ];
+
+export const predicateDef = {
+  is: (field, value) => `${field} = '${value}'`,
+  "is not": (field, value) => `${field} <> '${value}'`,
+  contains: (field, value) => `${field} LIKE '%${value}%'`,
+  "starts with": (field, value) => `${field} LIKE '${value}%'`,
+  "ends with": (field, value) => `${field} LIKE '%${value}'`,
+  "is greater than": (field, value) => `${field} > ${value}`,
+  "is less than": (field, value) => `${field} < ${value}`,
+};
+
+export const conditionDef = {
+  "is null": (field) => `${field} IS NULL`,
+  "is not null": (field) => `${field} IS NOT NULL`,
+};

@@ -1,6 +1,7 @@
 import { Avatar, Box, Button } from "@mui/material";
 import Nowrap from "../../../styled/Nowrap";
 import TextIcon from "../../../styled/TextIcon";
+import moment from "moment";
 
 export const RyDataGrid = ({
   invokeEvent,
@@ -17,21 +18,22 @@ export const RyDataGrid = ({
   if (!props.resourceData) {
     return <>No results to display.</>;
   }
-  const rowItems = props.resourceData[bindings.resourceID];
-  const json = JSON.stringify(rowItems, 0, 2);
+  const response = props.resourceData[bindings.resourceID];
+  const rowItems = response?.rows || response;
 
-  const handleChangePage = (event, column, row, index) => {
+  const handleChangePage = (event, column, row, index, items) => {
     invokeEvent(event, "onCellClick", {
       ID: row[selectedProp],
       column,
       ...row,
       row: index,
-      rows: rowItems,
+      items,
+      rowItems,
     });
   };
 
-  if (!bindings.columnMap || !rowItems) {
-    return <>No results to display.</>;
+  if (!bindings.columnMap || !rowItems || !rowItems.map) {
+    return <>No results to display. {JSON.stringify(rowItems)}</>;
   }
   const fr = bindings.columnMap
     .map((f) =>
@@ -42,7 +44,7 @@ export const RyDataGrid = ({
     .join(" ");
   return (
     <Box sx={props.sx}>
-      {children}
+      {/* {children}[{selectedProp}][{selectedID}] */}
       <Box
         sx={{
           display: "grid",
@@ -57,9 +59,9 @@ export const RyDataGrid = ({
           </Nowrap>
         ))}
       </Box>
-      {rowItems.map((row, i) => (
+      {rowItems.map((row, index) => (
         <Box
-          key={i}
+          key={index}
           sx={{
             display: "grid",
             gridTemplateColumns: fr,
@@ -72,8 +74,12 @@ export const RyDataGrid = ({
             const datatype = bindings.typeMap[f];
             if (datatype.type === "Image") {
               return (
-                <Avatar
-                  sx={{ width: 30, height: 30 }}
+                <img
+                  style={{
+                    width: datatype.settings.Width,
+                    height: datatype.settings.Height,
+                    borderRadius: datatype.settings.Radius,
+                  }}
                   src={row[f]}
                   alt="row icon"
                 />
@@ -81,9 +87,9 @@ export const RyDataGrid = ({
             }
             return (
               <Nowrap
-                bold={!!selectedColumn && row[selectedColumn] === selectedID}
+                bold={!!selectedProp && row[selectedProp] === selectedID}
                 variant="body2"
-                onClick={(e) => handleChangePage(e, f, row, i)}
+                onClick={(e) => handleChangePage(e, f, row, index, rowItems)}
                 sx={{ display: "flex", alignItems: "center" }}
                 key={f}
               >
@@ -93,7 +99,7 @@ export const RyDataGrid = ({
                   i === Number(selected_indicator_col) && (
                     <TextIcon icon={selectedRowIcon} />
                   )}
-                {parseProp(row[f])}
+                {parseProp(row[f], datatype)}
               </Nowrap>
             );
           })}
@@ -103,7 +109,10 @@ export const RyDataGrid = ({
   );
 };
 
-function parseProp(value) {
+function parseProp(value, datatype) {
+  if (datatype?.type === "Time") {
+    return moment(value).format(datatype.settings.format);
+  }
   if (!value) return null;
   if (["string", "number"].some((f) => typeof value === f)) {
     return value;

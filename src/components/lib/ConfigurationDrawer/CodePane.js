@@ -11,15 +11,14 @@ export default function CodePane({ children, setInnerText, ...props }) {
       contentEditable
       spellCheck="false"
       onKeyUp={(e) => !!setInnerText && setInnerText(e.target.innerText)}
+      {...props}
       customStyle={{
-        ...sx,
         overflow: "auto",
         fontSize: "0.9em",
-        paddingTop: "2rem",
+        minWidth: "100%",
       }}
       language="javascript"
       style={docco}
-      {...props}
     >
       {children}
     </SyntaxHighlighter>

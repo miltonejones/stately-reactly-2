@@ -1,6 +1,6 @@
 import invokeResource from "../../connector/invokeResource";
 import getScriptList from "../../util/getScriptList";
-import stateCompare from "../../util/stateCompare";
+// import stateCompare from "../../util/stateCompare";
 
 const stateReduce = (state) => {
   if (!state) return {};
@@ -11,7 +11,14 @@ const stateReduce = (state) => {
 };
 
 const scriptRun = async (context) => {
-  const { page: selectedPage, application, options, currentEvent } = context;
+  const {
+    page: selectedPage,
+    application,
+    options,
+    currentEvent,
+    clientLib,
+    preview,
+  } = context;
   const { action, componentID } = currentEvent;
   const { target } = action;
 
@@ -39,101 +46,85 @@ const scriptRun = async (context) => {
       pagename: selectedPage?.PagePath,
       application,
       data: scriptData,
-      state: stateReduce(selectedPage?.state),
+      state: clientLib.page, // stateReduce(selectedPage?.state),
       setState: (fn) => {
         if (!selectedPage) {
           return console.log(
             `setState is being called in page scope by "${script.name}" but there is no page.`
           );
         }
-        const states = selectedPage.state.reduce((out, st) => {
-          out[st.Key] = st.Value;
-          return out;
-        }, {});
-        const updated = fn(states);
 
-        const oldPage = { ...selectedPage };
+        // const states = selectedPage.state.reduce((out, st) => {
+        //   out[st.Key] = st.Value;
+        //   return out;
+        // }, {});
 
-        Object.assign(selectedPage, {
-          state: selectedPage.state.map((item) =>
-            updated.hasOwnProperty(item.Key)
-              ? {
-                  ...item,
-                  Value:
-                    item.Type === "boolean"
-                      ? !!updated[item.Key]
-                      : updated[item.Key],
-                  added: "special",
-                  by: script.name,
-                }
-              : item
-          ),
+        const updated = fn(clientLib.page);
+        console.log("%cupdated state", "border: dotted 1px red;color:magenta", {
+          updated,
         });
+        Object.assign(clientLib, { page: updated });
 
-        updatedApp.pages = updatedApp.pages.map((p) =>
-          p.ID === selectedPage.ID ? selectedPage : p
-        );
+        // const oldPage = { ...selectedPage };
 
-        const diff1 = stateCompare(oldPage.state, selectedPage.state);
-        diff1.map((diff) =>
-          console.log(
-            `  %c"%s" was altered by script "%s" from %O to %O`,
-            "color:lime",
-            diff.Key,
-            script.name,
-            diff.Value,
-            diff.change
-          )
-        );
+        // Object.assign(selectedPage, {
+        //   state: selectedPage.state.map((item) =>
+        //     updated.hasOwnProperty(item.Key)
+        //       ? {
+        //           ...item,
+        //           Value:
+        //             item.Type === "boolean"
+        //               ? !!updated[item.Key]
+        //               : updated[item.Key],
+        //           added: "special",
+        //           by: script.name,
+        //         }
+        //       : item
+        //   ),
+        // });
+
+        // updatedApp.pages = updatedApp.pages.map((p) =>
+        //   p.ID === selectedPage.ID ? selectedPage : p
+        // );
+
+        // const diff1 = stateCompare(oldPage.state, selectedPage.state);
+        // diff1.map((diff) =>
+        //   console.log(
+        //     `  %c"%s" was altered by script "%s" from %O to %O`,
+        //     "color:lime",
+        //     diff.Key,
+        //     script.name,
+        //     diff.Value,
+        //     diff.change
+        //   )
+        // );
 
         // console.log({ states, app: updated, selectedPage, updatedApp });
       },
       application: {
         getState: async () => stateReduce(updatedApp.state),
-        state: stateReduce(updatedApp.state),
+        state: clientLib.application, // stateReduce(updatedApp.state),
         setState: (fn) => {
-          const states = updatedApp.state.reduce((out, st) => {
-            out[st.Key] = st.Value;
-            return out;
-          }, {});
-          const updated = fn(states);
-
-          const oldApp = { ...updatedApp };
-
-          Object.assign(updatedApp, {
-            state: updatedApp.state.map((item) =>
-              updated.hasOwnProperty(item.Key)
-                ? {
-                    ...item,
-                    Value:
-                      item.Type === "boolean"
-                        ? !!updated[item.Key]
-                        : updated[item.Key],
-                    added: "special",
-                    by: script.name,
-                  }
-                : item
-            ),
-          });
-
-          const diff1 = stateCompare(oldApp.state, updatedApp.state);
-          diff1.map((diff) =>
-            console.log(
-              `  %c"application.%s" was altered by script "%s" from %s to %s`,
-              "color:magenta",
-              diff.Key,
-              script.name,
-              diff.Value,
-              diff.change
-            )
+          const updated = fn(clientLib.application);
+          console.log(
+            "%cupdated state",
+            "border: dotted 1px red;color:magenta",
+            {
+              updated,
+            }
           );
-
-          // console.log({ states, app: updated, updatedApp });
+          Object.assign(clientLib, { application: updated });
         },
       },
       api: {
         openPath: (path, data) => {
           // alert(JSON.stringify({ path, data }, 0, 2));
+          if (preview === "on") {
+            window.location.href = ["", "app", application.path, path].join(
+              "/"
+            );
+            return; // alert(path);
+          }
 
           Object.assign(updatedApp, {
             navigation: {
@@ -146,24 +137,35 @@ const scriptRun = async (context) => {
           alert(`Alert from ${script.name}\n${JSON.stringify(msg, 0, 2)}`),
         shout: (msg, title) => alert(title + "\n" + JSON.stringify(msg, 0, 2)),
         execRefByName: (name, fn) => {
-          const component = application.components.find(
-            (f) => f.ComponentName === name
-          );
+          let components = application.components;
+          if (selectedPage) {
+            components = components.concat(selectedPage.components);
+          }
+          const component = components.find((f) => f.ComponentName === name);
+          console.log({
+            components,
+            component,
+            name,
+            setups: clientLib.setups,
+          });
           if (component) {
-            const ref = context.setupData[component.ID];
+            const ref = clientLib.setups[component.ID];
             if (ref) {
               return fn(ref);
             }
           }
 
           alert(`Request to execute ${name}`);
-          fn({
-            play: () => alert("play was requested"),
-          });
         },
-        getResourceByName: (name) => {
+
+        // actions on actual application artifacts
+        getResourceByName: (name, fn) => {
+          const { resources } = application;
+          const resource = resources.find((f) => f.name === name);
           const scriptName = script.name;
           console.log(scriptName, `Getting resource "${name}"`);
+          !!fn && fn(resourceData[resource.ID]);
+          return resourceData[resource.ID];
         },
         execResourceByName: async (name, params) => {
           const scriptName = script.name;
@@ -199,16 +201,19 @@ const scriptRun = async (context) => {
     Object.assign(updatedApp, { result });
 
     console.log('returning updatedApp from %c"%s"', "color: red", script.name);
-    console.log({ tada: updatedApp });
+    console.log({ tada: updatedApp, clientLib });
 
-    return updatedApp;
+    return { application: updatedApp, clientLib };
   }
 
-  return updatedApp;
+  return { application: updatedApp, clientLib };
 };
 
 const exec = async (code, page, scriptOpts) => {
-  const codeBlock = `function runscript() { return ${code} }`;
+  const firstWord = code.indexOf("async") < 0 ? "function" : "async";
+  const codeIndex = code.indexOf(firstWord);
+  const codeText = code.substr(codeIndex);
+  const codeBlock = `function runscript() { return ${codeText} }`;
   const action = eval(`(${codeBlock})()`);
   return await action(page, scriptOpts);
 };

@@ -1,4 +1,4 @@
-import { Close, Edit, MoreHoriz } from "@mui/icons-material";
+import { Close, Edit } from "@mui/icons-material";
 import {
   Box,
   Button,

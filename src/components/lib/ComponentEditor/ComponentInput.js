@@ -1,5 +1,8 @@
 import React from "react";
 import {
+  Box,
+  Chip,
+  Dialog,
   IconButton,
   InputAdornment,
   MenuItem,
@@ -11,10 +14,15 @@ import {
 import Flex from "../../../styled/Flex";
 import Spacer from "../../../styled/Spacer";
 import { TinyButton } from "../../../styled/TinyButton";
-import { Link, LinkOff, MoreHoriz, MoreVert } from "@mui/icons-material";
+import { Add, Link, LinkOff, MoreHoriz, MoreVert } from "@mui/icons-material";
 import SearchInput from "../../../styled/SearchInput";
 import IconSelect from "../../../styled/IconSelect";
 import ChipMenu from "../../../styled/ChipMenu";
+import { useMenu } from "../../../machines/menuMachine";
+import Columns from "../../../styled/Columns";
+import Nowrap from "../../../styled/Nowrap";
+import ParamSelect from "./ParamSelect";
+import ListBinder from "./ListBinder";
 
 const InputBlock = ({
   alias,
@@ -64,30 +72,32 @@ export const ComponentInput = ({
   onBindingConfigure,
   repeaterBindings = [],
   stateList = [],
+  stateReference = {},
   keyName = "SettingName",
   valueName = "SettingValue",
   typeKey = "settings",
   hidden,
+  machine,
 }) => {
   // const [filter, setFilter] = React.useState("");
   const { boundProps = [] } = component;
   const boundProp = boundProps.find((p) => p.attribute === setting.title);
   const settings = component[typeKey];
-  if (!settings) {
-    return <>No settings for type "{JSON.stringify(typeKey)}"</>;
-  }
+  // if (!settings) {
+  //   return <>No settings for type "{JSON.stringify(typeKey)}"</>;
+  // }
   const isSelect = setting.type.indexOf(",") > 0;
   const isFunc = setting.type.indexOf("<") > 0;
   const options = setting.type.split(",");
-  const option = settings.find((s) => s[keyName] === setting.title) || {};
+  const option = !settings
+    ? {
+        [keyName]: setting.title,
+      }
+    : settings.find((s) => s[keyName] === setting.title) || {};
 
   if (hidden) {
     return <i />;
   }
-
-  // const foundState = stateList
-  //   .filter((f) => f.toLowerCase().indexOf(filter.toLowerCase()) > -1)
-  //   .slice(0, 10);
 
   const settingIsBound = ["table binding", "repeater binding"].some(
     (f) => setting.type === f
@@ -103,6 +113,7 @@ export const ComponentInput = ({
   };
 
   if (boundProp) {
+    const bindingRef = stateReference[boundProp.boundTo];
     return (
       <InputBlock {...inputProps}>
         <SearchInput
@@ -111,6 +122,17 @@ export const ComponentInput = ({
           value={boundProp.boundTo}
           onChange={(e) => onBind(setting.title, e.target.value)}
         />
+        {bindingRef?.Type === "boolean" && (
+          <Flex>
+            <Switch
+              onChange={(e) =>
+                onBind(setting.title, boundProp.boundTo, !boundProp.oppose)
+              }
+              checked={boundProp.oppose}
+            />{" "}
+            <Typography variant="caption">Use opposite value</Typography>
+          </Flex>
+        )}
       </InputBlock>
     );
   }
@@ -176,14 +198,25 @@ export const ComponentInput = ({
           value={option[valueName] || setting.default}
           InputProps={{ endAdornment }}
           options={options}
+          setting={setting}
+          machine={machine}
         />
       </Stack>
     </>
   );
 };
 
-function ChipMaybe({ options: untrimmed, ...props }) {
+function ChipMaybe({ options: untrimmed, setting, machine, ...props }) {
   const options = untrimmed.map((f) => f.trim());
+  const menu = useMenu(
+    (value) =>
+      !!value &&
+      props.onChange({
+        target: {
+          value: JSON.stringify(value),
+        },
+      })
+  );
   if (
     options?.length < 6 &&
     options?.length > 1 &&
@@ -205,13 +238,33 @@ function ChipMaybe({ options: untrimmed, ...props }) {
       </Flex>
     );
   }
+
+  const endAdornment =
+    setting.type === "typolist" ? (
+      <InputAdornment position="end">
+        <IconButton
+          onClick={(e) => menu.handleClick(e, JSON.parse(props.value || "[]"))}
+        >
+          <MoreHoriz />
+        </IconButton>
+      </InputAdornment>
+    ) : null;
+
   return (
-    <TextField {...props}>
-      {options.map((option) => (
-        <MenuItem key={option} value={option.trim()}>
-          {option.trim()}
-        </MenuItem>
-      ))}
-    </TextField>
+    <>
+      <TextField
+        {...props}
+        InputProps={{
+          endAdornment: props.InputProps.endAdornment || endAdornment,
+        }}
+      >
+        {options.map((option) => (
+          <MenuItem key={option} value={option.trim()}>
+            {option.trim()}
+          </MenuItem>
+        ))}
+      </TextField>
+      <ListBinder machine={machine} setting={setting} menu={menu} {...props} />
+    </>
   );
 }

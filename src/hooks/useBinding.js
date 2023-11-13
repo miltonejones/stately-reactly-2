@@ -2,59 +2,38 @@ import objectKeys from "../util/objectKeys";
 import stateRead from "../util/stateRead";
 
 const useBinding = (machine, component, isParent, source) => {
-  const { page, appData } = machine;
+  const { page, appData, clientLib } = machine;
   const owner = page || appData;
 
   // const isParent = component?.ComponentType === "Repeater";
-
+  // console.log({ clientLib });
   // function to parse a value using the current page context
   const getStateValue = (value) =>
     stateRead({
       value,
       page,
       application: appData,
+      clientLib,
     });
 
-  if (!component) {
-    // console.log({ "no component": isParent });
-    return { repeaterBindings: [], repeaterItems: [] };
-  }
-  if (!owner.components) {
-    // console.log({ "no owners": component.ComponentName });
-    return { repeaterBindings: [], repeaterItems: [] };
-  }
-  const parentComponent = isParent
-    ? component
-    : findHighestAncestor(owner.components, component);
+  if (!!component && !!owner.components) {
+    const parentComponent = isParent
+      ? component
+      : findHighestAncestor(owner.components, component);
+    if (parentComponent.ComponentType === "Repeater") {
+      const bindings = getRepeaterBindings(
+        parentComponent,
+        clientLib.resources,
+        getStateValue
+      );
 
-  if (parentComponent.ComponentType !== "Repeater") {
-    // console.log({
-    //   skipping: component.ComponentName,
-    //   type: parentComponent.ComponentType,
-    //   isParent,
-    //   source,
-    // });
-    return { repeaterBindings: [], repeaterItems: [] };
+      if (bindings) {
+        return bindings;
+      }
+    }
   }
 
-  const bindings = getRepeaterBindings(
-    parentComponent,
-    machine.resourceData,
-    getStateValue
-  );
-
-  if (!bindings) {
-    // component.ComponentType === "Typography" &&
-    //   console.log({ "no bindings": component.ComponentName });
-    return { repeaterBindings: [], repeaterItems: [] };
-  }
-
-  // console.log({
-  //   "parent component": parentComponent.ComponentName,
-  //   "final result": component.ComponentName,
-  //   bindings,
-  // });
-  return bindings;
+  return { repeaterBindings: [], repeaterItems: [] };
 
   function findHighestAncestor(objects, component) {
     const adult = objects.find((f) => f.ID === component?.componentID);
@@ -70,6 +49,7 @@ const useBinding = (machine, component, isParent, source) => {
   function getRepeaterBindings(component, resourceData, getStateValue) {
     let repeaterBindings = [];
     let repeaterItems = [];
+    let repeaterCount = 0;
 
     // filter by component type (is this necessary? presence of a 'bindings' setting might be
     // good enough and cover more component types)
@@ -85,28 +65,32 @@ const useBinding = (machine, component, isParent, source) => {
         // if component is bound to a state variable, parse that value as data rows
         if (bindingDef?.stateName) {
           repeaterItems = getStateValue(bindingDef.stateName);
+          console.log({ repeaterItems, bindingDef });
           if (!!repeaterItems && repeaterItems.hasOwnProperty("length")) {
+            repeaterCount = repeaterItems.length;
             repeaterBindings = objectKeys(repeaterItems).map(
               (key) => `${component.ComponentName}.${key}`
             );
-            return { repeaterBindings, repeaterItems };
+            return { repeaterBindings, repeaterItems, repeaterCount };
           }
         }
 
-        // if component is bound to a data resource, add its data rows
-        if (bindingDef?.resourceID && resourceData) {
-          repeaterItems = resourceData[bindingDef.resourceID];
+        if (
+          bindingDef?.resourceID &&
+          resourceData &&
+          resourceData[bindingDef.resourceID]
+        ) {
+          const response = resourceData[bindingDef.resourceID];
+
+          repeaterItems = response.rows || response;
+          repeaterCount = response.count || repeaterItems.length;
+          // console.log({ response, repeaterItems, repeaterCount });
           if (!!repeaterItems && repeaterItems.hasOwnProperty("length")) {
             repeaterBindings = objectKeys(repeaterItems).map(
               (key) => `${component.ComponentName}.${key}`
             );
-            // console.log({ bindingDef, repeaterItems, repeaterBindings });
-            // console.log({
-            //   "parser result": component.ComponentName,
-            //   repeaterItems,
-            //   repeaterBindings,
-            // });
-            return { repeaterBindings, repeaterItems };
+            // console.log({ repeaterBindings, repeaterItems, repeaterCount });
+            return { repeaterBindings, repeaterItems, repeaterCount };
           }
         }
       }

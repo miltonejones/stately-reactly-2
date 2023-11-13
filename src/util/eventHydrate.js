@@ -23,13 +23,9 @@ const eventHydrate = (event) => {
   }, []);
 
   const settings = {
+    ...event,
     eventType: event.eventType,
     events: hydrated,
-    page: event.page,
-    application: event.application,
-    options: event.options,
-    resourceData: event.resourceData,
-    setupData: event.setupData,
   };
   console.log({ settings });
   return settings;

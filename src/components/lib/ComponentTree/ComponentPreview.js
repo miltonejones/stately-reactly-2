@@ -3,17 +3,15 @@ import { Error } from "@mui/icons-material";
 import { Library } from "../../reactly";
 import Flex from "../../../styled/Flex";
 import { reduceStyles } from "../../../util/reduceStyles";
-import { stateValue } from "../../../util/stateValue";
 import ComponentMenu from "./ComponentMenu";
 import useBinding from "../../../hooks/useBinding";
 import { useTheme } from "@mui/material";
+import { attachBindings } from "../../../util";
 
 function ComponentNode(props) {
   const {
     componentList,
     currentComponent,
-    resourceData,
-    modalData,
     application,
     page,
     selectComponent,
@@ -33,6 +31,7 @@ function ComponentNode(props) {
   // set hover state for the component
   const [hover, setHover] = React.useState(false);
   const theme = useTheme();
+  const { clientLib } = machine;
 
   // find any repeater data for this component
   const { repeaterItems, repeaterBindings } = useBinding(
@@ -88,8 +87,7 @@ function ComponentNode(props) {
   // create an array of resolved values for data-bound settings
   const boundSettings = attachBindings(
     current,
-    application,
-    page,
+    machine.clientLib,
     repeaterItem
   );
 
@@ -119,8 +117,8 @@ function ComponentNode(props) {
   const style = reduceStyles(current.styles);
 
   // for modal components, set the OPEN state based on the presence of their ID
-  // in the application.modalData object
-  const open = !modalData ? false : modalData[current.ID];
+  // in the clientLib.modals object
+  const open = !clientLib.modals ? false : clientLib.modals[current.ID];
 
   const openProp = current.ComponentType === "Collapse" ? "in" : "open";
   const openSx = { [openProp]: !!open };
@@ -171,27 +169,32 @@ function ComponentNode(props) {
           current: currentComponent?.ID,
         });
       open = childSelected(kid.ID, open);
+      return open;
     });
     return open;
   }; //
 
   const faux = selected || childSelected(current.ID);
-  const libType = iconList[current.ComponentType];
+  // const libType = iconList[current.ComponentType];
+
+  if (muiProps.hidden) {
+    return <i />;
+  }
 
   return (
     <Tag
       sx={{ ...sx, ...style }}
       {...muiProps}
       faux={faux}
+      resourceData={clientLib.resources}
       type={current.ComponentType}
-      resourceData={resourceData}
       boundSettings={boundSettings}
       invokeEvent={invokeEvent}
       register={(setup) => register(current.ID, setup)}
       getStateValue={getStateValue}
       {...openSx}
-      onMouseEnter={() => !selected && setHover(true)}
-      onMouseLeave={() => !selected && setHover(false)}
+      onMouseEnter={() => !selected && isEditMode && setHover(true)}
+      onMouseLeave={() => !selected && isEditMode && setHover(false)}
     >
       {!!selected && isEditMode && !(repeaterIndex > 0) && (
         <>
@@ -202,7 +205,7 @@ function ComponentNode(props) {
           />
         </>
       )}
-      {hover && !selected && (
+      {hover && isEditMode && !selected && (
         <>
           <ComponentMenu
             create={create}
@@ -212,6 +215,7 @@ function ComponentNode(props) {
         </>
       )}
       {children}
+      {muiProps.debug && <pre>{JSON.stringify(muiProps, 0, 2)}</pre>}
       {!!childComponents && (
         <ComponentPreview
           create={create}
@@ -219,10 +223,8 @@ function ComponentNode(props) {
           machine={machine}
           bindText={bindText}
           application={application}
-          resourceData={resourceData}
           page={page}
           iconList={iconList}
-          modalData={modalData}
           component={currentComponent}
           componentList={componentList}
           components={childComponents}
@@ -289,62 +291,3 @@ export default function ComponentPreview(props) {
     </>
   );
 }
-
-const attachBindings = (component, application, page, repeaterItem) => {
-  const { settings, boundProps } = component;
-  const { state: pageState } = page || { state: [] };
-  if (!boundProps) return component.settings;
-  let output = settings || [];
-  boundProps.map((prop) => {
-    const { boundTo, attribute } = prop;
-    if (attribute === "component") return;
-    if (!boundTo) return;
-    const [scope, key] = boundTo.split(".");
-
-    if (repeaterItem && repeaterItem[key]) {
-      output = output
-        .filter((s) => s.SettingName !== attribute)
-        .concat({
-          SettingName: attribute,
-          SettingValue: repeaterItem[key],
-          debug: 2,
-        });
-      return prop;
-    }
-
-    if (scope === "application") {
-      const boundProp = application.state.find((s) => s.Key === key);
-      // key === "banner_image" && console.log({ scope, key, boundProp });
-      if (boundProp) {
-        output = output
-          .filter((s) => s.SettingName !== attribute)
-          .concat({
-            SettingName: attribute,
-            SettingValue: stateValue(boundProp),
-            debug: 1,
-          });
-      }
-      return prop;
-    }
-    if (!pageState) return;
-    const boundProp = pageState.find((s) => s.Key === boundTo);
-    if (boundProp) {
-      output = output
-        .filter((s) => s.SettingName !== attribute)
-        .concat({
-          SettingName: attribute,
-          SettingValue: stateValue(boundProp),
-          debug: 2,
-        });
-    }
-    return prop;
-  });
-
-  const uniqueKeys = [...new Set(output.map((f) => f.SettingName))];
-  const uniqueProps = uniqueKeys.map((key) =>
-    output.find((obj) => obj.SettingName === key)
-  );
-
-  // console.log({ output, uniqueProps });
-  return uniqueProps;
-};

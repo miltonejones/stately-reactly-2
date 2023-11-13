@@ -9,8 +9,7 @@ export default function StateBar({ state }) {
       sx={{
         flexGrow: 1,
         backgroundColor: (theme) => theme.palette.grey[300],
-        borderRadius: 2,
-
+        borderRadius: 1,
         p: (theme) => theme.spacing(0.5, 1),
       }}
     >

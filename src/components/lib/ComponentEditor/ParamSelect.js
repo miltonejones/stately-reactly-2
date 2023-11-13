@@ -4,6 +4,8 @@ const exposedProps = {
   onPageChange: ["page"],
   onProgress: ["currentTime", "duration", "progress", "current_time_formatted"],
   onCellClick: ["column", "row", "rows", "ID"],
+  onCrumbClick: ["value"],
+  onChipChange: ["value"],
   onChange: ["value", "checked"],
 };
 

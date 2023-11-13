@@ -1,8 +1,7 @@
-import { Stack, TextField } from "@mui/material";
+import { Stack } from "@mui/material";
 import { ComponentInput } from "./ComponentInput";
 import OrderSlider from "./OrderSlider";
-import EditBlock from "../../../styled/EditBlock";
-import SearchInput from "../../../styled/SearchInput";
+import CommonForm from "../CommonForm/CommonForm";
 
 export const ComponentSettingsEditor = (props) => {
   const { machine, component, repeaterBindings } = props;
@@ -34,110 +33,147 @@ export const ComponentSettingsEditor = (props) => {
     icon: iconOf(s.ComponentType) || "CheckBoxOutlineBlankRounded",
   }));
 
+  const formProps = [
+    {
+      alias: "Component Order",
+      title: "order",
+      description:
+        "Sets where the component displays in relation to its sibling components.",
+      when: siblings.length > 1,
+      component: OrderSlider,
+      props: {
+        ticks,
+        onChange: (e) => {
+          machine.send({
+            type: "update",
+            order: e,
+          });
+        },
+      },
+    },
+    {
+      alias: "Parent Component",
+      title: "componentID",
+      type: owner.components?.map((f) => ({
+        value: f.ID,
+        label: f.ComponentName,
+      })),
+      description: "The component that contains this component.",
+    },
+    {
+      title: "ComponentName",
+      field: "name",
+      alias: "Component Name",
+      description: "The name of the component.",
+    },
+    // {
+    //   title: "hidden",
+    //   key: "settings",
+    //   type: "boolean",
+    //   types: reduced,
+    //   description: "When TRUE the component is not rendered.",
+    // },
+    // {
+    //   title: "debug",
+    //   alias: "Debug Mode",
+    //   key: "settings",
+    //   type: "boolean",
+    //   types: reduced,
+    //   description: "When TRUE the component is in debug mode.",
+    // },
+  ];
+
+  const attributes = [
+    {
+      title: "hidden",
+      key: "settings",
+      type: "bool",
+      description: "When TRUE the component is not rendered.",
+    },
+    {
+      title: "debug",
+      alias: "Debug Mode",
+      key: "settings",
+      type: "bool",
+      description: "When TRUE the component is in debug mode.",
+    },
+  ].concat(componentData?.Attributes);
+
   return (
     <>
+      <CommonForm
+        fields={formProps}
+        record={component}
+        onChange={(name, value, key) => {
+          if (key) {
+            return machine.send({
+              type: "update",
+              field: name,
+              value,
+              key,
+            });
+          }
+          machine.send({
+            type: "update",
+            [name]: value,
+          });
+        }}
+      />
+
       <Stack spacing={2}>
-        {siblings.length > 1 && (
-          <EditBlock
-            title="Component Order"
-            description="Sets where the component displays in relation to its sibling components."
-          >
-            <OrderSlider
-              onChange={(e) => {
-                machine.send({
-                  type: "update",
-                  order: e,
-                });
-              }}
-              ticks={ticks}
-              value={component.order}
-            />
-          </EditBlock>
-        )}
-
-        <EditBlock
-          title="Parent Component"
-          description="The component that contains this component."
-        >
-          <SearchInput
-            onChange={(e) => {
-              machine.send({
-                type: "update",
-                componentID: e.target.value,
-              });
-            }}
-            autoComplete="off"
-            size="small"
-            label="name"
-            field="ComponentName"
-            id="ID"
-            options={owner.components}
-            value={component.componentID}
-          />
-        </EditBlock>
-
-        <EditBlock title="Name" description="The name of the component.">
-          <TextField
-            autoComplete="off"
-            size="small"
-            label="name"
-            onChange={(e) => {
-              machine.send({
-                type: "update",
-                name: e.target.value,
-              });
-            }}
-            value={component.ComponentName}
-          />
-        </EditBlock>
-
-        {!!componentData &&
-          componentData.Attributes.filter(
-            (setting) =>
-              setting.type !== "object" &&
-              !(setting.title.toLowerCase().indexOf("no value") > -1) &&
-              !(setting.title === "children" && componentData.allowChildren)
-          ).map((setting) => (
-            <>
-              <ComponentInput
-                repeaterBindings={repeaterBindings}
-                stateList={machine.stateList}
-                setting={setting}
-                key={setting.title}
-                component={component}
-                onUnbind={(attribute) =>
-                  machine.send({
-                    type: "unbind",
-                    attribute,
-                  })
-                }
-                onBind={(attribute, boundTo) =>
-                  machine.send({
-                    type: "bind",
-                    attribute,
-                    boundTo,
-                  })
-                }
-                onBindingConfigure={() => {
-                  machine.send("configure binding");
-                }}
-                onConfigure={() =>
-                  machine.send({
-                    type: "configure",
-                    setting,
-                  })
-                }
-                onChange={(value) => {
-                  machine.send({
-                    type: "update",
-                    key: "settings",
-                    field: setting.title,
-                    value,
-                  });
-                }}
-              />
-            </>
-          ))}
+        {!!attributes &&
+          attributes
+            .filter(
+              (setting) =>
+                !!setting &&
+                setting.type !== "object" &&
+                !(setting.title.toLowerCase().indexOf("no value") > -1) &&
+                !(setting.title === "children" && componentData.allowChildren)
+            )
+            .map((setting) => (
+              <>
+                <ComponentInput
+                  machine={machine}
+                  repeaterBindings={repeaterBindings}
+                  stateList={machine.stateList}
+                  stateReference={machine.stateReference}
+                  setting={setting}
+                  key={setting.title}
+                  component={component}
+                  onUnbind={(attribute) =>
+                    machine.send({
+                      type: "unbind",
+                      attribute,
+                    })
+                  }
+                  onBind={(attribute, boundTo, oppose) =>
+                    machine.send({
+                      type: "bind",
+                      attribute,
+                      boundTo,
+                      oppose,
+                    })
+                  }
+                  onBindingConfigure={() => {
+                    machine.send("configure binding");
+                  }}
+                  onConfigure={() =>
+                    machine.send({
+                      type: "configure",
+                      setting,
+                    })
+                  }
+                  onChange={(value) => {
+                    machine.send({
+                      type: "update",
+                      key: "settings",
+                      field: setting.title,
+                      value,
+                    });
+                  }}
+                />
+              </>
+            ))}
       </Stack>
     </>
   );

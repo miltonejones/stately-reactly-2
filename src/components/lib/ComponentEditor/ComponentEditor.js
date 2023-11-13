@@ -41,6 +41,9 @@ import SearchInput from "../../../styled/SearchInput";
 import EditBlock from "../../../styled/EditBlock";
 import useBinding from "../../../hooks/useBinding";
 import StateBar from "../../../styled/StateBar";
+import CommonForm from "../CommonForm/CommonForm";
+import React from "react";
+import JsonTree from "../../../styled/JsonTree";
 
 const ComponentTabs = ({ machine }) => {
   const tabs = [
@@ -90,6 +93,47 @@ const ComponentEventsEditor = (props) => {
   );
 };
 
+const bindingTypes = {
+  Image: [
+    {
+      of: "settings",
+      title: "Width",
+      xs: 4,
+    },
+    {
+      of: "settings",
+      title: "Height",
+      xs: 4,
+    },
+    {
+      of: "settings",
+      title: "Radius",
+      xs: 4,
+    },
+  ],
+  Time: [
+    {
+      of: "settings",
+      title: "format",
+      description: "Text format to present time value",
+      xs: 6,
+    },
+    {
+      of: "settings",
+      title: "multiplier",
+      description: "Multiply by this factor to get milliseconds",
+      xs: 6,
+    },
+  ],
+  Text: [
+    {
+      of: "settings",
+      title: "variant",
+      type: ["caption", "body2"],
+    },
+  ],
+};
+
 function BindingDialog(props) {
   const { machine } = props;
   const { binder, appData, stateList } = machine;
@@ -98,8 +142,6 @@ function BindingDialog(props) {
   const currentResource = resources.find((res) => res.ID === resourceID);
 
   if (!bindings) return <i />;
-
-  // return <pre>{JSON.stringify(binder.bindingData, 0, 2)}</pre>;
 
   const unusedProps = !currentResource
     ? []
@@ -121,7 +163,17 @@ function BindingDialog(props) {
     });
   };
 
-  // const selectedType = typeMap[binder.selectedProp];
+  const selectedBinding = typeMap?.[binder.selectedProp];
+
+  const update = (field, name, value) => {
+    binder.send({
+      type: "update field",
+      field,
+      name,
+      value,
+    });
+  };
+
   const presets = [
     {
       label: "data resource",
@@ -133,6 +185,8 @@ function BindingDialog(props) {
     },
   ];
 
+  const formProps = bindingTypes[selectedBinding?.type];
+  const bindingKeys = Object.keys(bindingTypes);
   return (
     <Dialog maxWidth="lg" open={binder.state.matches("ready")}>
       <Stack sx={{ p: 2, width: 640 }}>
@@ -143,15 +197,39 @@ function BindingDialog(props) {
                 <ArrowBack />
               </IconButton>
               <Nowrap variant="body2">
-                <b>Edit prop "{binder.selectedProp}"</b>
+                <b>Edit column settings for "{binder.selectedProp}"</b>
               </Nowrap>
             </Flex>
-
-            {!!typeMap && (
-              <pre>{JSON.stringify(typeMap[binder.selectedProp], 0, 2)}</pre>
+            <StateBar state={binder.state} />
+            {/* {JSON.stringify(formProps)}[ {JSON.stringify(binder.selectedProp)}] */}
+            {!!typeMap && formProps && (
+              <Stack sx={{ p: 2 }}>
+                <EditBlock
+                  title="Data type"
+                  description="Set the component type that should be rendered for this column"
+                >
+                  <SearchInput
+                    onChange={(e) =>
+                      update(binder.selectedProp, "type", e.target.value)
+                    }
+                    options={bindingKeys}
+                    value={selectedBinding.type}
+                  />
+                </EditBlock>
+                <CommonForm
+                  fields={formProps}
+                  onChange={(name, value) =>
+                    update(binder.selectedProp, "settings", {
+                      ...selectedBinding.settings,
+                      [name]: value,
+                    })
+                  }
+                  record={selectedBinding}
+                />
+              </Stack>
             )}
-
-            <pre>{JSON.stringify(bindings[binder.selectedProp], 0, 2)}</pre>
+            {/* {!!typeMap && <pre>{JSON.stringify(selectedBinding, 0, 2)}</pre>} */}
+            {/* [ <pre>{JSON.stringify(selectedBinding, 0, 2)}</pre>] */}
           </Stack>
         </Collapse>
         <Collapse in={binder.state.can("edit")}>
@@ -292,6 +370,8 @@ function BindingDialog(props) {
 }
 
 const ComponentEditor = (props) => {
+  const ref = React.useRef(null);
+  const [open, setOpen] = React.useState({});
   const { machine, component } = props;
   const { repeaterBindings } = useBinding(
     machine,
@@ -303,6 +383,8 @@ const ComponentEditor = (props) => {
   const { componentTab } = machine;
   const { selectedSetting, componentData } = machine.state.context;
   const Component = machine.state.can("no") ? Dialog : Snackbar;
+
+  const expanded = Boolean(machine.columnsOpen & 2);
 
   return (
     <>
@@ -372,81 +454,136 @@ const ComponentEditor = (props) => {
           </Stack>
         </Card>
       </Component>
+
       <Flex baseline>
-        <Stack
-          sx={{
-            backgroundColor: (theme) => theme.palette.grey[100],
-            width: "100%",
-            p: 0.5,
-            borderRadius: 1,
+        {expanded && (
+          <>
+            <Stack
+              sx={{
+                backgroundColor: (theme) => theme.palette.grey[100],
+                width: "100%",
+                p: 0.5,
+                borderRadius: 1,
+              }}
+            >
+              <Typography variant="body2">
+                <b>{component.ComponentName}</b>
+              </Typography>
+              <Flex>
+                {!!componentData?.Icon && (
+                  <TinyButton icon={componentData.Icon} />
+                )}
+                <Typography variant="caption">
+                  {component.ComponentType}
+                </Typography>
+              </Flex>
+            </Stack>
+
+            <Spacer />
+
+            <Flex>
+              {machine.state.can("configure style") && (
+                <MachineButton
+                  icon="Settings"
+                  machine={machine}
+                  message="configure style"
+                />
+              )}
+              <MachineButton
+                icon={Add}
+                machine={machine}
+                message="configure"
+                payload={{
+                  setting: {
+                    title: "newsetting",
+                    type: "",
+                    default: "",
+                    description: "Add a description",
+                    category: "General",
+                  },
+                }}
+              />
+            </Flex>
+          </>
+        )}
+
+        <MachineButton
+          icon={expanded ? "ChevronRight" : "ChevronLeft"}
+          machine={machine}
+          payload={{
+            name: "columnsOpen",
+            value: expanded
+              ? machine.columnsOpen - 2
+              : Number(machine.columnsOpen) + 2,
           }}
-        >
-          <Typography variant="body2">
-            <b>{component.ComponentName}</b>
-          </Typography>
-          <Flex>
-            {!!componentData?.Icon && <TinyButton icon={componentData.Icon} />}
-            <Typography variant="caption">{component.ComponentType}</Typography>
+          message="set context"
+        />
+      </Flex>
+
+      {expanded && (
+        <>
+          <Flex sx={{ mb: 2, pt: 1, borderBottom: 1, borderColor: "divider" }}>
+            <ComponentTabs machine={machine} />
+
+            <Spacer />
+            <MachineButton icon="Close" machine={machine} message="close" />
           </Flex>
-        </Stack>
 
-        <Spacer />
+          <Stack direction="row">
+            <TabBody in={componentTab === 0}>
+              <ComponentSettingsEditor
+                {...props}
+                repeaterBindings={repeaterBindings}
+              />
+            </TabBody>
+            <TabBody in={componentTab === 1}>
+              <ComponentStylesEditor
+                {...props}
+                repeaterBindings={repeaterBindings}
+              />
+            </TabBody>
+            <TabBody in={componentTab === 2}>
+              <ComponentEventsEditor
+                {...props}
+                repeaterBindings={repeaterBindings}
+              />
+            </TabBody>
+            <TabBody in={componentTab === 3}>
+              <Stack sx={{ width: "100%", overflow: "auto" }}>
+                <Flex>
+                  <MachineButton
+                    icon="Edit"
+                    hide
+                    machine={machine}
+                    message="edit json"
+                  />
+                  <MachineButton
+                    icon="Save"
+                    hide
+                    machine={machine}
+                    message="done"
+                    payload={{
+                      json: ref.current?.innerText,
+                    }}
+                  />
+                  <MachineButton
+                    icon="Close"
+                    hide
+                    machine={machine}
+                    message="cancel json"
+                  />
+                </Flex>
 
-        <Flex>
-          {machine.state.can("configure style") && (
-            <MachineButton
-              icon="Settings"
-              machine={machine}
-              message="configure style"
-            />
-          )}
-          <MachineButton
-            icon={Add}
-            machine={machine}
-            message="configure"
-            payload={{
-              setting: {
-                title: "newsetting",
-                type: "",
-                default: "",
-                description: "Add a description",
-                category: "General",
-              },
-            }}
-          />
-
-          <MachineButton icon="Close" machine={machine} message="close" />
-        </Flex>
-      </Flex>
-
-      <Flex sx={{ mb: 2, pt: 1, borderBottom: 1, borderColor: "divider" }}>
-        <ComponentTabs machine={machine} />
-
-        <Spacer />
-      </Flex>
-      <Stack direction="row">
-        <TabBody in={componentTab === 0}>
-          <ComponentSettingsEditor
-            {...props}
-            repeaterBindings={repeaterBindings}
-          />
-        </TabBody>
-        <TabBody in={componentTab === 1}>
-          <ComponentStylesEditor
-            {...props}
-            repeaterBindings={repeaterBindings}
-          />
-        </TabBody>
-        <TabBody in={componentTab === 2}>
-          <ComponentEventsEditor
-            {...props}
-            repeaterBindings={repeaterBindings}
-          />
-        </TabBody>
-        <TabBody in={componentTab === 3}>
-          <pre> {JSON.stringify(component, 0, 2)}</pre>
-        </TabBody>
-      </Stack>
+                <JsonTree open={open} setOpen={setOpen} value={component} />
+                {/* <pre ref={ref} contentEditable>
+                  {" "}
+                  {JSON.stringify(component, 0, 2)}
+                </pre> */}
+              </Stack>
+            </TabBody>
+          </Stack>
+        </>
+      )}
     </>
   );
 };

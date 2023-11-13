@@ -57,14 +57,6 @@ export const generateText = async (
 };
 
 const create = (content, name) => {
-  const assignCmd = !name
-    ? ""
-    : `Format the returned code thusly:
-  const ${name} = assign(/* GENERATED CODE GOES HERE */);
-  
-  So that the function you create is actually an argument in the "assign" 
-  function and returned to the variable declared as "${name}"`;
-
   return [
     {
       role: "system",
@@ -72,7 +64,8 @@ const create = (content, name) => {
      Take any code you are given and rewrite it to be more legible and efficient.
      add verbose comments in JSDoc format.
 
-     ${assignCmd}
+     Infer any method names imported from webpack.
+     Convert any JSX to ReactJS tag format where possible.
       `,
     },
     { role: "user", content },

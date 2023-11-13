@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   Collapse,
+  Divider,
   Grid,
   LinearProgress,
   MenuItem,
@@ -26,16 +27,10 @@ import ChipMenu from "../../../styled/ChipMenu";
 import Json from "../../../styled/Json";
 import SearchInput from "../../../styled/SearchInput";
 import EditBlock from "../../../styled/EditBlock";
-import PredicateList from "./PredicateList";
+import PredicateList, { clauseDef } from "./PredicateList";
 import generateGuid from "../../../util/generateGuid";
 import Columns from "../../../styled/Columns";
 import decrypt from "../../../util/decrypt";
-
-// function HideBox({ in: visible, children, ...props }) {
-//   if (!visible) return <i />;
-
-//   return <Stack {...props}>{children}</Stack>;
-// }
 
 const connectionProps = [
   {
@@ -420,22 +415,47 @@ function ResourceForm({ resource, connection, stateAttr, machine }) {
       title: "method",
       type: ["SELECT", "INSERT", "UPDATE", "DELETE"],
       chip: true,
-      xs: 7,
+      xs: 8,
     },
     {
       title: "range",
       type: ["all rows", "filter"],
       chip: true,
-      xs: 5,
+      xs: 4,
       when: (item) => item.method === "SELECT",
     },
     {
       title: "name",
+      xs: 4,
     },
     {
       type: machine.tableList || [],
       title: "tablename",
       alias: "Table Name",
+      xs: 4,
+    },
+    {
+      type: machine.columnList || resource.columns || [],
+      title: "order",
+      alias: "Order by",
+      xs: 4,
+    },
+    {
+      type: ["asc", "desc"],
+      title: "direction",
+      alias: "Direction",
+      xs: 4,
+    },
+    {
+      title: "page",
+      alias: "Page",
+      xs: 4,
+    },
+    {
+      title: "size",
+      alias: "Page Size",
+      xs: 4,
+      type: [25, 50, 100, 250],
     },
   ];
 
@@ -453,18 +473,29 @@ function ResourceForm({ resource, connection, stateAttr, machine }) {
     ),
     buttons:
       connection.type !== "rest" ? (
-        <Button
-          color="error"
-          variant="contained"
-          onClick={() => {
-            machine.send({
-              type: "test",
-              attr: stateAttr,
-            });
-          }}
-        >
-          test
-        </Button>
+        <>
+          <Button
+            disabled={!machine.testResponse}
+            onClick={() => {
+              machine.send("clear");
+            }}
+          >
+            clear
+          </Button>
+
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => {
+              machine.send({
+                type: "test",
+                attr: stateAttr,
+              });
+            }}
+          >
+            test
+          </Button>
+        </>
       ) : null,
     fields: types[connection.type],
     record: resource,
@@ -493,12 +524,15 @@ export default function ConnectionDrawer(props) {
   const [col, setCol] = React.useState(0);
 
   if (!submachine) return <i />;
-  const { resourceID, connectionID } = submachine.state.context;
+  const { resourceID, connectionID, chosenConnection, chosenResource } =
+    submachine.state.context;
   const { resources, connections } = submachine.connectionProps;
-  const chosenConnection = connections.find((c) => c.ID === connectionID);
-  const chosenResource = resources.find((c) => c.ID === resourceID);
-  let candidateColumns = submachine.testResponse;
+  // const chosenConnection = connections.find((c) => c.ID === connectionID);
+  // const chosenResource = resources.find((c) => c.ID === resourceID);
 
+  // derive candidate column list from latest test response
+  // TODO: this should be a useEffect/useState thing
+  let candidateColumns = submachine.testResponse;
   if (chosenResource?.node && candidateColumns) {
     candidateColumns = resolveNode(
       candidateColumns,
@@ -506,10 +540,7 @@ export default function ConnectionDrawer(props) {
     );
   }
 
-  // const candidateColumns = !(submachine.testResponse && chosenResource)
-  //   ? null
-  //   : resolveNode(submachine.testResponse, chosenResource.node.split("/"));
-
+  // TRUE if records are present and machine is in the correct state
   const hasRecords =
     !!submachine.testResponse && submachine.state.can("close resource");
 
@@ -518,6 +549,11 @@ export default function ConnectionDrawer(props) {
 
   // labels for the resource tabs
   const tabs = [{ label: "settings" }, { label: "events" }];
+
+  const isFilteredRequest =
+    !!chosenResource &&
+    chosenResource.range === "filter" &&
+    ["SCAN", "SELECT"].some((f) => chosenResource.method === f);
 
   const isPostRequest = ["POST", "PUT"].some(
     (f) => chosenResource?.method === f
@@ -529,6 +565,10 @@ export default function ConnectionDrawer(props) {
 
   if (isPostRequest) {
     tabs.push({ label: "body" });
+  }
+
+  if (isFilteredRequest) {
+    tabs.push({ label: "SQL" });
   }
 
   const includeColumn = (col) => {
@@ -611,12 +651,12 @@ export default function ConnectionDrawer(props) {
                     `solid 8px ${
                       connection.ID === connectionID
                         ? theme.palette.warning.dark
-                        : theme.palette.common.white
+                        : theme.palette.grey[300]
                     }`,
                   backgroundColor: (theme) =>
                     connection.ID === connectionID
                       ? "#FFFFCC"
-                      : theme.palette.common.white,
+                      : theme.palette.grey[100],
                 }}
               >
                 <Nowrap
@@ -763,13 +803,8 @@ export default function ConnectionDrawer(props) {
                             </Columns>
                           </EditBlock>
                         </Collapse>
-                        <Collapse
-                          in={
-                            chosenResource.range === "filter" &&
-                            chosenResource.method === "SCAN"
-                          }
-                        >
-                          <Box>
+                        <Collapse in={isFilteredRequest}>
+                          <Card sx={{ m: 1, p: 2 }}>
                             <EditBlock
                               title="Filter"
                               description="Specify the filter(s) for your query"
@@ -792,7 +827,7 @@ export default function ConnectionDrawer(props) {
                                 resource={chosenResource}
                               />
                             </EditBlock>
-                          </Box>
+                          </Card>
                         </Collapse>
                       </Stack>
                     </TabBody>
@@ -805,7 +840,10 @@ export default function ConnectionDrawer(props) {
                         stateList={machine.stateList}
                       />
                     </TabBody>
-                    <TabBody minWidth={500} in={tab === 2}>
+                    <TabBody
+                      minWidth={500}
+                      in={tab === 2 && chosenConnection.type === "rest"}
+                    >
                       <ParameterForm
                         hasRecords={hasRecords}
                         resource={chosenResource}
@@ -813,6 +851,45 @@ export default function ConnectionDrawer(props) {
                         stateAttr={machine.stateAttr}
                         stateList={machine.stateList}
                       />
+                    </TabBody>
+                    <TabBody
+                      minWidth={500}
+                      in={tab === 2 && chosenConnection.type === "mysql"}
+                    >
+                      {isFilteredRequest && (
+                        <>
+                          <pre>
+                            SELECT {chosenResource.columns.join("\n , ")}
+                            {"\n"}FROM {chosenResource.tablename}
+                          </pre>
+                          {!!chosenResource.predicates?.length && (
+                            <>
+                              <pre>
+                                WHERE
+                                <br />
+                                {chosenResource.predicates.map((pred) => {
+                                  const transformer = clauseDef[pred.condition];
+                                  if (!transformer) return <i>undefined...</i>;
+                                  const transformText = transformer(
+                                    pred.property,
+                                    pred.operand
+                                  );
+                                  return (
+                                    <>
+                                      {" "}
+                                      {pred.operator} {transformText}
+                                      <br />
+                                    </>
+                                  );
+                                })}
+                              </pre>
+                            </>
+                          )}
+                          {!!chosenResource.size && (
+                            <pre>LIMIT {chosenResource.size}</pre>
+                          )}
+                        </>
+                      )}
                     </TabBody>
                     <TabBody minWidth={500} in={tab === 1}>
                       <EventList
@@ -895,11 +972,36 @@ export default function ConnectionDrawer(props) {
         </>
       )}
 
-      {!hasRecords && submachine.state.can("close resource") && (
-        <Grid item xs={xs}>
-          <Card sx={{ p: 1, height: "40vh", overflow: "auto" }}></Card>
-        </Grid>
-      )}
+      {!hasRecords &&
+        submachine.state.can("close resource") &&
+        !!chosenResource.columns && (
+          <Grid item xs={xs}>
+            <Card sx={{ p: 1, height: "40vh", overflow: "auto" }}>
+              <Flex sx={{ mb: 2 }}>
+                <Typography variant="body2">Selected columns</Typography>
+                <Spacer />
+                <TinyButton
+                  icon={Close}
+                  onClick={() => submachine.send("close connection")}
+                />
+              </Flex>
+              <Columns columns="1fr 1fr 1fr">
+                {chosenResource.columns.map((col) => (
+                  <Flex>
+                    <Switch
+                      onChange={() => includeColumn(col)}
+                      checked
+                      size="small"
+                    />
+                    <Typography variant="body2">{col}</Typography>
+                  </Flex>
+                ))}
+              </Columns>
+
+              {/* <pre>{JSON.stringify(chosenResource, 0, 2)}</pre> */}
+            </Card>
+          </Grid>
+        )}
     </Grid>
   );
 }

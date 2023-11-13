@@ -3,6 +3,9 @@ body {
   overflow: hidden;
 }
 
+.panel * {
+  box-sizing: border-box;
+}
 .App {
   width: 100vw;
   height: 100vh;
@@ -117,4 +120,39 @@ pre.code.clicked::before {
 }
 .key {
   color: red;
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.full-collapse .MuiCollapse-wrapper,
+.full-collapse .MuiCollapse-wrapperInner {
+  width: 100% !important;
+}
+.debug {
+  outline: dotted 1px rebeccapurple;
+  position: relative;
+  outline-offset: -2px;
+}
+.debug.outer {
+  outline: solid 2px magenta;
+}
+
+.debug.outer::before {
+  position: absolute;
+  content: "outer ";
+  background-color: red;
+  color: white;
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.debug.inner::before {
+  position: absolute;
+  content: "inner ";
+  background-color: rebeccapurple;
+  color: white;
+  font-size: 0.7rem;
+  padding: 0.25rem 0.5rem;
 }

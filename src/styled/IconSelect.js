@@ -1,9 +1,5 @@
 import React from "react";
-import { Box, TextField, Typography } from "@mui/material";
 import * as Icons from "@mui/icons-material";
-import Flex from "./Flex";
-import { TinyButton } from "./TinyButton";
-import Nowrap from "./Nowrap";
 import SearchInput from "./SearchInput";
 
 const IconSelect = ({ onChange, value }) => {

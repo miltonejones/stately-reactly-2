@@ -1,8 +1,10 @@
-import { Chip } from "@mui/material";
+import { Card, Chip, Collapse, Typography } from "@mui/material";
 import Flex from "./Flex";
 import Spacer from "./Spacer";
 import { ArrowBack, ArrowForward } from "@mui/icons-material";
 import React from "react";
+import Nowrap from "./Nowrap";
+import { TinyButton } from "./TinyButton";
 const PAGE_SIZE = 4;
 
 export default function ChipMenu({
@@ -12,6 +14,7 @@ export default function ChipMenu({
   limit,
 }) {
   const [index, setIndex] = React.useState(0);
+  if (!opts) return <i />;
   const options = !limit ? opts : opts.slice(index, index + limit);
   const ordinal = (i) => Number(i) + index;
 
@@ -28,6 +31,7 @@ export default function ChipMenu({
         <ChipItem
           onClick={() => onChange(ordinal(i))}
           key={i}
+          active={ordinal(i) === value}
           color={ordinal(i) === value ? "primary" : "default"}
           variant={ordinal(i) !== value ? "outlined" : "filled"}
           label={option}
@@ -55,9 +59,56 @@ export default function ChipMenu({
   );
 }
 
+function ChipCard({ label, icon, active, ...props }) {
+  const [el, setEl] = React.useState(0);
+  const sx = {
+    borderRadius: (theme) => theme.spacing(2),
+    padding: (theme) => theme.spacing(0.25, 0.5),
+    backgroundColor: (theme) =>
+      active || el > 0 ? theme.palette.common.white : theme.palette.grey[400],
+  };
+  const actions = {
+    onMouseEnter: () => setEl(3),
+    onMouseLeave: () => setEl(0),
+  };
+  return (
+    <>
+      {[active, !active].map((open, i) => (
+        <Collapse
+          sx={{ minWidth: 0, m: 0, p: 0 }}
+          collapsedSize={`0px`}
+          orientation="horizontal"
+          dir="left"
+          key={i}
+          in={open}
+        >
+          <Card
+            {...props}
+            sx={sx}
+            variant="elevation"
+            elevation={el}
+            {...actions}
+          >
+            <Flex>
+              {typeof icon !== "string" ? (
+                <>{icon}</>
+              ) : (
+                <TinyButton icon={icon} />
+              )}
+              <Nowrap bold={active} variant="caption">
+                {label}
+              </Nowrap>
+            </Flex>
+          </Card>
+        </Collapse>
+      ))}
+    </>
+  );
+}
+
 function ChipItem({ label, ...props }) {
   if (["string", "number"].some((f) => typeof label === f)) {
-    return <Chip {...props} label={label} />;
+    return <ChipCard {...props} label={label} />;
   }
-  return <Chip {...props} {...label} />;
+  return <ChipCard {...props} {...label} />;
 }

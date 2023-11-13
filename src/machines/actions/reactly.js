@@ -3,10 +3,9 @@ import editPage from "../../util/editPage";
 import { cleanApp } from "../../util/cleanApp";
 import generateGuid from "../../util/generateGuid";
 import { stateValue } from "../../util/stateValue";
-import editComponent from "../../util/editComponent";
+import { editComponent } from "../../util";
 import editResource from "../../util/editResource";
-import stateCompare from "../../util/stateCompare";
-import editState from "../../util/editState";
+// import editState from "../../util/editState";
 import stateRead from "../../util/stateRead";
 import stateReduce from "../../util/stateReduce";
 
@@ -33,7 +32,7 @@ export const assignAppToKey = assign((context, event) => {
 });
 
 export const assignAppKeys = assign((_, event) => ({
-  appKeys: event.data?.Contents,
+  appKeys: event.data, //?.Contents,
   key_index: 0,
 }));
 
@@ -89,7 +88,7 @@ export const assignStateList = assign((context) => {
     return out;
   }, []);
 
-  const modalTypes = ["Dialog", "Collapse", "Menu", "Drawer"];
+  const modalTypes = ["Dialog", "Collapse", "Menu", "Drawer", "Snackbar"];
 
   const appEvents = appData.pages.reduce((out, pg) => {
     if (pg.components?.length) {
@@ -184,7 +183,11 @@ export const assignStateList = assign((context) => {
     });
   });
 
-  const stateList = appData.state.map((item) => `application.${item.Key}`);
+  const stateReference = appData.state.reduce((out, item) => {
+    out[`application.${item.Key}`] = item;
+    return out;
+  }, {});
+
   let stateAttr = stateReduce(appData.state, "application.");
   if (page) {
     stateAttr = {
@@ -192,11 +195,50 @@ export const assignStateList = assign((context) => {
       ...stateReduce(page.state),
     };
     page.state.map((item) => {
-      stateList.push(item.Key);
+      stateReference[item.Key] = item;
     });
   }
 
-  return { stateList, modalTags, applicationScripts, stateAttr, appEvents };
+  // const clientLib = {
+  //   ...context.clientLib,
+  //   application: stateReduce(appData.state),
+  //   page: !page ? null : stateReduce(page.state),
+  // };
+
+  console.log({ stateAttr, stateReference });
+  return {
+    // clientLib,
+
+    // reference object containing state key/value pairs
+    // of state DEFINITIONS from the app and page contexts
+    stateReference,
+
+    // list of application/page client state variables
+    stateList: Object.keys(stateReference),
+
+    // list if Modal components in the current app context
+    modalTags,
+
+    // application wide list of scripts
+    applicationScripts,
+
+    // reference object containing state key/value pairs
+    // DEPRECATE FOR CLIENT LIB
+    stateAttr,
+
+    // application wide list of events
+    appEvents,
+  };
+});
+
+export const resetApplicationClientLib = assign((context) => {
+  const clientLib = {
+    ...context.clientLib,
+    application: stateReduce(context.appData.state),
+    page: !context.page ? null : stateReduce(context.page.state),
+  };
+  console.log("%cclientLib", "color:yellow", { clientLib });
+  return { clientLib };
 });
 
 export const assignConfirmMessage = assign((context) => ({
@@ -217,13 +259,17 @@ export const assignNavEvent = assign((context, event) => {
 
   const page = appData.pages.find((page) => page.PagePath === path);
 
-  const updatedPage = editPage(appData, page.ID, (page) => {
-    Object.assign(page, { parameters: data });
-  });
+  // const updatedPage = editPage(appData, page.ID, (page) => {
+  //   Object.assign(page, { parameters: data });
+  // });
 
   return {
-    page: updatedPage,
+    page,
     pageTab: 0,
+    clientLib: {
+      ...context.clientLib,
+      parameters: data,
+    },
     appData: {
       ...appData,
       PagePath: path,
@@ -474,16 +520,26 @@ export const assignData = assign((_, event) => {
   };
 });
 
-export const assignDataFromKey = assign((context, event) => {
-  const appNode = context.appKeys.find((f) => f.Key === event.key);
-  const appData = appNode.content;
-
+export const assignAppDataFromDb = assign((context, event) => {
+  const appData = event.data;
   return {
-    pageTab: 0,
     appData: {
       ...appData,
       PagePath: "",
     },
+  };
+});
+
+export const assignDataFromKey = assign((context, event) => {
+  // const appNode = context.appKeys.find((f) => f.Key === event.key);
+  // const appData = appNode.content;
+
+  return {
+    pageTab: 0,
+    // appData: {
+    //   ...appData,
+    //   PagePath: "",
+    // },
     page: null,
     currentKey: event.key,
   };
@@ -557,8 +613,6 @@ export const assignBindings = assign((context) => {
     output.find((obj) => obj.SettingName === key)
   );
 
-  // console.log({ uniqueKeys, uniqueProps });
-
   return {
     selectedComponent: {
       ...context.selectedComponent,
@@ -569,12 +623,10 @@ export const assignBindings = assign((context) => {
 
 export const assignComponentProps = assign((context) => {
   const { page: currentPage, appData, componentID } = context;
-  console.log({ assignComponentProps: componentID });
   const componentItems = !currentPage
     ? appData.components
     : currentPage.components;
 
-  console.log({ componentItems, currentPage });
   const selectedComponent = componentItems.find(
     (comp) => comp.ID === componentID
   );
@@ -739,7 +791,7 @@ export const unbindComponent = assign((context, event) => {
 
 export const bindComponent = assign((context, event) => {
   const { selectedComponent } = context;
-  const { boundTo, attribute } = event;
+  const { boundTo, attribute, oppose } = event;
 
   const updatedComponent = {
     ...selectedComponent,
@@ -748,6 +800,7 @@ export const bindComponent = assign((context, event) => {
       .concat({
         boundTo,
         attribute,
+        oppose,
       }),
   };
   return {
@@ -850,6 +903,10 @@ export const upsertEvent = assign((context, event) => {
   return { appData };
 });
 
+export const applyJSON = assign((_, event) => ({
+  selectedComponent: JSON.parse(event.json),
+}));
+
 export const updateComponent = assign((context, event) => {
   const { selectedComponent } = context;
   const {
@@ -910,18 +967,30 @@ export const updateComponent = assign((context, event) => {
 
 export const updatePage = assign((context, event) => {
   const { appData, page } = context;
+  const { field, value, key } = event;
 
   if (!page) {
     return {
       appData: {
         ...appData,
-        [event.field]: event.value,
+        [field]: value,
         dirty: true,
       },
     };
   }
+
   const updatedPage = editPage(appData, page.ID, (page) => {
-    page[event.field] = event.value;
+    if (key === "styles") {
+      const { styles = [] } = page;
+      const fresh = { Key: field, Value: value };
+      const existing = styles.some((s) => s.Key === field);
+      const updatedStyles = existing
+        ? styles.map((s) => (s.Key === field ? fresh : s))
+        : styles.concat(fresh);
+      page.styles = updatedStyles;
+      return;
+    }
+    page[field] = value;
   });
 
   return {
@@ -934,13 +1003,14 @@ export const updatePage = assign((context, event) => {
 });
 
 export const registerPackage = assign((context, event) => {
-  const setupData = {
-    ...context.setupData,
-    [event.key]: event.setup,
-  };
-  console.log("%csetupData", "border: solid 3px red", { setupData });
   return {
-    setupData,
+    clientLib: {
+      ...context.clientLib,
+      setups: {
+        ...context.clientLib.setups,
+        [event.key]: event.setup,
+      },
+    },
   };
 });
 
@@ -967,6 +1037,7 @@ export const assignLibraryData = assign((_, event) => {
     };
     return out;
   }, {});
+  // alert(JSON.stringify(iconList));
   return { iconList, Library };
 });
 
@@ -1002,11 +1073,25 @@ export const clearComponent = assign({
 
 export const reassignAppData = assign((context, event) => {
   if (!event.application) return;
+  const { clientLib } = event;
+  const {
+    modalData: rootModal,
+    resourceData: rootResource,
+    application,
+    ...appData
+  } = event.application;
 
-  console.log("%cReassigning app data", "color:cyan");
-  const { modalData, resourceData, ...appData } = event.application;
+  console.log("%cReassigning app data", "color:cyan", {
+    clientLib,
+  });
+  // backwards compat for modals and resources
+  const modalData = rootModal || application?.modalData;
+  const resourceData = rootResource || application?.resourceData;
+
+  console.log({ appData });
 
   const appContext = { appData };
+
   if (modalData) {
     console.log("  %cAdding modal data", "color:cyan");
     const { key, open } = modalData;
@@ -1020,43 +1105,76 @@ export const reassignAppData = assign((context, event) => {
 
   if (resourceData) {
     console.log("  %cAdding resource data", "color:cyan");
-    const { key, rows } = resourceData;
+    const { key, rows, count } = resourceData;
     Object.assign(appContext, {
       resourceData: {
         ...context.resourceData,
         [key]: rows,
+        count,
       },
     });
   }
 
-  const diff1 = stateCompare(context.appData.state, appData.state);
-  diff1.map((diff) =>
-    console.log(
-      `  %c"application.%s" was changed from %s to %s`,
-      "color:lime",
-      diff.Key,
-      diff.Value,
-      diff.change
-    )
-  );
+  if (clientLib) {
+    if (modalData) {
+      console.log("  %cAdding modal data", "border:solid 2px lime;color:cyan");
+      const { key, open } = modalData;
+      Object.assign(clientLib, {
+        modals: {
+          ...clientLib.modals,
+          [key]: open,
+        },
+      });
+    }
+
+    if (resourceData) {
+      console.log(
+        "  %cAdding resource data",
+        "border:dotted 2px lime;color:cyan"
+      );
+      const { key, rows, count } = resourceData;
+      Object.assign(clientLib, {
+        resources: {
+          ...clientLib.resources,
+          [key]: rows,
+          count,
+        },
+      });
+    }
+
+    Object.assign(appContext, { clientLib });
+  }
+
+  // const diff1 = stateCompare(context.appData.state, appData.state);
+  // diff1.map((diff) =>
+  //   console.log(
+  //     `  %c"application.%s" was changed from %s to %s`,
+  //     "color:lime",
+  //     diff.Key,
+  //     diff.Value,
+  //     diff.change
+  //   )
+  // );
 
   if (context.page) {
     console.log("  %cUpdating page", "color:cyan");
 
     const page = appData.pages.find((p) => p.ID === context.page.ID);
-    const diff2 = stateCompare(context.page.state, page.state);
-    diff2.map((diff) =>
-      console.log(
-        `  %c"%s" was changed from %s to %s`,
-        "color:lime",
-        diff.Key,
-        diff.Value,
-        diff.change
-      )
-    );
+    // const diff2 = stateCompare(context.page.state, page.state);
+    // diff2.map((diff) =>
+    //   console.log(
+    //     `  %c"%s" was changed from %s to %s`,
+    //     "color:lime",
+    //     diff.Key,
+    //     diff.Value,
+    //     diff.change
+    //   )
+    // );
 
     Object.assign(appContext, { page });
   }
+
+  console.log({ appContext });
   return appContext;
 });
 
@@ -1073,14 +1191,13 @@ export const resetAppState = assign({
   stateAttr: {},
   appEvents: null,
   modalData: null,
-  resourceData: null,
   componentID: null,
   selectedComponent: null,
   path: null,
   componentTab: null,
   componentData: null,
-  Library: null,
-  iconList: null,
+  // Library: null,
+  // iconList: null,
   appKeys: null,
   key_index: 0,
   stateList: [],
@@ -1089,66 +1206,91 @@ export const resetAppState = assign({
 });
 
 export const updateBoundState = assign((context, event) => {
-  const { page, appData } = context;
+  const { page, appData, clientLib } = context;
   const { name, value } = event;
 
-  const updated = editState(
-    appData,
-    page?.ID,
-    name,
-    (state) => (state.Value = value)
-  );
+  // const updated = editState(
+  //   appData,
+  //   page?.ID,
+  //   name,
+  //   (state) => (state.Value = value)
+  // );
 
   if (page) {
     return {
-      page: updated,
-      appData,
+      clientLib: {
+        ...clientLib,
+        page: {
+          ...clientLib.page,
+          [name]: value,
+        },
+      },
+      // page: updated,
+      // appData,
     };
   }
 
-  return { appData };
+  return {
+    clientLib: {
+      ...clientLib,
+      application: {
+        ...clientLib.application,
+        [name]: value,
+      },
+    },
+    // appData,
+  };
 });
 
-export const updateAppState = assign((context, event) => {
-  const { page, appData } = context;
+export const getUpdatedAppState = (context, event) => {
+  const { page, appData, clientLib } = context;
   const { step, options } = event;
   const { action } = step;
   const { target, value } = action;
 
-  const [__, key] = typeof value !== "string" ? [] : value.split(".");
+  const [_, key] = typeof value !== "string" ? [] : value.split(".");
 
   let prop;
 
-  if (!!key && options.item && options.item[key]) {
+  if (!!key && options.item && options.item.hasOwnProperty(key)) {
+    // if this is from a Repeater binding, set the prop value to the
+    // corresponding repeater.item value
     prop = options.item[key];
-    // alert(JSON.stringify({ a: prop, c: options }));
   } else {
-    prop = stateRead({ value, page, application: appData, options });
-    // alert(JSON.stringify({ b: prop, d: options, value }));
+    // otherwise read value from app/page/event context
+    prop = stateRead({ value, page, application: appData, options, clientLib });
   }
 
+  // if target contains no '.', it is a page-level client variable
   if (target.indexOf(".") < 0) {
-    const updatedPage = editPage(appData, page.ID, (page) => {
-      page.state = page.state.map((s) =>
-        s.Key === target ? { ...s, Value: prop } : s
-      );
-    });
-
+    console.log({ target, prop });
     return {
-      page: updatedPage,
-      appData,
+      clientLib: {
+        ...clientLib,
+        page: {
+          ...clientLib.page,
+          [target]: prop,
+        },
+      },
     };
   }
 
-  const [_, actual] = target.split(".");
-  appData.state = appData.state.map((s) =>
-    s.Key === actual ? { ...s, Value: prop } : s
-  );
+  console.log({ setting: scope, label, prop });
+
+  const [scope, label] = target.split(".");
 
   return {
-    appData,
+    clientLib: {
+      ...clientLib,
+      [scope]: {
+        ...clientLib[scope],
+        [label]: prop,
+      },
+    },
   };
-});
+};
+
+export const updateAppState = assign(getUpdatedAppState);
 
 export const assignApplicationDropMessage = assign((context) => ({
   message: `Are you sure you want to delete application ${context.appData.Name}?`,
@@ -1160,4 +1302,8 @@ export const expandedNode = assign((context, event) => ({
     ...context.expandedNodes,
     [event.name]: !context.expandedNodes[event.name],
   },
+}));
+
+export const assignInvokerState = assign((_, event) => ({
+  invokerLoadState: event.data,
 }));

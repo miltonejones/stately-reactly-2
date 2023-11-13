@@ -1,0 +1,17 @@
+{
+  "folders": [
+	{
+		"path": "../../../.."
+	},
+	{
+		"path": "../../../../../aws-secure-mysql"
+	},
+	{
+		"path": "../../../../../react-daystrom"
+	},
+	{
+		"path": "../../../../../mui-api"
+	}
+],
+  "settings": {}
+}

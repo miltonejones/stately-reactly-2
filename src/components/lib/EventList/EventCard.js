@@ -11,6 +11,8 @@ const EVENT_DESC = {
   onPageLoad: "the page is loaded",
   onPageChange: "the page number of the component changes",
   onCellClick: "a cell in any list row is clicked",
+  onCrumbClick: "one of the breadcrumbs is clicked",
+  onChipChange: "one of the chips in the menu is clicked",
 };
 
 const EventCard = ({

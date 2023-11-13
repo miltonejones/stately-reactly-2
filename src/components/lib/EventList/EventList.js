@@ -1,13 +1,4 @@
-import {
-  Box,
-  Button,
-  Card,
-  Chip,
-  Divider,
-  IconButton,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Card, Chip, Stack, Typography } from "@mui/material";
 import Flex from "../../../styled/Flex";
 import Nowrap from "../../../styled/Nowrap";
 import Spacer from "../../../styled/Spacer";
@@ -23,7 +14,6 @@ import EventCard from "./EventCard";
 import { TinyButton } from "../../../styled/TinyButton";
 import DataExecEdit from "./DataExecEdit";
 import PathOpenEdit from "./PathOpenEdit";
-import statePath from "../../../util/statePath";
 import StateBar from "../../../styled/StateBar";
 
 const EventList = ({

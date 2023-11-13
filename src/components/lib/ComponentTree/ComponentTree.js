@@ -1,15 +1,11 @@
 import React from "react";
 import {
-  Avatar,
   Box,
   Button,
   Card,
-  CardContent,
-  CardMedia,
   Collapse,
   Dialog,
   Divider,
-  Grid,
   LinearProgress,
   Stack,
   Typography,
@@ -22,10 +18,9 @@ import Spacer from "../../../styled/Spacer";
 import ComponentNav from "./ComponentNav";
 import PageNav from "./PageNav";
 import { cleanApp } from "../../../util/cleanApp";
-import { TinyButton } from "../../../styled/TinyButton";
-import { Add, Home, Task } from "@mui/icons-material";
+import { MachineButton, TinyButton } from "../../../styled/TinyButton";
+import { Add, Home, List, Task } from "@mui/icons-material";
 import ComponentPreview from "./ComponentPreview";
-import moment from "moment";
 import ComponentToolbar from "./ComponentToolbar";
 import InvokeErrorModal from "../InvokeErrorModal/InvokeErrorModal";
 import ComponentModal from "../ComponentModal/ComponentModal";
@@ -36,124 +31,26 @@ import PageModal from "../PageModal/PageModal";
 import EditBlock from "../../../styled/EditBlock";
 import stateRead from "../../../util/stateRead";
 import ChipMenu from "../../../styled/ChipMenu";
-import Json from "../../../styled/Json";
 import PageTitle from "../PageTitle/PageTitle";
 import SubmitField from "../../../styled/SubmitField";
-
-function AppGrid({ appKeys, machine }) {
-  return (
-    <Stack sx={{ p: 2 }}>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr",
-          alignItems: "center",
-          gap: 1,
-        }}
-      >
-        {appKeys
-          .filter((item) => !!item.content)
-          .map((item) => (
-            <Card
-              sx={{ cursor: "pointer" }}
-              onClick={() =>
-                machine.send({
-                  type: "open",
-                  key: item.Key,
-                })
-              }
-            >
-              <CardMedia
-                sx={{ height: 180 }}
-                image={item.content.Photo}
-                title={item.content.Name}
-              />
-              <CardContent>
-                <Typography gutterBottom variant="body2">
-                  {item.content.Name}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Last changed:{" "}
-                  {moment(item.LastModified).format("DD MMM yyyy HH:mm")}
-                </Typography>
-              </CardContent>
-            </Card>
-          ))}
-      </Box>
-    </Stack>
-  );
-}
-
-function AppList({ appKeys, machine }) {
-  return (
-    <Stack sx={{ p: 2 }}>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "40px 240px 400px 1fr 1fr ",
-          alignItems: "center",
-          gap: "0.5rem",
-        }}
-      >
-        <Box />
-        <Nowrap variant="caption" bold>
-          Name
-        </Nowrap>
-        <Nowrap variant="caption" bold>
-          File
-        </Nowrap>
-        <Nowrap variant="caption" bold>
-          Size
-        </Nowrap>
-        <Nowrap variant="caption" bold>
-          Date
-        </Nowrap>
-      </Box>
-      {appKeys
-        .filter((item) => !!item.content)
-        .map((item) => (
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: "40px 240px 400px 1fr 1fr ",
-              alignItems: "center",
-              gap: "0.5rem",
-            }}
-          >
-            <Box
-              sx={{
-                backgroundColor: "white",
-              }}
-            >
-              <Avatar src={item.content.Photo} alt={item.content.Name} />
-            </Box>
-            <Nowrap
-              variant="body2"
-              hover
-              onClick={() =>
-                machine.send({
-                  type: "open",
-                  key: item.Key,
-                })
-              }
-            >
-              {item.content.Name}
-            </Nowrap>
-
-            <Typography variant="body2">{item.Key}</Typography>
-            <Typography variant="body2">{item.Size}</Typography>
-            <Typography variant="body2">
-              {moment(item.LastModified).format("DD MMM yyyy HH:mm")}
-            </Typography>
-          </Box>
-        ))}
-    </Stack>
-  );
-}
+import Columns from "../../../styled/Columns";
+import JsonTree from "../../../styled/JsonTree";
+import AppGrid from "../ConfigurationDrawer/AppGrid";
+import AppList from "../ConfigurationDrawer/AppList";
+import { StateBar } from "../../../styled";
 
 function ApplicationList({ machine }) {
   const { appKeys } = machine.state.context;
-  const options = ["View as List", "View as Grid"];
+  const options = [
+    {
+      label: "View as List",
+      icon: "List",
+    },
+    {
+      label: "View as Grid",
+      icon: "Apps",
+    },
+  ];
   if (machine.recycledApps.length) {
     options.push("Recycle Bin");
   }
@@ -263,20 +160,14 @@ function ApplicationList({ machine }) {
 }
 
 export default function ComponentTree({ machine }) {
-  // an object to represent expanded nodes in the treeview
-  // const [expanded, setExpanded] = React.useState({});
-
   const { expandedNodes: expanded } = machine;
+  const [open, setOpen] = React.useState({});
 
   const expand = (name) => {
     machine.send({
       type: "expand node",
       name,
     });
-    // setExpanded((old) => ({
-    //   ...old,
-    //   [key]: !old[key],
-    // }));
   };
 
   // method to create a new component
@@ -303,7 +194,13 @@ export default function ComponentTree({ machine }) {
   }
 
   // extract useful properties from the state machine
-  const { page: currentPage, appData, selectedComponent, iconList } = machine;
+  const {
+    page: currentPage,
+    appData,
+    selectedComponent,
+    iconList,
+    clientLib,
+  } = machine;
 
   const height = "calc(100vh - 88px)";
 
@@ -327,6 +224,7 @@ export default function ComponentTree({ machine }) {
       value,
       page: currentPage,
       application: appData,
+      clientLib,
     });
 
   // global method to register components with the platform
@@ -369,21 +267,55 @@ export default function ComponentTree({ machine }) {
 
   // properties based into the component previewer
   const previewProps = {
-    application: appData,
-    bindText,
-    component: selectedComponent,
-    create,
-    getStateValue,
-    iconList,
-    invoke: machine.invokeEvent,
-    isEditMode,
+    // reference to the applicaion state machine
     machine,
-    modalData: machine.modalData,
+
+    // reference to the current applicaion
+    application: appData,
+
+    // reference to the current page
     page: currentPage,
+
+    // helper method to get state value from current context
+    getStateValue,
+
+    // helper method to invoke component events
+    invoke: (events, eventType, options, e) =>
+      machine.invokeEvent(events, eventType, options, e, machine.setupData),
+
+    // helper method to register component DOM references
     register,
+
+    // DEPRECATED: reference to machine modal data
+    modalData: machine.modalData,
+
+    // DEPRECATED: reference to machine resource data
     resourceData: machine.resourceData,
+
+    // helper method to bind component settings
+    bindText,
+
+    // reference to the currently selected component
+    component: selectedComponent,
+
+    // helper method to create a new component
+    create,
+
+    // helper list of icons for component navigation
+    iconList,
+
+    // TRUE when the component is being edited
+    isEditMode,
+
+    // helper method to select a component
     selectComponent,
   };
+
+  const left = machine.columnsOpen & 1 ? "320px" : "72px";
+  const right = machine.columnsOpen & 2 ? "420px" : "32px";
+  const expandLeft = Boolean(machine.columnsOpen & 1);
+
+  const maxWidth = "30vw";
 
   return (
     <>
@@ -430,219 +362,247 @@ export default function ComponentTree({ machine }) {
         sx={{
           m: 0,
           p: 1,
-          width: "100vw",
-          height: "100vh",
+          width: (theme) => `calc(100vw - ${theme.spacing(2)})`,
+          height: (theme) => `calc(100vh - ${theme.spacing(2)})`,
           backgroundColor: (theme) => theme.palette.primary.dark,
         }}
       >
-        <Grid
-          sx={{
-            width: (theme) => `calc(100vw - ${theme.spacing(1)})`,
-          }}
-          container
-          spacing={1}
-        >
-          {/* toolbar */}
-          <Grid item xs={12}>
-            <ComponentToolbar handleSave={handleSave} machine={machine} />
-          </Grid>
+        <Stack spacing={1}>
+          <ComponentToolbar handleSave={handleSave} machine={machine} />
 
-          {/* right sidebar */}
-          <Grid item xs={3}>
-            <Flex baseline spacing={1}>
-              <Card
-                sx={{
-                  p: 1,
-                  height,
-                  overflow: "hidden",
-                }}
-              >
-                <Stack sx={{ height: "100%", justifyContent: "space-between" }}>
-                  <TinyButton
-                    onClick={() => machine.send("home")}
-                    icon={Home}
-                  />
-                  <Stack spacing={1}>
-                    {Object.keys(machine.configMachines).map((key) => (
-                      <TinyButton
-                        key={key}
-                        onClick={() => {
-                          machine.configureApp(key);
-                        }}
-                        icon={machine.configMachines[key].icon}
-                      />
-                    ))}
-                  </Stack>
-                </Stack>
-              </Card>
-
-              <Stack
-                sx={{
-                  width: `calc(100% - 40px)`,
-                }}
-                spacing={1}
-              >
-                {/* page navigation */}
+          <Columns
+            sx={{ alignItems: "flex-start" }}
+            columns={[left, "2fr", right].join(" ")}
+          >
+            {/* right sidebar */}
+            <Box sx={{ maxWidth, overflow: "auto" }}>
+              <Flex baseline spacing={1}>
                 <Card
                   sx={{
                     p: 1,
-                    height: 300,
-                    overflow: "auto",
+                    height,
+                    overflow: "hidden",
                   }}
                 >
-                  <Nowrap bold variant="caption">
-                    Pages
-                  </Nowrap>
-                  <Flex sx={{ ml: 1 }}>
-                    <TinyButton icon={Task} />
-                    <Nowrap
-                      variant="body2"
-                      hover
-                      bold={!currentPage}
-                      onClick={() => {
-                        machine.send("navigate");
+                  <Stack
+                    sx={{ height: "100%", justifyContent: "space-between" }}
+                  >
+                    <TinyButton
+                      onClick={() => machine.send("home")}
+                      icon={Home}
+                    />
+                    <Stack spacing={1}>
+                      {Object.keys(machine.configMachines).map((key) => (
+                        <TinyButton
+                          key={key}
+                          onClick={() => {
+                            machine.configureApp(key);
+                          }}
+                          icon={machine.configMachines[key].icon}
+                        />
+                      ))}
+                    </Stack>
+                  </Stack>
+                </Card>
+
+                <Stack
+                  sx={{
+                    width: `calc(100% - 40px)`,
+                  }}
+                  spacing={1}
+                >
+                  {/* page navigation */}
+                  <Card
+                    sx={{
+                      p: 1,
+                      height: expandLeft ? 300 : "calc(100vh - 88px)",
+                      overflow: "auto",
+                    }}
+                  >
+                    <Flex>
+                      {expandLeft && (
+                        <Nowrap bold variant="caption">
+                          Pages
+                        </Nowrap>
+                      )}
+
+                      <MachineButton
+                        icon={expandLeft ? "ChevronLeft" : "ChevronRight"}
+                        machine={machine}
+                        payload={{
+                          name: "columnsOpen",
+                          value: expandLeft
+                            ? machine.columnsOpen - 1
+                            : Number(machine.columnsOpen) + 1,
+                        }}
+                        message="set context"
+                      />
+                    </Flex>
+
+                    {expandLeft && (
+                      <>
+                        <Flex sx={{ ml: 1 }}>
+                          <TinyButton icon={Task} />
+                          <Nowrap
+                            variant="body2"
+                            hover
+                            bold={!currentPage}
+                            onClick={() => {
+                              machine.send("navigate");
+                            }}
+                          >
+                            {appData.Name}
+                          </Nowrap>
+                        </Flex>
+
+                        <PageNav
+                          onClick={(p) => {
+                            machine.send({
+                              type: "navigate",
+                              path: p.PagePath,
+                            });
+                          }}
+                          page={currentPage}
+                          pages={machine.appData.pages.filter((f) => !f.pageID)}
+                          pageList={machine.appData.pages}
+                          send={machine.send}
+                        />
+
+                        {machine.state.can("new page") && (
+                          <Flex sx={{ ml: 1 }}>
+                            <TinyButton icon={Add} />
+                            <Nowrap
+                              variant="body2"
+                              hover
+                              onClick={() => machine.send("new page")}
+                            >
+                              Add page
+                            </Nowrap>
+                          </Flex>
+                        )}
+                      </>
+                    )}
+                  </Card>
+
+                  {/* component navigation */}
+                  {expandLeft && (
+                    <Card
+                      sx={{
+                        p: 1,
+                        height: "calc(100vh - 412px)",
+                        overflow: "auto",
                       }}
                     >
-                      {appData.Name}
-                    </Nowrap>
-                  </Flex>
+                      {machine.state.can("merge") &&
+                        !items?.length &&
+                        !!machine.page && (
+                          <Warning spacing={1}>
+                            Page has no components.
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() => {
+                                machine.send("merge");
+                              }}
+                            >
+                              download
+                            </Button>
+                          </Warning>
+                        )}
+                      {!machine.state.can("edit") && <LinearProgress />}
 
-                  <PageNav
-                    onClick={(p) => {
-                      machine.send({
-                        type: "navigate",
-                        path: p.PagePath,
-                      });
-                    }}
-                    page={currentPage}
-                    pages={machine.appData.pages.filter((f) => !f.pageID)}
-                    pageList={machine.appData.pages}
-                    send={machine.send}
-                  />
-
-                  {machine.state.can("new page") && (
-                    <Flex sx={{ ml: 1 }}>
-                      <TinyButton icon={Add} />
-                      <Nowrap
-                        variant="body2"
-                        hover
-                        onClick={() => machine.send("new page")}
-                      >
-                        Add page
+                      <Nowrap bold variant="caption">
+                        Components
                       </Nowrap>
-                    </Flex>
-                  )}
-                </Card>
+                      {!!items && (
+                        <ComponentNav
+                          expand={expand}
+                          create={create}
+                          expanded={expanded}
+                          iconList={iconList}
+                          components={parentComponent}
+                          component={selectedComponent}
+                          componentList={items}
+                          machine={machine}
+                          send={machine.send}
+                        />
+                      )}
 
-                {/* component navigation */}
-                <Card
-                  sx={{
-                    p: 1,
-                    height: "calc(100vh - 412px)",
-                    overflow: "auto",
-                  }}
-                >
-                  {machine.state.can("merge") &&
-                    !items?.length &&
-                    !!machine.page && (
-                      <Warning spacing={1}>
-                        Page has no components.
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={() => {
-                            machine.send("merge");
-                          }}
+                      <Flex sx={{ ml: 1 }}>
+                        <TinyButton icon={Add} />
+                        <Nowrap
+                          onClick={() => create(null, highest + 50)}
+                          hover
+                          variant="caption"
                         >
-                          download
-                        </Button>
-                      </Warning>
-                    )}
-                  {!machine.state.can("edit") && <LinearProgress />}
-
-                  <Nowrap bold variant="caption">
-                    Components
-                  </Nowrap>
-                  {!!items && (
-                    <ComponentNav
-                      expand={expand}
-                      create={create}
-                      expanded={expanded}
-                      iconList={iconList}
-                      components={parentComponent}
-                      component={selectedComponent}
-                      componentList={items}
-                      machine={machine}
-                      send={machine.send}
-                    />
+                          Add component
+                        </Nowrap>
+                      </Flex>
+                    </Card>
                   )}
+                </Stack>
+              </Flex>
+            </Box>
 
-                  <Flex sx={{ ml: 1 }}>
-                    <TinyButton icon={Add} />
-                    <Nowrap
-                      onClick={() => create(null, highest + 50)}
-                      hover
-                      variant="caption"
-                    >
-                      Add component
-                    </Nowrap>
-                  </Flex>
-                </Card>
-              </Stack>
-            </Flex>
-          </Grid>
+            {/* workspace */}
+            <Stack spacing={1}>
+              <StateBar state={machine.state} />
 
-          {/* workspace */}
-          <Grid item xs={6}>
-            <Card sx={{ p: 1, height, overflow: "auto" }}>
-              {!machine.preview && <Json>{JSON.stringify(appData, 0, 2)}</Json>}
+              <Card
+                sx={{ p: 1, height: `calc(100vh - 126px)`, overflow: "auto" }}
+              >
+                {!machine.preview && (
+                  <JsonTree open={open} setOpen={setOpen} value={appData} />
+                  // <Json>{JSON.stringify(appData, 0, 2)}</Json>
+                )}
 
-              {/* application scope components are displayed on the current page
+                {/* application scope components are displayed on the current page
               since the main component previewer is not displaying page components */}
-              {!!currentPage && !!machine.preview && (
-                <>
+                {!!currentPage && !!machine.preview && (
+                  <>
+                    <ComponentPreview
+                      {...previewProps}
+                      componentList={applicationComponents}
+                      components={applicationComponents.filter(
+                        (f) =>
+                          !applicationComponents.find(
+                            (p) => p.ID === f.componentID
+                          )
+                      )}
+                    />
+                  </>
+                )}
+
+                {/* page scope components, or application components if there is no page */}
+                {!!items && !!machine.preview && (
                   <ComponentPreview
                     {...previewProps}
-                    componentList={applicationComponents}
-                    components={applicationComponents.filter(
-                      (f) =>
-                        !applicationComponents.find(
-                          (p) => p.ID === f.componentID
-                        )
+                    componentList={items}
+                    components={items.filter(
+                      (f) => !items.find((p) => p.ID === f.componentID)
                     )}
                   />
-                </>
-              )}
+                )}
 
-              {/* page scope components, or application components if there is no page */}
-              {!!items && !!machine.preview && (
-                <ComponentPreview
-                  {...previewProps}
-                  componentList={items}
-                  components={items.filter(
-                    (f) => !items.find((p) => p.ID === f.componentID)
-                  )}
+                {!currentPage && (
+                  <Warning>You are editing in application scope.</Warning>
+                )}
+              </Card>
+            </Stack>
+
+            {/* left sidebar */}
+            <Box sx={{ maxWidth, overflow: "auto" }}>
+              <Card sx={{ p: 1, height, overflow: "auto" }}>
+                <ComponentEditor
+                  getStateValue={getStateValue}
+                  machine={machine}
+                  component={selectedComponent}
+                  handleSave={handleSave}
                 />
-              )}
-
-              {!currentPage && (
-                <Warning>You are editing in application scope.</Warning>
-              )}
-            </Card>
-          </Grid>
-
-          {/* left sidebar */}
-          <Grid item xs={3}>
-            <Card sx={{ p: 1, height, overflow: "auto" }}>
-              <ComponentEditor
-                getStateValue={getStateValue}
-                machine={machine}
-                component={selectedComponent}
-                handleSave={handleSave}
-              />
-            </Card>
-          </Grid>
-        </Grid>
+              </Card>
+            </Box>
+          </Columns>
+        </Stack>
       </Box>
     </>
   );

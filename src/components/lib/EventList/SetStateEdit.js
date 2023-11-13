@@ -1,7 +1,6 @@
-import { Card, Stack, Switch, TextField, Typography } from "@mui/material";
+import { Card, Stack, Switch, Typography } from "@mui/material";
 import EditBlock from "../../../styled/EditBlock";
 import ParamSelect from "../ComponentEditor/ParamSelect";
-import Nowrap from "../../../styled/Nowrap";
 import ChipMenu from "../../../styled/ChipMenu";
 import Flex from "../../../styled/Flex";
 import Spacer from "../../../styled/Spacer";

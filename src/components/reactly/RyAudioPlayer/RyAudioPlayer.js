@@ -1,103 +1,96 @@
 import React from "react";
-import { PauseCircle, VolumeOff } from "@mui/icons-material";
-import { Chip } from "@mui/material";
+import { PauseCircle, PlayCircle, VolumeOff } from "@mui/icons-material";
+import { Box, Chip } from "@mui/material";
 import Nowrap from "../../../styled/Nowrap";
-import moment from "moment";
 import Flex from "../../../styled/Flex";
+import { useAudio } from "../../../machines/audioMachine";
+import StateBar from "../../../styled/StateBar";
 
-export const RyAudioPlayer = ({ src, register, invokeEvent, ...props }) => {
-  const ref = React.useRef();
+export const RyAudioPlayer = ({
+  src,
+  register,
+  invokeEvent,
+  children,
+  debug,
+  ...props
+}) => {
+  const machine = useAudio(invokeEvent);
+
+  const PAUSE_STATE = "active.pause player";
+
   React.useEffect(() => {
+    machine.send({
+      type: "set source",
+      src,
+    });
+  }, [src]);
+
+  React.useEffect(() => {
+    console.log("Registering audio player");
     register({
-      ref,
-      play: () => {
-        try {
-          console.log("Play was requested");
-          //  ref.current.play();
-        } catch (ex) {
-          console.log("Error occured %c%s", ex.message);
-        }
-      },
-      pause: () => ref.current.pause(),
+      ref: null,
+      paused: machine.state.matches(PAUSE_STATE),
+      stop: () => machine.send("stop"),
+      play: () => machine.send("play"),
+      seek: (value) =>
+        machine.send({
+          type: "seek",
+          value,
+        }),
+      pause: () => machine.send("pause"),
     });
 
-    const loadAudio = (audio) => {
-      // audio.addEventListener("play", (event) => {
-      //   invokeEvent(event, "onPlayerStart", {});
-      //   console.log("%cPLAY", "color: yellow;text-transform: capitalize");
-      // });
-
-      audio.addEventListener("pause", (event) => {
-        invokeEvent(event, "onPlayerStop", {});
-        console.log("%cpause", "color: yellow;text-transform: capitalize");
-      });
-
-      audio.addEventListener("ended", (event) => {
-        console.log("%cended", "color: yellow;text-transform: capitalize");
-        invokeEvent(event, "onPlayerEnded", {});
-      });
-
-      ["abort", "stalled", "suspend", "error"].map((type) => {
-        audio.addEventListener(type, () => {
-          console.log(
-            "%cerror",
-            "color: yellow;text-transform: capitalize",
-            type
-          );
-        });
-      });
-
-      audio.addEventListener("timeupdate", (event) => {
-        invokeEvent(event, "onProgress", {
-          type: "PROGRESS",
-          currentTime: audio.currentTime,
-          duration: audio.duration,
-          progress: 100 * (audio.currentTime / audio.duration),
-          current_time_formatted: moment(audio.currentTime * 1000).format(
-            "mm:ss"
-          ),
-        });
-      });
-
-      return audio;
-    };
-
-    loadAudio(ref.current);
+    machine.send("init");
   }, []);
+  const chipProps = {
+    variant: "filled",
+    color: "primary",
+    size: "small",
+    sx: { m: 1 },
+  };
   return (
-    <Flex>
-      <Chip
-        label="AudioPlayer"
-        variant="filled"
-        color="success"
-        size="small"
-        sx={{ m: 1 }}
-        icon={<VolumeOff />}
-      />
-      <audio src={src} autoPlay ref={ref}>
-        {/* <source src={src} type="audio/mpeg" />
-        Your browser does not support the audio element. */}
-      </audio>
-      {!!src && (
+    <Box {...props}>
+      {children}
+      {!!debug && <StateBar state={machine.state} />}
+      {!!debug && (
         <Flex>
-          <Nowrap width={500} variant="caption">
-            src: {src}
-          </Nowrap>
-
           <Chip
-            label="pause"
+            label="AudioPlayer"
             variant="filled"
-            color="primary"
+            color="success"
             size="small"
             sx={{ m: 1 }}
-            onClick={(e) => {
-              ref.current.pause();
-              invokeEvent(e, "onPlayerStop", {});
-            }}
-            icon={<PauseCircle />}
+            icon={<VolumeOff />}
           />
+
+          {!!src && (
+            <Flex>
+              <Nowrap width={500} variant="caption">
+                src - {machine.source}
+              </Nowrap>
+
+              <Chip
+                label="pause"
+                disabled={!machine.state.can("pause")}
+                {...chipProps}
+                onClick={(e) => {
+                  machine.send("pause");
+                }}
+                icon={<PauseCircle />}
+              />
+              <Chip
+                label="play"
+                disabled={machine.state.can("pause")}
+                {...chipProps}
+                onClick={(e) => {
+                  machine.send("play");
+                }}
+                icon={<PlayCircle />}
+              />
+            </Flex>
+          )}
         </Flex>
       )}
-    </Flex>
+    </Box>
   );
 };

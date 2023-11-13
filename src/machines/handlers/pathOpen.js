@@ -1,7 +1,7 @@
 import stateRead from "../../util/stateRead";
 
 const pathOpen = (context) => {
-  const { application, currentEvent, options } = context;
+  const { application, currentEvent, options, preview } = context;
   const { action } = currentEvent;
   const { target, data: params } = action;
 
@@ -18,6 +18,10 @@ const pathOpen = (context) => {
 
     Object.assign(data, { [term]: param });
   });
+
+  if (preview === "on") {
+    return alert(page.PagePath);
+  }
 
   const packaged = {
     ...application,
