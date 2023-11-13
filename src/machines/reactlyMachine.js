@@ -1288,6 +1288,11 @@ export const useReactly = () => {
     "Client State Manager": clientState,
   };
 
+  const iconOf = (key) => {
+    const type = state.context.Library.find((s) => s.ComponentName === key);
+    return type?.Icon;
+  };
+
   return {
     state,
     send,
@@ -1298,6 +1303,7 @@ export const useReactly = () => {
     setContext,
     ...state.context,
     configureApp,
+    iconOf,
     configurationType,
     states: reactlyMachine.states,
     machineList,

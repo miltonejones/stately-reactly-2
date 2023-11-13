@@ -72,7 +72,13 @@ const RyMarquee = ({ children, ...props }) => {
   return <Marquee {...props}>{children}</Marquee>;
 };
 
-const RySnackbar = ({ children, faux, ...props }) => {
+const RySnackbar = ({
+  children,
+  horizontal = "center",
+  vertical = "top",
+  faux,
+  ...props
+}) => {
   const Tag = faux ? Card : Snackbar;
   const opener = !faux ? {} : { open: true, elevation: 0 };
   const sx = !faux
@@ -80,7 +86,12 @@ const RySnackbar = ({ children, faux, ...props }) => {
     : { width: "fit-content", minWidth: 300, maxWidth: "30vw" };
 
   return (
-    <Tag {...props} {...opener} sx={{ ...props.sx, ...sx }}>
+    <Tag
+      {...props}
+      {...opener}
+      sx={{ ...props.sx, ...sx }}
+      anchorOrigin={{ horizontal, vertical }}
+    >
       <Box>{children}</Box>
     </Tag>
   );

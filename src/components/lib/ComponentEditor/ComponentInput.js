@@ -34,10 +34,11 @@ const InputBlock = ({
   onUnbind,
   boundProp,
   settingIsBound,
+  ...props
 }) => {
   const label = alias || title;
   return (
-    <Stack>
+    <Stack {...props}>
       <Flex>
         <Typography sx={{ textTransform: "capitalize" }} variant="caption">
           <b> {label.replace(/-/g, " ")}</b>
@@ -110,6 +111,12 @@ export const ComponentInput = ({
     onConfigure,
     stateList,
     settingIsBound,
+    sx: {
+      p: (theme) => theme.spacing(0, 1),
+      "&:hover": {
+        backgroundColor: (theme) => theme.palette.grey[100],
+      },
+    },
   };
 
   if (boundProp) {
@@ -173,10 +180,17 @@ export const ComponentInput = ({
 
   return (
     <>
-      <Stack>
+      <Stack
+        sx={{
+          p: (theme) => theme.spacing(0.25, 1),
+          "&:hover": {
+            backgroundColor: (theme) => theme.palette.grey[100],
+          },
+        }}
+      >
         <Flex>
           <Typography sx={{ textTransform: "capitalize" }} variant="caption">
-            <b> {setting.title.replace(/-/g, " ")}</b>
+            <b> {(setting.alias || setting.title).replace(/-/g, " ")}</b>
           </Typography>
           <Spacer />
           {!!onBind && !settingIsBound && (
@@ -217,15 +231,13 @@ function ChipMaybe({ options: untrimmed, setting, machine, ...props }) {
         },
       })
   );
-  if (
-    options?.length < 6 &&
-    options?.length > 1 &&
-    !["number", "string"].some((f) => options.indexOf(f) > -1)
-  ) {
+  if (options?.length < 6 && options?.length > 1) {
     return (
       <Flex>
         <ChipMenu
-          options={options}
+          options={options.filter(
+            (word) => !["number", "string"].some((f) => word?.trim() === f)
+          )}
           value={options.indexOf(props.value)}
           onChange={(index) =>
             props.onChange({

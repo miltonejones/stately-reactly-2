@@ -44,6 +44,8 @@ import StateBar from "../../../styled/StateBar";
 import CommonForm from "../CommonForm/CommonForm";
 import React from "react";
 import JsonTree from "../../../styled/JsonTree";
+import ComponentEditorMenu from "./ComponentEditorMenu";
+import ComponentSettingsModal from "./ComponentSettingsModal";
 
 const ComponentTabs = ({ machine }) => {
   const tabs = [
@@ -201,7 +203,7 @@ function BindingDialog(props) {
               </Nowrap>
             </Flex>
             <StateBar state={binder.state} />
-            {/* {JSON.stringify(formProps)}[ {JSON.stringify(binder.selectedProp)}] */}
+
             {!!typeMap && formProps && (
               <Stack sx={{ p: 2 }}>
                 <EditBlock
@@ -390,46 +392,7 @@ const ComponentEditor = (props) => {
     <>
       <StyleConfigureModal {...props} />
       <BindingDialog machine={machine} />
-      <Dialog open={machine.state.can("cancel")}>
-        <Stack spacing={2} sx={{ p: 2, width: 300 }}>
-          <Flex>
-            <Typography variant="subtitle2">Edit Setting</Typography>
-            <Spacer />
-            <IconButton onClick={() => machine.send("cancel")}>
-              <Close />
-            </IconButton>
-          </Flex>
-          {!!selectedSetting &&
-            Object.keys(selectedSetting).map((key) => (
-              <Flex>
-                <TextField
-                  fullWidth
-                  size="small"
-                  key={key}
-                  label={key}
-                  onChange={(e) => {
-                    machine.send({
-                      type: "update",
-                      name: key,
-                      value: e.target.value,
-                    });
-                  }}
-                  value={selectedSetting[key]}
-                />
-              </Flex>
-            ))}
-          {/* <pre>{JSON.stringify(selectedSetting, 0, 2)}</pre> */}
-          <Flex spacing={1}>
-            <Spacer />
-            {machine.state.can("cancel") && (
-              <Button onClick={() => machine.send("cancel")}>cancel</Button>
-            )}
-            <Button variant="contained" onClick={() => machine.send("save")}>
-              save
-            </Button>
-          </Flex>
-        </Stack>
-      </Dialog>
+      <ComponentSettingsModal machine={machine} />
 
       <Component open={machine.state.can("yes")}>
         <Card>
@@ -458,26 +421,7 @@ const ComponentEditor = (props) => {
       <Flex baseline>
         {expanded && (
           <>
-            <Stack
-              sx={{
-                backgroundColor: (theme) => theme.palette.grey[100],
-                width: "100%",
-                p: 0.5,
-                borderRadius: 1,
-              }}
-            >
-              <Typography variant="body2">
-                <b>{component.ComponentName}</b>
-              </Typography>
-              <Flex>
-                {!!componentData?.Icon && (
-                  <TinyButton icon={componentData.Icon} />
-                )}
-                <Typography variant="caption">
-                  {component.ComponentType}
-                </Typography>
-              </Flex>
-            </Stack>
+            <ComponentEditorMenu machine={machine} component={component} />
 
             <Spacer />
 

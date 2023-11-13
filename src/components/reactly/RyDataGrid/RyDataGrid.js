@@ -16,7 +16,9 @@ export const RyDataGrid = ({
   if (!props.bindings) return <>no bindings detected</>;
   const bindings = JSON.parse(props.bindings);
   if (!props.resourceData) {
-    return <>No results to display.</>;
+    return (
+      <Box sx={props.sx}>No results to display. {JSON.stringify(props.sx)}</Box>
+    );
   }
   const response = props.resourceData[bindings.resourceID];
   const rowItems = response?.rows || response;
@@ -33,7 +35,9 @@ export const RyDataGrid = ({
   };
 
   if (!bindings.columnMap || !rowItems || !rowItems.map) {
-    return <>No results to display. {JSON.stringify(rowItems)}</>;
+    return (
+      <Box sx={props.sx}>No results to display. {JSON.stringify(rowItems)}</Box>
+    );
   }
   const fr = bindings.columnMap
     .map((f) =>

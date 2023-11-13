@@ -92,7 +92,7 @@ const DynamoGrid = ({ prop, record, onChange }) => {
       <Stack sx={{ p: 1 }}>
         <Flex>
           <Typography sx={{ textTransform: "capitalize" }} variant="caption">
-            <b> {prop.title.replace(/-/g, " ")}</b>
+            <b> {(prop.alias || prop.title).replace(/-/g, " ")}</b>
           </Typography>
           <Spacer />
         </Flex>
