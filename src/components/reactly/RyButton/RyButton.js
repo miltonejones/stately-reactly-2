@@ -1,15 +1,15 @@
 import { Button } from "@mui/material";
 import TextIcon from "../../../styled/TextIcon";
 
-export const RyButton = ({ end, Label, invokeEvent, ...props }) => {
+export const RyButton = ({ endIcon, Label, invokeEvent, ...props }) => {
   const handleClick = (event) => {
     invokeEvent(event, "onClick", {});
   };
 
   let iconProps = {};
-  if (end) {
+  if (endIcon) {
     iconProps = {
-      endIcon: <TextIcon icon={end} />,
+      endIcon: <TextIcon icon={endIcon} />,
     };
   }
   return (
