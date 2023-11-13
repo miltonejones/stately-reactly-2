@@ -120,9 +120,12 @@ const scriptRun = async (context) => {
         openPath: (path, data) => {
           // alert(JSON.stringify({ path, data }, 0, 2));
           if (preview === "on") {
-            window.location.href = ["", "app", application.path, path].join(
-              "/"
-            );
+            let pathList = ["", "app", application.path, path];
+            if (data) {
+              pathList = pathList.concat(Object.values(data));
+            }
+
+            window.location.href = pathList.join("/");
             return; // alert(path);
           }
 

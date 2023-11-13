@@ -92,9 +92,15 @@ const recursivePath = (page, pages, outputPath = []) => {
   return outputPath;
 };
 
-function ParametersMenu({ page }) {
-  const menu = useMenu((val) => !!val && window.alert(val.param));
+function ParametersMenu({ page, updateParam, addressParts }) {
+  const menu = useMenu((val) => !!val && updateParam(val.key, val.param));
   if (!page?.parameters) return <i />;
+
+  const handleLaunch = () => {
+    let pathList = addressParts;
+    pathList = pathList.concat(menu.value.param);
+    window.open(pathList.join("/"));
+  };
 
   const keys = Object.keys(page.parameters);
 
@@ -148,7 +154,7 @@ function ParametersMenu({ page }) {
             />
           </EditBlock>
           <Flex>
-            <Button startIcon={<Launch />} size="small">
+            <Button onClick={handleLaunch} startIcon={<Launch />} size="small">
               launch
             </Button>
             <Spacer />
@@ -174,9 +180,27 @@ export default function ComponentToolbar({ machine, handleSave }) {
   const coder = useCode();
   const { appData, page: currentPage } = machine;
   const menuProps = { machine, geek, coder };
+  const updateParam = (name, value) => {
+    machine.send({
+      type: "update",
+      field: "parameters",
+      value: {
+        ...currentPage.parameters,
+        [name]: value,
+      },
+    });
+  };
 
   const pageList = recursivePath(currentPage, appData?.pages).reverse();
   const addressParts = [" ", "app", appData?.path, ...pageList].filter(Boolean);
+
+  const handleLaunch = () => {
+    let pathList = addressParts;
+    if (currentPage.parameters) {
+      pathList = pathList.concat(Object.values(currentPage.parameters));
+    }
+    window.open(pathList.join("/"));
+  };
 
   return (
     <>
@@ -217,16 +241,14 @@ export default function ComponentToolbar({ machine, handleSave }) {
             <Typography variant="caption">
               <b>URL</b>
             </Typography>
-            <Nowrap
-              hover
-              onClick={() => {
-                window.open(addressParts.join("/"));
-              }}
-              variant="caption"
-            >
+            <Nowrap hover onClick={handleLaunch} variant="caption">
               {addressParts.join(" / ")}
             </Nowrap>
-            <ParametersMenu page={currentPage} />
+            <ParametersMenu
+              page={currentPage}
+              updateParam={updateParam}
+              addressParts={addressParts}
+            />
             {/* {JSON.stringify(pageList)} */}
           </Spacer>
           {/* <StateBar state={machine.state} /> */}
