@@ -59,7 +59,7 @@ const DataExecEdit = ({ machine, editor, appData }) => {
           />
         </EditBlock>
 
-        {!!resource?.values.length && (
+        {!!resource?.values?.length && (
           <>
             <EditBlock
               title="Parameters"
@@ -115,7 +115,7 @@ const DataExecEdit = ({ machine, editor, appData }) => {
               />
             </EditBlock>
 
-            {!!resource?.predicates.length && (
+            {!!resource?.predicates?.length && (
               <>
                 <EditBlock
                   title="Conditions"

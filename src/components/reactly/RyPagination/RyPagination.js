@@ -8,7 +8,11 @@ export const RyPagination = ({ children, invokeEvent, ...props }) => {
   return (
     <Box sx={{ position: "relative" }}>
       {children}
-      <Pagination {...props} onChange={handleChangePage} />
+      <Pagination
+        {...props}
+        onChange={handleChangePage}
+        page={Number(props.page)}
+      />
     </Box>
   );
 };

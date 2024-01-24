@@ -74,9 +74,13 @@ export const assignSetting = assign((_, event) => ({
   },
 }));
 
+// create reference lists for the app to use in dropdowns and menus
 export const assignStateList = assign((context) => {
   const { appData, page } = context;
+  const modalTypes = ["Dialog", "Collapse", "Menu", "Drawer", "Snackbar"];
+  const componentReference = {};
 
+  // append SCRIPTS from pages and page component scopes
   const applicationScripts = appData.pages.reduce((out, pg) => {
     if (!pg.scripts?.length) return out;
     pg.scripts.map((sc) => {
@@ -88,8 +92,15 @@ export const assignStateList = assign((context) => {
     return out;
   }, []);
 
-  const modalTypes = ["Dialog", "Collapse", "Menu", "Drawer", "Snackbar"];
+  // append SCRIPTS from application scope
+  appData.scripts.map((sc) => {
+    applicationScripts.push({
+      ...sc,
+      page: "application",
+    });
+  });
 
+  // append EVENTS from pages and page components
   const appEvents = appData.pages.reduce((out, pg) => {
     if (pg.components?.length) {
       pg.components.map((sc) => {
@@ -117,6 +128,7 @@ export const assignStateList = assign((context) => {
     return out;
   }, []);
 
+  // append EVENTS from application components
   if (appData.components?.length) {
     appData.components.map((sc) => {
       if (!sc.events.length) return;
@@ -130,6 +142,8 @@ export const assignStateList = assign((context) => {
     });
   }
 
+  // append EVENTS from resources and transforms
+  // TODO: deprecate transforms
   if (appData.resources?.length) {
     appData.resources.map((res, e) => {
       if (!res.events.length) return;
@@ -156,6 +170,13 @@ export const assignStateList = assign((context) => {
 
   const modalTags = appData.pages.reduce((out, pg) => {
     if (!pg.components?.length) return out;
+    // append ALL COMPONENTS from page scopes to component reference
+    pg.components.map((c) =>
+      Object.assign(componentReference, {
+        [c.ID]: `${pg.PageName}.${c.ComponentName}`,
+      })
+    );
+    // append MODAL COMPONENTS from page scopes to modal reference
     pg.components
       .filter((c) => modalTypes.some((t) => t === c.ComponentType))
       .map((sc) => {
@@ -167,6 +188,14 @@ export const assignStateList = assign((context) => {
     return out;
   }, []);
 
+  // append ALL COMPONENTS from page scopes to component reference
+  appData.components.map((c) =>
+    Object.assign(componentReference, {
+      [c.ID]: `application.${c.ComponentName}`,
+    })
+  );
+
+  // append MODAL COMPONENTS from application scope
   appData.components
     .filter((c) => modalTypes.some((t) => t === c.ComponentType))
     .map((sc) => {
@@ -176,13 +205,7 @@ export const assignStateList = assign((context) => {
       });
     });
 
-  appData.scripts.map((sc) => {
-    applicationScripts.push({
-      ...sc,
-      page: "application",
-    });
-  });
-
+  // append STATE references and definitions
   const stateReference = appData.state.reduce((out, item) => {
     out[`application.${item.Key}`] = item;
     return out;
@@ -199,15 +222,8 @@ export const assignStateList = assign((context) => {
     });
   }
 
-  // const clientLib = {
-  //   ...context.clientLib,
-  //   application: stateReduce(appData.state),
-  //   page: !page ? null : stateReduce(page.state),
-  // };
-
-  console.log({ stateAttr, stateReference });
   return {
-    // clientLib,
+    componentReference,
 
     // reference object containing state key/value pairs
     // of state DEFINITIONS from the app and page contexts
@@ -232,12 +248,15 @@ export const assignStateList = assign((context) => {
 });
 
 export const resetApplicationClientLib = assign((context) => {
+  // initialize clientLib with values from the app definition
   const clientLib = {
     ...context.clientLib,
     application: stateReduce(context.appData.state),
     page: !context.page ? null : stateReduce(context.page.state),
   };
+
   console.log("%cclientLib", "color:yellow", { clientLib });
+
   return { clientLib };
 });
 
@@ -346,25 +365,6 @@ export const autoNameCreatedComponent = assign((context) => {
 export const openCreatedComponent = assign((context, event) => {
   const { createdComponent, page, appData } = context;
   const { componentID } = createdComponent;
-
-  // const { Attributes } = Library.find(
-  //   (t) => t.ComponentName === createdComponent.ComponentType
-  // );
-
-  // const props = JSON.parse(Attributes);
-
-  // props.map((prop) => {
-  //   if (prop.default) {
-  //     const SettingValue =
-  //       prop.type === "bool" ? prop.default !== "false" : prop.default;
-  //     createdComponent.settings.push({
-  //       SettingName: prop.title,
-  //       SettingValue,
-  //     });
-  //   }
-  // });
-  // console.log({ createdComponent });
-  // alert(JSON.stringify(createdComponent.settings, 0, 2));
 
   if (!!page) {
     const updatedPage = editPage(appData, page.ID, (page) => {
@@ -531,15 +531,8 @@ export const assignAppDataFromDb = assign((context, event) => {
 });
 
 export const assignDataFromKey = assign((context, event) => {
-  // const appNode = context.appKeys.find((f) => f.Key === event.key);
-  // const appData = appNode.content;
-
   return {
     pageTab: 0,
-    // appData: {
-    //   ...appData,
-    //   PagePath: "",
-    // },
     page: null,
     currentKey: event.key,
   };
@@ -1037,7 +1030,6 @@ export const assignLibraryData = assign((_, event) => {
     };
     return out;
   }, {});
-  // alert(JSON.stringify(iconList));
   return { iconList, Library };
 });
 
@@ -1085,6 +1077,7 @@ export const reassignAppData = assign((context, event) => {
     clientLib,
   });
   // backwards compat for modals and resources
+  // TODO: deprecate this
   const modalData = rootModal || application?.modalData;
   const resourceData = rootResource || application?.resourceData;
 
@@ -1145,37 +1138,34 @@ export const reassignAppData = assign((context, event) => {
     Object.assign(appContext, { clientLib });
   }
 
-  // const diff1 = stateCompare(context.appData.state, appData.state);
-  // diff1.map((diff) =>
-  //   console.log(
-  //     `  %c"application.%s" was changed from %s to %s`,
-  //     "color:lime",
-  //     diff.Key,
-  //     diff.Value,
-  //     diff.change
-  //   )
-  // );
-
   if (context.page) {
     console.log("  %cUpdating page", "color:cyan");
-
     const page = appData.pages.find((p) => p.ID === context.page.ID);
-    // const diff2 = stateCompare(context.page.state, page.state);
-    // diff2.map((diff) =>
-    //   console.log(
-    //     `  %c"%s" was changed from %s to %s`,
-    //     "color:lime",
-    //     diff.Key,
-    //     diff.Value,
-    //     diff.change
-    //   )
-    // );
-
     Object.assign(appContext, { page });
   }
 
   console.log({ appContext });
   return appContext;
+});
+
+export const expandStateList = assign((context) => {
+  const expandedList = context.stateList.reduce((out, ref) => {
+    if (
+      context.stateReference[ref] &&
+      context.stateReference[ref].Type === "object"
+    ) {
+      const referenceNode = context.stateReference[ref].Value;
+      if (referenceNode) {
+        return out.concat([
+          ref,
+          ...Object.keys(referenceNode).map((key) => `${ref}/${key}`),
+        ]);
+      }
+    }
+    return out.concat(ref);
+  }, []);
+
+  return { expandedList };
 });
 
 export const updateMachineContext = assign((_, event) => ({
@@ -1250,32 +1240,44 @@ export const getUpdatedAppState = (context, event) => {
 
   const [_, key] = typeof value !== "string" ? [] : value.split(".");
 
-  let prop;
+  let updatedProp;
 
-  if (!!key && options.item && options.item.hasOwnProperty(key)) {
-    // if this is from a Repeater binding, set the prop value to the
+  if (
+    !!key &&
+    options.item &&
+    options.item.hasOwnProperty(key) &&
+    typeof options.item[key] !== "undefined"
+  ) {
+    // if this is from a Repeater binding, set the updatedProp value to the
     // corresponding repeater.item value
-    prop = options.item[key];
+    updatedProp = options.item[key];
+    console.log({ options, item: options.item, key });
   } else {
     // otherwise read value from app/page/event context
-    prop = stateRead({ value, page, application: appData, options, clientLib });
+    updatedProp = stateRead({
+      value,
+      page,
+      application: appData,
+      options,
+      clientLib,
+    });
   }
 
   // if target contains no '.', it is a page-level client variable
   if (target.indexOf(".") < 0) {
-    console.log({ target, prop });
+    // console.log({ target, updatedProp });
     return {
       clientLib: {
         ...clientLib,
         page: {
           ...clientLib.page,
-          [target]: prop,
+          [target]: updatedProp,
         },
       },
     };
   }
 
-  console.log({ setting: scope, label, prop });
+  console.log({ setting: scope, label, updatedProp });
 
   const [scope, label] = target.split(".");
 
@@ -1284,7 +1286,7 @@ export const getUpdatedAppState = (context, event) => {
       ...clientLib,
       [scope]: {
         ...clientLib[scope],
-        [label]: prop,
+        [label]: updatedProp,
       },
     },
   };

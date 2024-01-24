@@ -1,10 +1,8 @@
 import React from "react";
 import {
-  Box,
-  Chip,
-  Dialog,
   IconButton,
   InputAdornment,
+  Menu,
   MenuItem,
   Stack,
   Switch,
@@ -14,14 +12,11 @@ import {
 import Flex from "../../../styled/Flex";
 import Spacer from "../../../styled/Spacer";
 import { TinyButton } from "../../../styled/TinyButton";
-import { Add, Link, LinkOff, MoreHoriz, MoreVert } from "@mui/icons-material";
+import { Link, LinkOff, MoreHoriz, MoreVert } from "@mui/icons-material";
 import SearchInput from "../../../styled/SearchInput";
 import IconSelect from "../../../styled/IconSelect";
 import ChipMenu from "../../../styled/ChipMenu";
 import { useMenu } from "../../../machines/menuMachine";
-import Columns from "../../../styled/Columns";
-import Nowrap from "../../../styled/Nowrap";
-import ParamSelect from "./ParamSelect";
 import ListBinder from "./ListBinder";
 
 const InputBlock = ({
@@ -72,7 +67,6 @@ export const ComponentInput = ({
   onUnbind,
   onBindingConfigure,
   repeaterBindings = [],
-  stateList = [],
   stateReference = {},
   keyName = "SettingName",
   valueName = "SettingValue",
@@ -81,6 +75,7 @@ export const ComponentInput = ({
   machine,
 }) => {
   // const [filter, setFilter] = React.useState("");
+  const menu = useMenu();
   const { boundProps = [] } = component;
   const boundProp = boundProps.find((p) => p.attribute === setting.title);
   const settings = component[typeKey];
@@ -99,7 +94,6 @@ export const ComponentInput = ({
   if (hidden) {
     return <i />;
   }
-
   const settingIsBound = ["table binding", "repeater binding"].some(
     (f) => setting.type === f
   );
@@ -109,7 +103,7 @@ export const ComponentInput = ({
     onBind,
     onUnbind,
     onConfigure,
-    stateList,
+    expandedList: machine.expandedList,
     settingIsBound,
     sx: {
       p: (theme) => theme.spacing(0, 1),
@@ -124,7 +118,7 @@ export const ComponentInput = ({
     return (
       <InputBlock {...inputProps}>
         <SearchInput
-          options={stateList.concat(repeaterBindings)}
+          options={machine.expandedList.concat(repeaterBindings)}
           label={`Binding for "${setting.title}"`}
           value={boundProp.boundTo}
           onChange={(e) => onBind(setting.title, e.target.value)}
@@ -221,7 +215,33 @@ export const ComponentInput = ({
 };
 
 function ChipMaybe({ options: untrimmed, setting, machine, ...props }) {
+  const stringProp =
+    typeof props.value === "string" &&
+    props.value.indexOf(" ") < 0 &&
+    !!setting.unit;
+
+  const isUnitted =
+    stringProp && setting.unit.some((u) => props.value.endsWith(u));
+
   const options = untrimmed.map((f) => f.trim());
+  const chosenUnit = setting.unit?.find(
+    (u) => typeof props.value === "string" && props.value.endsWith(u)
+  );
+
+  let old = props.value;
+  stringProp &&
+    setting.unit.map((e) => {
+      return (old = old.replace(e, ""));
+    });
+
+  const unitMenu = useMenu((value) => {
+    !!value &&
+      props.onChange({
+        target: {
+          value: old + value,
+        },
+      });
+  });
   const menu = useMenu(
     (value) =>
       !!value &&
@@ -252,20 +272,35 @@ function ChipMaybe({ options: untrimmed, setting, machine, ...props }) {
   }
 
   const endAdornment =
-    setting.type === "typolist" ? (
+    setting.type === "typolist" || !!setting.unit ? (
       <InputAdornment position="end">
         <IconButton
-          onClick={(e) => menu.handleClick(e, JSON.parse(props.value || "[]"))}
+          size="small"
+          onClick={(e) =>
+            !!setting.unit
+              ? unitMenu.handleClick(e)
+              : menu.handleClick(e, JSON.parse(props.value || "[]"))
+          }
         >
-          <MoreHoriz />
+          {setting.unit ? <>{chosenUnit || "%"}</> : <MoreHoriz />}
         </IconButton>
       </InputAdornment>
     ) : null;
 
   return (
     <>
+      {!!setting.unit && (
+        <Menu {...unitMenu.menuProps}>
+          {setting.unit.map((u) => (
+            <MenuItem key={u} onClick={unitMenu.handleClose(u)}>
+              {u}
+            </MenuItem>
+          ))}
+        </Menu>
+      )}
       <TextField
         {...props}
+        value={old || props.value}
         InputProps={{
           endAdornment: props.InputProps.endAdornment || endAdornment,
         }}
@@ -276,6 +311,7 @@ function ChipMaybe({ options: untrimmed, setting, machine, ...props }) {
           </MenuItem>
         ))}
       </TextField>
+      {/* {[isUnitted.toString()]} */}
       <ListBinder machine={machine} setting={setting} menu={menu} {...props} />
     </>
   );

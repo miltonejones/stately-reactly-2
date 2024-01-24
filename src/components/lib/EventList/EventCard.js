@@ -23,6 +23,7 @@ const EventCard = ({
   appData,
   page,
   configure,
+  componentReference,
 }) => {
   const handleClick = () => {
     if (!supported) return configure();
@@ -68,6 +69,7 @@ const EventCard = ({
               application: appData,
               scripts: applicationScripts,
               page,
+              componentReference,
             }).content
           }
         </Nowrap>

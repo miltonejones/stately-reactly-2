@@ -1,8 +1,9 @@
-import { Close, Edit } from "@mui/icons-material";
+import { Close, CopyAll, Edit } from "@mui/icons-material";
 import {
   Box,
   Button,
   Card,
+  Chip,
   Dialog,
   Grid,
   IconButton,
@@ -19,11 +20,13 @@ import React from "react";
 import SearchInput from "../../../styled/SearchInput";
 import Warning from "../../../styled/Warning";
 import Json from "../../../styled/Json";
+import { TabBody, TabMenu, TinyButton } from "../../../styled";
 
 export default function ClientStateDrawer(props) {
+  const [tabIndex, setTabIndex] = React.useState(0);
   const ref = React.useRef();
 
-  const { submachine } = props;
+  const { submachine, machine } = props;
 
   if (!submachine) return <i />;
 
@@ -49,19 +52,27 @@ export default function ClientStateDrawer(props) {
           <Flex>
             <Typography variant="body2">Edit JSON</Typography>
             <Spacer />
-            <IconButton
+            <Chip
+              size="small"
+              onClick={() => {
+                submachine.send("copy");
+              }}
+              icon={<CopyAll />}
+              color="success"
+              label={`Copy '${submachine.jsonKey}' from current state`}
+            />
+            <TinyButton
               onClick={() => {
                 submachine.send({
                   type: "done",
                 });
               }}
-            >
-              <Close />
-            </IconButton>
+              icon="Close"
+            />
           </Flex>
           <Card
             sx={{
-              width: (theme) => `calc(500px - ${theme.spacing(4)})`,
+              width: (theme) => `calc(532px - ${theme.spacing(4)})`,
               height: (theme) => `calc(500px - ${theme.spacing(4)})`,
               overflow: "auto",
             }}
@@ -110,10 +121,21 @@ export default function ClientStateDrawer(props) {
                   key={prop.Key}
                   sx={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gridTemplateColumns: "24px 1fr 1fr 1fr",
                     gap: 1,
+                    alignItems: "center",
                   }}
                 >
+                  <TinyButton
+                    icon="Delete"
+                    onClick={(e) => {
+                      submachine.send({
+                        type: "drop variable",
+                        key: prop.Key,
+                      });
+                    }}
+                  />
+
                   <TextField
                     size="small"
                     readOnly
@@ -204,8 +226,29 @@ export default function ClientStateDrawer(props) {
         </Grid>
 
         <Grid item xs={6}>
-          <Card sx={{ height, overflow: "auto", p: 1 }}>
-            <Json>{JSON.stringify(propJSON, 0, 2)}</Json>
+          <TabMenu
+            value={tabIndex}
+            onClick={setTabIndex}
+            tabs={[
+              {
+                label: "Definitions",
+              },
+              {
+                label: "Live",
+              },
+            ]}
+          />
+          <Card
+            sx={{ height: `calc(${height} - 40px)`, overflow: "auto", p: 1 }}
+          >
+            <Stack direction="row">
+              <TabBody in={tabIndex === 0}>
+                <Json>{JSON.stringify(propJSON, 0, 2)}</Json>
+              </TabBody>
+              <TabBody in={tabIndex === 1}>
+                <Json>{JSON.stringify(machine.clientLib[scope], 0, 2)}</Json>
+              </TabBody>
+            </Stack>
           </Card>
         </Grid>
       </Grid>

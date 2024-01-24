@@ -46,6 +46,8 @@ import React from "react";
 import JsonTree from "../../../styled/JsonTree";
 import ComponentEditorMenu from "./ComponentEditorMenu";
 import ComponentSettingsModal from "./ComponentSettingsModal";
+import { Columns } from "../../../styled";
+import IconPopover from "../ComponentTree/IconPopover";
 
 const ComponentTabs = ({ machine }) => {
   const tabs = [
@@ -94,7 +96,10 @@ const ComponentEventsEditor = (props) => {
     />
   );
 };
-
+const textTypes =
+  "body1,body2,button,caption,h1,h2,h3,h4,h5,h6,inherit,overline,subtitle1,subtitle2,string".split(
+    ","
+  );
 const bindingTypes = {
   Image: [
     {
@@ -131,7 +136,14 @@ const bindingTypes = {
     {
       of: "settings",
       title: "variant",
-      type: ["caption", "body2"],
+      type: textTypes,
+    },
+  ],
+  Link: [
+    {
+      of: "settings",
+      title: "variant",
+      type: textTypes,
     },
   ],
 };
@@ -218,6 +230,7 @@ function BindingDialog(props) {
                     value={selectedBinding.type}
                   />
                 </EditBlock>
+
                 <CommonForm
                   fields={formProps}
                   onChange={(name, value) =>
@@ -328,7 +341,7 @@ function BindingDialog(props) {
                         </Flex>
                         <Stack spacing={1}>
                           {Object.keys(bindings).map((key) => (
-                            <Flex between>
+                            <Columns columns="1fr 1fr 100px">
                               <Flex spacing={1}>
                                 <TinyButton
                                   icon={CheckCircle}
@@ -355,9 +368,21 @@ function BindingDialog(props) {
                                 value={bindings[key].title || bindings[key]}
                                 label="alias"
                               />
-                            </Flex>
+
+                              {!!typeMap && (
+                                <TextField
+                                  onChange={(e) =>
+                                    update(key, "fr", e.target.value)
+                                  }
+                                  size="small"
+                                  value={typeMap[key].fr || `1fr`}
+                                  label="size"
+                                />
+                              )}
+                            </Columns>
                           ))}
                         </Stack>
+                        {/* <pre>{JSON.stringify(typeMap, 0, 2)}</pre> */}
                       </Grid>
                     )}
                   </Grid>
@@ -383,17 +408,30 @@ const ComponentEditor = (props) => {
   );
   if (!component) return <PageEditor {...props} />;
   const { componentTab } = machine;
-  const { selectedSetting, componentData } = machine.state.context;
   const Component = machine.state.can("no") ? Dialog : Snackbar;
 
   const expanded = Boolean(machine.columnsOpen & 2);
+
+  const tabItems = {
+    settings: {
+      icon: "Settings",
+      component: ComponentSettingsEditor,
+    },
+    styles: {
+      icon: "Palette",
+      component: ComponentStylesEditor,
+    },
+    events: {
+      icon: "Bolt",
+      component: ComponentEventsEditor,
+    },
+  };
 
   return (
     <>
       <StyleConfigureModal {...props} />
       <BindingDialog machine={machine} />
       <ComponentSettingsModal machine={machine} />
-
       <Component open={machine.state.can("yes")}>
         <Card>
           <Stack direction="column" spacing={2} sx={{ p: 2, width: 300 }}>
@@ -417,7 +455,6 @@ const ComponentEditor = (props) => {
           </Stack>
         </Card>
       </Component>
-
       <Flex baseline>
         {expanded && (
           <>
@@ -463,6 +500,28 @@ const ComponentEditor = (props) => {
           message="set context"
         />
       </Flex>
+      {!expanded && (
+        <Stack sx={{ mt: 1 }} spacing={1}>
+          {Object.keys(tabItems).map((tab) => {
+            const Tag = tabItems[tab].component;
+            return (
+              <IconPopover
+                key={tab}
+                icon={tabItems[tab].icon}
+                onClick={() => machine.send(`open ${tab}`)}
+              >
+                <Tag
+                  machine={machine}
+                  {...props}
+                  repeaterBindings={repeaterBindings}
+                />
+              </IconPopover>
+            );
+          })}
+
+          <MachineButton icon="Close" machine={machine} message="close" />
+        </Stack>
+      )}
 
       {expanded && (
         <>
@@ -494,35 +553,7 @@ const ComponentEditor = (props) => {
             </TabBody>
             <TabBody in={componentTab === 3}>
               <Stack sx={{ width: "100%", overflow: "auto" }}>
-                <Flex>
-                  <MachineButton
-                    icon="Edit"
-                    hide
-                    machine={machine}
-                    message="edit json"
-                  />
-                  <MachineButton
-                    icon="Save"
-                    hide
-                    machine={machine}
-                    message="done"
-                    payload={{
-                      json: ref.current?.innerText,
-                    }}
-                  />
-                  <MachineButton
-                    icon="Close"
-                    hide
-                    machine={machine}
-                    message="cancel json"
-                  />
-                </Flex>
-
                 <JsonTree open={open} setOpen={setOpen} value={component} />
-                {/* <pre ref={ref} contentEditable>
-                  {" "}
-                  {JSON.stringify(component, 0, 2)}
-                </pre> */}
               </Stack>
             </TabBody>
           </Stack>

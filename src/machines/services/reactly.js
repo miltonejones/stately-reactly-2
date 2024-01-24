@@ -89,17 +89,35 @@ export const reactlyServiceProvider = {
           });
         });
 
+        // update clientLib before passing it into the invoker
         updatedClientLib = setters.reduce((out, step) => {
-          const up = getUpdatedAppState(state.context, {
-            options,
-            step,
-          }).clientLib;
+          const updatedState = getUpdatedAppState(
+            {
+              ...state.context,
+
+              // pass updated clientLib to keep state setter current
+              //  with the values it is updating
+              clientLib: out,
+            },
+            {
+              // pass action and options into the state setter
+              options,
+              step,
+            }
+          ).clientLib;
+
+          // extract updated page/application data and append to clientLib
+          const { page, application } = updatedState;
+
           return {
             ...out,
-            ...up,
+            page,
+            application,
           };
         }, clientLib);
       }
+
+      // invoke remaining events
       if (!invoked.length) return;
       invoker.send({
         type: "load",

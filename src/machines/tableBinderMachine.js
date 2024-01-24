@@ -3,7 +3,7 @@ import { assign, createMachine } from "xstate";
 import { binderActions } from "./actions/binder";
 const tableBinderMachine = createMachine(
   {
-    /** @xstate-layout N4IgpgJg5mDOIC5QBcCGAjANmAQgSwDsIwAnAOjwmwGJMB7VCAbQAYBdRUABztj2Tx0CnEAA9EAFgBMEsiwCMU+QDYAHPICcG5QHYdAVgA0IAJ6IpZKco0SJqlspYGp+gMzSAvh+NosuQsTklDT0jEzyHEggPHwCQiLiCBKuqmSuMhr6Klks6ixGpojy+hYaUrmuZfKqLhLyEl4+GNj4RKRkJGCMJtQAjgCu-KyR3Lz8gsJRiXYsZDOa9a7W6brGZggAtErKZG4OrtU61hIsDd4gvi0B7Z3dZAC2qIQABLAAxp1gBNTIdFBQ2GeADM8GBMMx2CIYuN4lNEBpXDo5nodOkbK4WNo1og3Bpdk4sgiJG5bFJGhdmv42uRbhATA8ngRXh8wF9qKhMHhULBhlCxnFJqBEoplLIdOVUSx3Do6lIpNiEFkdmp9MdpaoJDLyZcqYEOl06QyXu9Pt9IENIVFoQKEkVlDIyI5lK4Sspii5XArbPJLLp0lJVIiNRodNrKa09bT6Y9jSyvmQIKg0M9OrA6P0SG8wNQ3pyvsheVb+RNbQhFKrHSiDPVVBoVPLCmXNJWdIoZFJxbpVWG-BGbgbo4zmaaE0nUCm4OnM9nYGBkBO0xms4XRrES3Cm1k5KpVJKbKL3ArETt3CcSjvUWplMoe1dqfq7jGmSbWQQyLnQQR57A0Mhs6mp2XS1VxhQUxHhVQdnrWxKgxfIWAbdYA2VfRMj0fRUTsdR9FvXV+0fIcX3jD981eX8ZznMikzAFdomLWEhXhHQ8RsHdpBYBR7QwhUtjxFQtDPaxr1bOxcL7GkB3fIQQSgDNCCgYFQXBWAc3oWdaOtddGIQMoLE0JY9ADVt5FbHiMR2EN5BdEN7HLEyxOuchczGAgoGoCAhDACgCAANzoABrLydXE981PkhBCD8t4kwmYYNPosDhWYuZ9HsBRUvUDVkh4+QOMrfQFDYux5BMnDzmCxyH0NN5pLwWSSHkxSwQgFT+i4RM-ya8F4rXBjwLLVELBmRx8lRS8NB45IkUxRwtBRe1Ki8c4CDoYh4CiCrqT5XrEqKEyyEyBCOMcEydClAp1g2N0LBmzFdzcF17PK8NKuCMBttA0tylcMhFA0XcDAExwdAVB0tEccpMpUJxdwc+8ow+m0N13WR9N0cVdxK0zGw2EpZFQ2adBqcplG7Z7e0qqMjWfOMwM0vrEgRH1WI1cpOJcEGcZUH1+MyXKOxsLC4cjSSn2HV9R2TACl3eosdtLRQHAO0UrDOjQnCkT1G2Qx1UIwgxMJ3eRhfww0xaIt8SK-Ki-0RrT+tyvLWysOUNRK9xVAVEqxS0Gp0mJY4QxNiS7hqggZLk1yupau2GaKVCfTsOs-RE0UzKVpQ8bqVjNdcYPQpcqBY92stSYOgq2ZOvRzp4mRZilBxNWvEoykgpaPCAA */
+    /** @xstate-layout N4IgpgJg5mDOIC5QBcCGAjANmAQgSwDsIwAnAOjwmwGJMB7VCAbQAYBdRUABztj2Tx0CnEAA9EAFgBMEsiwCMU+QDYAHPICcG5QHYdAVgA0IAJ6IpZKco0SJqlspYGp+gMzSAvh+NosuQsTklDT0jEzyHEggPHwCQiLiCBKuqmSuMhr6Klks6ixGpojy+hYaUrmuZfKqLhLyEl4+GNj4RKRkJGCMJtQAjgCu-KyR3Lz8gsJRiXYsZDOa9a7W6brGZggAtErKZG4OrtU61hIsDd4gvi0B7Z3dZAC2qIQABLAAxp1gBNTIdFBQ2GeADM8GBMMx2CIYuN4lNEBpXDo5nodOkbK4WNo1og3Bpdk4sgiJG5bFJGhdmv42uRbhATA8ngRXh8wF9qKhMHhULBhlCxnFJqBEopHGQNKpdCpEVJXPp9BpsQhcfiDJp3CTPOdLlTAh0unSGS93p9vpAhpCotCBQkisoZGRHMpZVZii5XIrbPJLLp0lJVIjVBINDpydrWrrafTHkaWV8yBBUGhnp1YHR+iQ3mBqG9OV9kLzLfyJjaEIp9DtdCisnYNCopIr5JoHXpFDIpDorAZlKHKeGbvqo4zmSb44nUMm4GmM1nYGBkBPU+nMwXRrFi3DS8UvblVKjMRJlMkJIrETt3CcSqpd0sJd2tb3rjSB4amcbWQQyDnQQR57A0MgsxTKdlwtVcYUFMR4QlMg61sSoMXyFh60KBA-QreV9D0TD3CvYoez8PsnzuaNX1jD8vzzV5-xnOcqMTMAV2iItYSFeEdDxGwr2kFgFDtTDFS2PEVC0C9rGUSU7Hwq5qT1O43iEEEoHTQgoGBUFwVgbN6FnRirXXViEDKCw1UrP0dEbcyBIxHZg3kWVg3sMt5BDe8CMfWS6WofouATAC1LBCERiYtcWMg0sdBYVwyFUNwVB48VrPdFCNjcfQ5hcOzbH0OpIqknV2hzMYCCgagICEMAKAIAA3OgAGsKrDdzCr4YqEEIGq3kTCZhl05iIOFdi5n0ewFGG9RA2SAT5B45t9AULi7As-QvHOAg6GIeAoka6k+RC-qimcsU5vKBwFD0SKCnWDY7VKDLXHPFx5Rcpo3Jk4IwF28CS3KKLFHFLCRMcHRFXtLRHHKca4p0Xc8sIjz1jA60N13WQTL0MyLPkKybGROzlGGjQHDsMlXOkiNnxI4d30+pGDIRL1OMDE66345KVC9YSbFRPGnCkEmXrJ-tiKHN84188cgKXD7Cz2ktFAcMVD07TFeaS9Y0IdDCsNROx1Fh9zIxfKm4won86IAmn9LC6aZvMqw+cDRscIbeoyHY8UZRkcsbGDfWZMN+SCEU5Tiv8jTLdC4V5S9GsVFRcyD2PZLrMsV1PU4mVXD93VmpUiP9tLfGjqQnjHGciLZQEmRZkiomjnxqQyglFaPCAA */
     id: "tableBinder",
     initial: "idle",
     context: {
@@ -85,12 +85,6 @@ const tableBinderMachine = createMachine(
 
             on: {
               close: "main screen",
-
-              "update field": {
-                target: "configuring fields",
-                internal: true,
-                actions: "assignTypeMap",
-              },
             },
           },
         },
@@ -99,6 +93,11 @@ const tableBinderMachine = createMachine(
 
         on: {
           quit: "closing",
+
+          "update field": {
+            actions: "assignTypeMap",
+            internal: true,
+          },
         },
       },
 

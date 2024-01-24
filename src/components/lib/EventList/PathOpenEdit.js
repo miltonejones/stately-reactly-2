@@ -3,7 +3,7 @@ import EditBlock from "../../../styled/EditBlock";
 import SearchInput from "../../../styled/SearchInput";
 import ParamSelect from "../ComponentEditor/ParamSelect";
 
-const PathOpenEdit = ({ editor, machine }) => {
+const PathOpenEdit = ({ editor, repeaterBindings, machine }) => {
   const { appData } = machine;
   const { currentEvent } = editor;
   const { target, data = {} } = currentEvent.action;
@@ -57,6 +57,7 @@ const PathOpenEdit = ({ editor, machine }) => {
                       },
                     });
                   }}
+                  repeaterBindings={repeaterBindings}
                   value={data[term]}
                   machine={machine}
                 />

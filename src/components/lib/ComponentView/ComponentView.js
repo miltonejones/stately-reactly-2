@@ -6,6 +6,7 @@ import { Card, Typography } from "@mui/material";
 import { Columns, Flex, Nowrap, Spacer, TinyButton } from "../../../styled";
 import { Helmet } from "react-helmet";
 import { reduceStyles } from "../../../util";
+import InvokeErrorModal from "../InvokeErrorModal/InvokeErrorModal";
 
 const recursivePath = (page, pages, outputPath = []) => {
   if (!page) return outputPath;
@@ -77,6 +78,7 @@ export default function ComponentView({ machine }) {
 
   return (
     <>
+      <InvokeErrorModal invoker={machine.invoker} />
       <Helmet>
         <title>{titleParts.join(" | ")}</title>
       </Helmet>

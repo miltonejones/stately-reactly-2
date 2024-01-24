@@ -321,6 +321,7 @@ export const useViewer = () => {
     invokeEvent,
     bindText,
     services,
+    invoker,
     states: viewerMachine.states,
   };
 };

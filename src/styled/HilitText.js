@@ -1,5 +1,6 @@
 const HilitText = ({ value, values = [], children }) => {
   if (!children) return <i />;
+  if (!values.length && !value) return children;
   const content = children.toString();
   const param = values.find(
     (str) => content?.toLowerCase().indexOf(str.toLowerCase()) > -1
@@ -10,12 +11,15 @@ const HilitText = ({ value, values = [], children }) => {
   if (!parts?.length) {
     return <i />;
   }
+
+  const index = content.toLowerCase().indexOf(str);
+  const original = content.substr(index, index + str.length);
+
   return (
     <>
-      {/* [{JSON.stringify(values)}] */}
       {parts.reduce((out, res, i) => {
         if (!(i < parts.length - 1)) return out.concat(res);
-        return out.concat(res, <b style={{ color: "red" }}>{str}</b>);
+        return out.concat(res, <b style={{ color: "red" }}>{original}</b>);
       }, [])}
     </>
   );

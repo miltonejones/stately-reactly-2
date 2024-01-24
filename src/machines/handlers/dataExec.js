@@ -72,6 +72,7 @@ const dataExec = async (context) => {
         [target]: data,
         key: target,
         rows,
+        count: data.count,
       },
     };
     return packaged;

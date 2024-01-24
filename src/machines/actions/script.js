@@ -64,6 +64,7 @@ export const scriptActions = {
     assignNewName: assign((_, event) => ({
       name: event.name,
     })),
+
     appendScript: assign((context) => {
       const scriptID = generateGuid();
       return {
@@ -82,6 +83,29 @@ export const scriptActions = {
         },
       };
     }),
+
+    dropScript: assign((context) => {
+      const scriptProps = {
+        ...context.scriptProps,
+        [context.scope]: context.scriptProps[context.scope].filter(
+          (f) => f.ID !== context.scriptID
+        ),
+      };
+      return {
+        dirty: true,
+        scriptID: !scriptProps[context.scope][0]
+          ? null
+          : scriptProps[context.scope][0].ID,
+        name: "",
+        scriptProps,
+      };
+    }),
+
+    assignScriptDropMessage: assign((context) => ({
+      message: `Are you sure you want to delete script ${context.scriptID}?`,
+      caption: "This action cannot be undone!",
+    })),
+
     assignSelectedScript: assign((_, event) => ({
       scriptID: event.ID,
     })),

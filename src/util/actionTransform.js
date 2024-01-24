@@ -2,13 +2,17 @@ import { Box } from "@mui/material";
 
 const incomplete = (action) => (
   <Box>
-    "{action.target}/{action.type}" configuration incomplete
+    {!!action && (
+      <>
+        "{action.target}/{action.type}" configuration incomplete
+      </>
+    )}
   </Box>
 );
 
 export default function actionTransform(
   action,
-  { application, scripts, page }
+  { application, scripts, page, componentReference }
 ) {
   const pages = application.pages;
   const resources = application.resources;
@@ -18,10 +22,10 @@ export default function actionTransform(
       if (!action.hasOwnProperty("value")) {
         return incomplete(action);
       }
-      const label = action.value.toString().split("|").join(" or ");
       return (
         <Box>
-          Set the value of "{action.target}" to <b>{label}</b>
+          Set the value of "{action.target}" to{" "}
+          <b>{JSON.stringify(action.value)}</b>
         </Box>
       );
     },
@@ -35,14 +39,15 @@ export default function actionTransform(
       );
     },
     openLink: () => {
-      const targetPage = pages.find((e) => e.ID === action.target);
-      if (!targetPage) {
-        return incomplete(action);
-      }
-      const href = targetPage.PageName || <>Deleted page</>;
-      return <>Open a link to "{href}"</>;
+      return <>Open a link to "{action.target}"</>;
     },
     methodCall: () => <Box>Execute method "{action.methodName}"</Box>,
+    execRef: () => (
+      <Box>
+        Execute method {componentReference[action.target]}.
+        <b>{action.method}()</b>
+      </Box>
+    ),
     modalOpen: () => {
       const dialogName = page?.components?.find((e) => e.ID === action.target);
       const appModal = application?.components?.find(

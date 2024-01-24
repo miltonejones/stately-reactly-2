@@ -121,14 +121,39 @@ function updateApplication(context, event) {
   }
 
   const application = event.data;
-  if (application.clientLib) {
-    return {
-      ...application,
-    };
+
+  // if a clientLib is in the response, extract application and clientLib
+  const appContext = !!application.clientLib
+    ? {
+        ...application,
+      }
+    : {
+        application,
+      };
+
+  if (application.resourceData) {
+    const { rows, count } = application.resourceData;
+    Object.assign(appContext, {
+      options: {
+        ...context.options,
+        rows,
+        count,
+      },
+    });
   }
-  return {
-    application,
-  };
+  console.log("%cupdateApplication", "border:dotted 2px yellow;color:red", {
+    appContext,
+  });
+  return appContext;
+
+  // if (application.clientLib) {
+  //   return {
+  //     ...application,
+  //   };
+  // }
+  // return {
+  //   application,
+  // };
   // // Check if page exists in context
   // if (!context.page) {
 

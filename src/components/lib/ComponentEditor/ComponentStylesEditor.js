@@ -105,6 +105,10 @@ export const ComponentStylesEditor = (props) => {
   );
 };
 
+const UNIT = {
+  SIZE: ["px", "rem", "em", "%", "pc"],
+};
+
 const displayItems = {
   [STYLEBIT.LAYOUT]: [
     {
@@ -141,6 +145,7 @@ const displayItems = {
       title: "gap",
       type: "",
       default: "",
+      unit: UNIT.SIZE,
       description: "Spacing between items",
     },
     {
@@ -172,11 +177,13 @@ const displayItems = {
       type: "",
       default: 0,
       xs: 4,
+      unit: UNIT.SIZE,
     },
     {
       title: "min-width",
       type: "",
       default: 0,
+      unit: UNIT.SIZE,
       xs: 4,
     },
     {
@@ -184,24 +191,28 @@ const displayItems = {
       type: "",
       default: 0,
       xs: 4,
+      unit: UNIT.SIZE,
     },
     {
       title: "height",
       type: "",
       default: 0,
       xs: 4,
+      unit: UNIT.SIZE,
     },
     {
       title: "min-height",
       type: "",
       default: 0,
       xs: 4,
+      unit: UNIT.SIZE,
     },
     {
       title: "max-height",
       type: "",
       default: 0,
       xs: 4,
+      unit: UNIT.SIZE,
     },
     {
       title: "overflow",
@@ -276,6 +287,7 @@ const displayItems = {
       title: "border-width",
       type: "",
       default: 0,
+      unit: UNIT.SIZE,
       description: "Size of the border in pixels",
       when: (component) => {
         const args = reduceStyles(component.styles);
@@ -298,6 +310,7 @@ const displayItems = {
       default: "",
       xs: 6,
       description: "Margin around the component",
+      unit: UNIT.SIZE,
     },
     {
       title: "padding",
@@ -305,6 +318,7 @@ const displayItems = {
       default: "",
       xs: 6,
       description: "Padding inside the component",
+      unit: UNIT.SIZE,
     },
   ],
 };

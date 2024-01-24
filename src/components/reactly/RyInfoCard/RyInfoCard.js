@@ -9,11 +9,16 @@ export const RyInfoCard = ({
   ...props
 }) => {
   const of = (value) => {
-    if (!truncate || !value || value.length < truncate) {
+    if (
+      !truncate ||
+      !value ||
+      value.length < truncate ||
+      typeof value !== "string"
+    ) {
       return value;
     }
 
-    return value.substr(0, truncate) + "...";
+    return value.substring(0, truncate) + "...";
   };
 
   return (

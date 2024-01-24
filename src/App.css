@@ -48,9 +48,9 @@ body {
 
 pre.code {
   position: relative;
-  background-color: rgb(40, 44, 52);
+  background-color: rgb(37, 62, 112);
   color: #fff;
-  padding: 32px 4px 12px 4px;
+  padding: 64px 4px 12px 4px;
   overflow-x: auto;
   border-radius: 0.25rem;
   height: calc(100% - 64px);

@@ -943,25 +943,28 @@ export default function ConnectionDrawer(props) {
                       onClick={() => submachine.send("close connection")}
                     />
                   </Flex>
-                  {!!candidateColumns && !!candidateColumns.columns && (
-                    <Box
-                      sx={{
-                        display: "grid",
-                        gridTemplateColumns: "1fr 1fr 1fr",
-                      }}
-                    >
-                      {candidateColumns.columns.map((col) => (
-                        <Flex>
-                          <Switch
-                            onChange={() => includeColumn(col)}
-                            checked={chosenResource.columns.indexOf(col) > -1}
-                            size="small"
-                          />
-                          <Typography variant="body2">{col}</Typography>
-                        </Flex>
-                      ))}
-                    </Box>
-                  )}
+                  {!!candidateColumns &&
+                    !!candidateColumns.columns &&
+                    !!chosenResource &&
+                    !!chosenResource.columns && (
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr 1fr",
+                        }}
+                      >
+                        {candidateColumns.columns.map((col) => (
+                          <Flex>
+                            <Switch
+                              onChange={() => includeColumn(col)}
+                              checked={chosenResource.columns.indexOf(col) > -1}
+                              size="small"
+                            />
+                            <Typography variant="body2">{col}</Typography>
+                          </Flex>
+                        ))}
+                      </Box>
+                    )}
                 </TabBody>
                 <TabBody in={col === 1}>
                   <Json>{JSON.stringify(candidateColumns, 0, 2)}</Json>
@@ -974,6 +977,7 @@ export default function ConnectionDrawer(props) {
 
       {!hasRecords &&
         submachine.state.can("close resource") &&
+        !!chosenResource &&
         !!chosenResource.columns && (
           <Grid item xs={xs}>
             <Card sx={{ p: 1, height: "40vh", overflow: "auto" }}>

@@ -15,6 +15,8 @@ import { TinyButton } from "../../../styled/TinyButton";
 import DataExecEdit from "./DataExecEdit";
 import PathOpenEdit from "./PathOpenEdit";
 import StateBar from "../../../styled/StateBar";
+import ExecRefEdit from "./ExecRefEdit";
+import OpenLinkEdit from "./OpenLinkEdit";
 
 const EventList = ({
   title,
@@ -26,8 +28,14 @@ const EventList = ({
   componentEvents,
   repeaterBindings,
 }) => {
-  const { applicationScripts, appData, page, modalTags, componentData } =
-    machine;
+  const {
+    applicationScripts,
+    appData,
+    page,
+    modalTags,
+    componentData,
+    componentReference,
+  } = machine;
   const editor = useEventEdit(
     (ID) => {
       machine.send({
@@ -62,6 +70,7 @@ const EventList = ({
     componentID,
     resourceID,
     repeaterBindings,
+    componentReference,
   };
 
   const upsert = () => {
@@ -80,6 +89,8 @@ const EventList = ({
     modalOpen: ModalOpenEdit,
     dataExec: DataExecEdit,
     pathOpen: PathOpenEdit,
+    execRef: ExecRefEdit,
+    openLink: OpenLinkEdit,
   };
 
   const EditForm = !editor.currentEvent
@@ -107,6 +118,14 @@ const EventList = ({
     {
       ID: "pathOpen",
       name: "Open a path within the application",
+    },
+    {
+      ID: "openLink",
+      name: "Link to an external URL",
+    },
+    {
+      ID: "execRef",
+      name: "Execute a method on a component",
     },
   ];
 

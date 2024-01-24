@@ -8,6 +8,8 @@ import Spacer from "../../../styled/Spacer";
 const SetStateEdit = ({ editor, machine, repeaterBindings }) => {
   const { currentEvent } = editor;
   const { target, value } = currentEvent.action;
+  const { stateReference } = machine;
+  const chosenRef = stateReference[target];
 
   const update = (name, value) => {
     editor.send({
@@ -17,7 +19,7 @@ const SetStateEdit = ({ editor, machine, repeaterBindings }) => {
     });
   };
 
-  const presets = [
+  const boolPreset = [
     {
       label: "boolean",
       action: () => update("value", true),
@@ -25,6 +27,17 @@ const SetStateEdit = ({ editor, machine, repeaterBindings }) => {
     {
       label: "variable",
       action: () => update("value", ""),
+    },
+  ];
+
+  const objPreset = [
+    {
+      label: "null",
+      action: () => update("value", null),
+    },
+    {
+      label: "empty",
+      action: () => update("value", {}),
     },
   ];
 
@@ -64,7 +77,7 @@ const SetStateEdit = ({ editor, machine, repeaterBindings }) => {
             <ParamSelect
               name="value"
               size="small"
-              value={value}
+              value={typeof value === "string" ? value : JSON.stringify(value)}
               machine={machine}
               repeaterBindings={repeaterBindings}
               onChange={(e) => {
@@ -75,14 +88,35 @@ const SetStateEdit = ({ editor, machine, repeaterBindings }) => {
           )}
         </EditBlock>
 
-        <Flex>
-          <Spacer />
-          <ChipMenu
-            onChange={(index) => presets[index].action()}
-            value={typeof value === "boolean" ? 0 : 1}
-            options={presets.map((p) => p.label)}
-          />
-        </Flex>
+        {chosenRef?.Type !== "object" && (
+          <Flex>
+            <Spacer />
+            <ChipMenu
+              onChange={(index) => boolPreset[index].action()}
+              value={typeof value === "boolean" ? 0 : 1}
+              options={boolPreset.map((p) => p.label)}
+            />
+          </Flex>
+        )}
+        {chosenRef?.Type === "object" && (
+          <Flex>
+            <Spacer />
+            <ChipMenu
+              onChange={(index) => objPreset[index].action()}
+              value={
+                typeof value === "object" &&
+                !!value &&
+                !Object.keys(value).length
+                  ? 1
+                  : value === null
+                  ? 0
+                  : -1
+              }
+              options={objPreset.map((p) => p.label)}
+            />
+          </Flex>
+        )}
+        {JSON.stringify(value)}
       </Stack>
     </Card>
   );

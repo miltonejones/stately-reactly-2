@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import Flex from "../../../styled/Flex";
 import { Add, AppRegistration, Launch } from "@mui/icons-material";
-import { TinyButton } from "../../../styled/TinyButton";
+import { MachineButton, TinyButton } from "../../../styled/TinyButton";
 import ChipMenu from "../../../styled/ChipMenu";
 import { useLibrarian } from "../../../machines/librarianMachine";
 import StateBar from "../../../styled/StateBar";
@@ -120,8 +120,7 @@ function ParametersMenu({ page, updateParam, addressParts }) {
       {" "}
       <b>/</b>{" "}
       {keys.map((key) => (
-        <Nowrap
-          bold
+        <Typography
           hover
           key={key}
           color="success"
@@ -133,9 +132,8 @@ function ParametersMenu({ page, updateParam, addressParts }) {
             })
           }
         >
-          {" "}
-          {page.parameters[key]}{" "}
-        </Nowrap>
+          <b> {page.parameters[key]}</b>
+        </Typography>
       ))}
       <Popover {...menu.menuProps}>
         <Stack spacing={1} sx={{ p: 2, width: 300 }}>
@@ -231,27 +229,43 @@ export default function ComponentToolbar({ machine, handleSave }) {
               <b>Page:</b> {currentPage.PageName}
             </Typography>
           )}
-          <Spacer
+          <Flex
             sx={{
+              flexGrow: 1,
               backgroundColor: (theme) => theme.palette.grey[300],
-              borderRadius: 2.5,
+              borderRadius: 1,
               p: (theme) => theme.spacing(0.5, 1),
             }}
           >
             <Typography variant="caption">
               <b>URL</b>
             </Typography>
-            <Nowrap hover onClick={handleLaunch} variant="caption">
+            <Typography noWrap hover onClick={handleLaunch} variant="caption">
               {addressParts.join(" / ")}
-            </Nowrap>
+            </Typography>
             <ParametersMenu
               page={currentPage}
               updateParam={updateParam}
               addressParts={addressParts}
             />
-            {/* {JSON.stringify(pageList)} */}
-          </Spacer>
+            <Spacer />
+            <Chip
+              onClick={handleLaunch}
+              size="small"
+              icon={<Launch />}
+              label="Open"
+            />
+          </Flex>
           {/* <StateBar state={machine.state} /> */}
+          <MachineButton
+            icon={machine.columnsOpen > 0 ? "Visibility" : "VisibilityOff"}
+            machine={machine}
+            payload={{
+              name: "columnsOpen",
+              value: machine.columnsOpen > 0 ? 0 : 3,
+            }}
+            message="set context"
+          />
           {!!handleSave && (
             <>
               <ChipMenu

@@ -8,6 +8,7 @@ import {
   Divider,
   LinearProgress,
   Stack,
+  TextField,
   Typography,
 } from "@mui/material";
 import ComponentEditor from "../ComponentEditor/ComponentEditor";
@@ -38,6 +39,7 @@ import JsonTree from "../../../styled/JsonTree";
 import AppGrid from "../ConfigurationDrawer/AppGrid";
 import AppList from "../ConfigurationDrawer/AppList";
 import { StateBar } from "../../../styled";
+import IconPopover from "./IconPopover";
 
 function ApplicationList({ machine }) {
   const { appKeys } = machine.state.context;
@@ -256,14 +258,26 @@ export default function ComponentTree({ machine }) {
   };
 
   // find the parent component of this component
-  const parentComponent = !items
+  const parentComponents = !items
     ? []
     : items.filter((f) => !items.find((p) => p.ID === f.componentID));
 
   // get this highest ORDER prop from the component list
   const highest = !items
     ? 100
-    : findMaxNumber(parentComponent.map((f) => f.order));
+    : findMaxNumber(parentComponents.map((f) => f.order));
+
+  const componentNavProps = {
+    components: parentComponents,
+    expand,
+    highest,
+    expanded,
+    create, //: () => create(null, highest + 50),
+    iconList,
+    componentList: items,
+    // reference to the currently selected component
+    component: selectedComponent,
+  };
 
   // properties based into the component previewer
   const previewProps = {
@@ -311,7 +325,7 @@ export default function ComponentTree({ machine }) {
     selectComponent,
   };
 
-  const left = machine.columnsOpen & 1 ? "320px" : "72px";
+  const left = machine.columnsOpen & 1 ? "380px" : "72px";
   const right = machine.columnsOpen & 2 ? "420px" : "32px";
   const expandLeft = Boolean(machine.columnsOpen & 1);
 
@@ -439,106 +453,30 @@ export default function ComponentTree({ machine }) {
                       />
                     </Flex>
 
-                    {expandLeft && (
-                      <>
-                        <Flex sx={{ ml: 1 }}>
-                          <TinyButton icon={Task} />
-                          <Nowrap
-                            variant="body2"
-                            hover
-                            bold={!currentPage}
-                            onClick={() => {
-                              machine.send("navigate");
-                            }}
-                          >
-                            {appData.Name}
-                          </Nowrap>
-                        </Flex>
-
-                        <PageNav
-                          onClick={(p) => {
-                            machine.send({
-                              type: "navigate",
-                              path: p.PagePath,
-                            });
-                          }}
-                          page={currentPage}
-                          pages={machine.appData.pages.filter((f) => !f.pageID)}
-                          pageList={machine.appData.pages}
-                          send={machine.send}
-                        />
-
-                        {machine.state.can("new page") && (
-                          <Flex sx={{ ml: 1 }}>
-                            <TinyButton icon={Add} />
-                            <Nowrap
-                              variant="body2"
-                              hover
-                              onClick={() => machine.send("new page")}
-                            >
-                              Add page
-                            </Nowrap>
-                          </Flex>
-                        )}
-                      </>
+                    {!expandLeft && (
+                      <Stack sx={{ mt: 1 }} spacing={1}>
+                        <IconPopover icon="Task">
+                          <PageNavigation machine={machine} />
+                        </IconPopover>
+                        <IconPopover icon="Apps">
+                          <ComponentNavigation
+                            {...componentNavProps}
+                            machine={machine}
+                          />
+                        </IconPopover>
+                      </Stack>
                     )}
+
+                    {/* page navigation */}
+                    {expandLeft && <PageNavigation machine={machine} />}
                   </Card>
 
                   {/* component navigation */}
                   {expandLeft && (
-                    <Card
-                      sx={{
-                        p: 1,
-                        height: "calc(100vh - 412px)",
-                        overflow: "auto",
-                      }}
-                    >
-                      {machine.state.can("merge") &&
-                        !items?.length &&
-                        !!machine.page && (
-                          <Warning spacing={1}>
-                            Page has no components.
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              onClick={() => {
-                                machine.send("merge");
-                              }}
-                            >
-                              download
-                            </Button>
-                          </Warning>
-                        )}
-                      {!machine.state.can("edit") && <LinearProgress />}
-
-                      <Nowrap bold variant="caption">
-                        Components
-                      </Nowrap>
-                      {!!items && (
-                        <ComponentNav
-                          expand={expand}
-                          create={create}
-                          expanded={expanded}
-                          iconList={iconList}
-                          components={parentComponent}
-                          component={selectedComponent}
-                          componentList={items}
-                          machine={machine}
-                          send={machine.send}
-                        />
-                      )}
-
-                      <Flex sx={{ ml: 1 }}>
-                        <TinyButton icon={Add} />
-                        <Nowrap
-                          onClick={() => create(null, highest + 50)}
-                          hover
-                          variant="caption"
-                        >
-                          Add component
-                        </Nowrap>
-                      </Flex>
-                    </Card>
+                    <ComponentNavigation
+                      {...componentNavProps}
+                      machine={machine}
+                    />
                   )}
                 </Stack>
               </Flex>
@@ -604,6 +542,112 @@ export default function ComponentTree({ machine }) {
           </Columns>
         </Stack>
       </Box>
+    </>
+  );
+}
+
+function ComponentNavigation({ machine, ...props }) {
+  return (
+    <Card
+      sx={{
+        p: 1,
+        height: "calc(100vh - 412px)",
+        overflow: "auto",
+      }}
+    >
+      <TextField
+        size="small"
+        label="Search"
+        fullWidth
+        onChange={(e) => {
+          machine.send({
+            type: "set context",
+            name: "searchParam",
+            value: e.target.value,
+          });
+        }}
+      />
+      {machine.state.can("merge") &&
+        !props.componentList?.length &&
+        !!machine.page && (
+          <Warning spacing={1}>
+            Page has no components.
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => {
+                machine.send("merge");
+              }}
+            >
+              download
+            </Button>
+          </Warning>
+        )}
+      {!machine.state.can("edit") && <LinearProgress />}
+
+      <Nowrap bold variant="caption">
+        Components
+      </Nowrap>
+      {!!props.componentList && (
+        <ComponentNav {...props} machine={machine} send={machine.send} />
+      )}
+
+      <Flex sx={{ ml: 1 }}>
+        <TinyButton icon={Add} />
+        <Nowrap
+          onClick={() => props.create(null, props.highest + 50)}
+          hover
+          variant="caption"
+        >
+          Add component
+        </Nowrap>
+      </Flex>
+    </Card>
+  );
+}
+
+function PageNavigation({ machine }) {
+  return (
+    <>
+      <Flex sx={{ ml: 1 }}>
+        <TinyButton icon={Task} />
+        <Nowrap
+          variant="body2"
+          hover
+          bold={!machine.page}
+          onClick={() => {
+            machine.send("navigate");
+          }}
+        >
+          {machine.appData.Name}
+        </Nowrap>
+      </Flex>
+
+      <PageNav
+        onClick={(p) => {
+          machine.send({
+            type: "navigate",
+            path: p.PagePath,
+          });
+        }}
+        page={machine.page}
+        pages={machine.appData.pages.filter((f) => !f.pageID)}
+        pageList={machine.appData.pages}
+        send={machine.send}
+      />
+
+      {machine.state.can("new page") && (
+        <Flex sx={{ ml: 1 }}>
+          <TinyButton icon={Add} />
+          <Nowrap
+            variant="body2"
+            hover
+            onClick={() => machine.send("new page")}
+          >
+            Add page
+          </Nowrap>
+        </Flex>
+      )}
     </>
   );
 }

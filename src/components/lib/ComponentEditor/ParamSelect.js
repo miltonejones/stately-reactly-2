@@ -3,10 +3,11 @@ import SearchInput from "../../../styled/SearchInput";
 const exposedProps = {
   onPageChange: ["page"],
   onProgress: ["currentTime", "duration", "progress", "current_time_formatted"],
-  onCellClick: ["column", "row", "rows", "ID"],
+  onCellClick: ["column", "row", "rowItems", "rowData", "ID"],
   onCrumbClick: ["value"],
   onChipChange: ["value"],
   onChange: ["value", "checked"],
+  dataLoaded: ["rows", "count"],
 };
 
 export default function ParamSelect({
@@ -16,13 +17,19 @@ export default function ParamSelect({
   repeaterBindings = [],
   ...props
 }) {
-  const { stateList, page } = machine;
+  const { expandedList, page } = machine;
 
   const eventParams = exposedProps[eventType];
+
+  const itemProps = !repeaterBindings
+    ? []
+    : ["rowData", "rowItem", "row"].map((f) => `item.${f}`);
+  const eventProps = !eventParams ? [] : eventParams.map((p) => `event.${p}`);
+
   const totalList =
     !!stateOnly || !eventParams
-      ? stateList
-      : eventParams.map((p) => `event.${p}`).concat(stateList);
+      ? expandedList.concat(itemProps)
+      : itemProps.concat(eventProps).concat(expandedList); // [...itemProps, ...eventProps, ...expandedList];
 
   const items = (
     !page?.parameters
@@ -32,9 +39,22 @@ export default function ParamSelect({
           .concat(totalList)
   ).concat(repeaterBindings);
 
-  // if (repeaterBindings) {
-  //   return <>{JSON.stringify(repeaterBindings)}</>;
-  // }
-
-  return <SearchInput options={items} {...props} />;
+  return (
+    <>
+      {/* {JSON.stringify({
+        eventParams: (!eventParams).toString(),
+        stateOnly: (!!stateOnly).toString(),
+      })}
+      <hr />
+      <hr />
+      {JSON.stringify(itemProps)}
+      <hr />
+      {JSON.stringify(totalList)}
+      <hr />
+      {JSON.stringify(items)}
+      <hr /> */}
+      {JSON.stringify(repeaterBindings)}
+      <SearchInput options={items} {...props} />
+    </>
+  );
 }

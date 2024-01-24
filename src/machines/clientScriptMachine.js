@@ -5,7 +5,7 @@ import { scriptActions } from "./actions/script";
 import codeCheck from "../util/generateText";
 const clientScriptMachine = createMachine(
   {
-    /** @xstate-layout N4IgpgJg5mDOIC5QGMA2BLMA7ALgZWQCd0AHHAYlQHsBDCAbQAYBdRUEq2dHdKrNkAA9EAFgBMAdgB0ADhEyAjAGYZEpSqViArBIA0IAJ6IAtADYRATikiFjCxMYyxF5aYsBfd-rSZcBYmSUtAwKrEggHFw8fALCCFpaClKO9pIySgoSpor6RgjGSqZJCqZiCjKMphIipeqmnt4Y2PhEpDhSsK1kAAQAtlQQNKjd6LDdVCTY5LBgON2dE2BMYeyc3Lz84XEuYlI7YkoORco5hibmVjZ2Dk4uhR5eID7N-m0dXXP9g8Oj45NY01m8w+ywEkXWMS2iDkSj2ZVM5gU2iyWjEuRMShE0gUSMkpkYWhk9nkDSeTT8H3eAU+AyGIzGiwBaE4SxYYLW0U2oDi2isbi0pRxEgsclsWnRCFsMi01kxjE0CPkWQkpOeFOpVLafVpPwZ-3IYEEJBoWAYbPC4M5sRMtkOUgk2kYNTEkhxCglxiRjCkpi0lixApEhxqClV5JaGs61O133pfymdDNKwiHI21vyIid9ts8rEFTE+PdZ3yLukMjcdQshx0ahEYd8EbeUa1Xzpv0ZUkg6ywUHIzJmwOpoItqch3JMVeS6kypXsGSqRbythEcPEWMkFgsYnkSnrL0pzZ6rd18awnYg3d7yCovV63G6yAAFiaYLBh6sommoZLCTK-eobBUQl1DRYtylhfkdBSSxhWyPd1SbD4YzbPVsHPS8pAAN0wAB3dAe3IQgwBw4gcFZZNLS-ccEAXWRzBsdJGBxeQRAlBQLFMKRMT9NxMkqEQBV3R41UbMhNSPHU4w7LseB7KQiJIy8HwGMByAgPgwCkfDMKoABrTSRNeMTDxpWN23+dDZKgeTiNI-CoGUiAwAQbSqGQGhOWWd8U0-MchEQHNig4woRBqCodCUCUXWKJUFC0CxBOqRx4NE9oTOQk9pIvKybMUqzHNUsBCEIKhCCkEhUA8gAzUreikQyDyQ48pIsmT7NyuyewKlysB09zPJYbzKL8uIsW9YUnUzJQqwRVwJW4vZTHUP1xCUAltxSoy0qayTzLQtq5IUzqHOvJzphwIiaF6IbRy5fzJUYMRvVFASnoLCQslMCV5Bke0gyegl5SWyotE2xro2avazwO6yjqU07VNgHAJhu3y7ricsrFglx1sYB1UQlLI4QUIM8YJaU5BkMHIx2szUOh7L2tgR8qBw7o8rIrACvIGhkGQMAyFRiF0YC9jYUxBFqksRhKkkeakXtGWsRFZEqhVYTwy28TTJQ09LKZlm2Y57BuacnwsHI9k0fTHFtC46V-oOHQ-XFYtjBqLiQ0kCR4tUD76g1hstfSyH6f1uTjQAVwHGrCG6MAqqqsBkAoQQkY8zSaCqsjCAACjimWAEo+018GW12sOYfKmho7AbpY-jxPk5wIWrW-JFMi42ogJxADWOLX0Vy3R6shqT682pxCIYrvWq6Kkq47y+zCNmQgDFbqj7oFXZfTWmoEqyPHQLyabdie-FKhxLRCiqITGiDsuJLp2fGbk+fSvZ46+xNfnUA3kbEAHFhMKHQFRSjbhxAiQmnEtwk3SP+bIoV1b333DTaez8OzXlvPedKT4XxwDUhpLSvU9IGVLmg8uGCLJYLvHMXBz4exwB6n1DyGwvLmg-MLdMOgkhqA4hWOw5gqgSnSJxaWmh1AgI+qGQOqCp6UN1h2RM9lBxtGmDQTClsRzW2-MYN6Uhr7liKDIMB2hsgensD6VEGRMz2AdpiSexlaaKIssorqJk+wMJgP-EW+QPrelAQWPM6RnCWA9GUFcEgSj4iyNuVE4FHHbXQS4tCbiHIePclgX+Pj0zGFRDKJiPsgwIiWuUPQbtCjSHMH6VQcgCSVIDighCTjkmZQsphIY6BBhkW6AAKw0TQDx6kLbEJ0vpeq5D5FPxSWeDpGBul136R0kyzC3KsL4Owiit0bYmJlMcCQ+ZYlEnKXkUR1gLC5kkQfKJiTtYZRamhOZXSM59IGR49+ZUKrVVqhMh+FDpltMeZ0hZrzlkfFWf1Nhg0OE+S4e3Cm1gBT+wOEUcQMhvpJALBxeKhQ8xrTgrI5pSSFGAuhsVD++FuZ6Rye3eK2IolKFRMFFwFgPT4h9I4bIig1qMsKLc-sy9hmaVcuMhqGoBU9ghesrAmyrZwuou7IK+ZUVmLKAKNimIVx1CdD7T6WIA6PCwCpeA4QxVtDlW3BVUoZT4ydOAqJOIPRqBgbYYkHERT4lBoS1KWkICoDABazecQ9EOFkC6AsJNLDSnlBq30BjSjyBOFWEUtyQ4z0ZIGgB+RFC-UCaUExmgLBhLdgJGUJM-RFNFI9SoqbnGkt9f6zNviQ3SAYpLBNwN+5LhdNYZEwookHPsHYWtrSHkM0vE2m2cVkgOjMZoKJ8UnQekyL9CWSIPpFqcKUEdJKx3h2sthYi9lJ3fgRH+OlGRlAXKMdA4mNQgwwjxim71wc617qrnDfKCMT3UQcLCTcKs+4-Xmj24G5QagqEcOIHdAL32v2sszVmn9uCcwKj++69hpAFi3XmJlk0JR+h9FErEKhMzlCATBnW9aq5Rxjh-BOScU7oeRiQRAiQkj7ySg6cQBMQD+uzqLTcUhyPGKrGkX0+gABGVAcDI16Gx+K1g3Bce3NoUCxAoCPhwAFDIVgRPlDEwciTIA8IQBwI+AKT19CPjAOgTT2mEDyH0HEHEQn9NEnneWV2eR2NKeJEfHjYhKP3Khvuzs5LF7HXQy5paM6XSCVdIurtiBNWyASAZn6EVkFkj+VMqje6aE4KQngxhJrOGWvur3Kwmg6W1KYktQmRa9ibiWqFTc4gbkvsfvl0LaTVFkGiyYHQnFBRrSlhWKsFj6U6AOIfJE3Fguhz1k8kFSzBkfEG5KOQK5va4lqExFQUUCTCccCYsB5RSl3xy3Ilpu7QsfJGFzb92j5WVelFYD1Z3HBCiRGy70+JyzBlUHmWa-LqBcB7Jtg4v0ijCgA3ijiBJY0rjXOxO4H1EieE8EAA */
+    /** @xstate-layout N4IgpgJg5mDOIC5QGMA2BLMA7ALgZWQCd0AHHAYlQHsBDCAbQAYBdRUEq2dHdKrNkAA9EAFgBMAdgB0ADhEyAjAGYZEpSqViArBIA0IAJ6IAtADYRATikiFjCxMYyxF5aYsBfd-rSZcBYmSUtAwKrEggHFw8fALCCFpaClKO9pIySgoSpor6RgjGSqZJCqZiCjKMphIipeqmnt4Y2PhEpDhSsK1kAAQAtlQQNKjd6LDdVCTY5LBgON2dE2BMYeyc3Lz84XEuYlI7YkoORco5hibmVjZ2Dk4uhR5eID7N-m0dXXP9g8Oj45NY01m8w+ywEkXWMS2iDkSj2ZVM5gU2iyWjEuRMShE0gUSMkpkYWhk9nkDSeTT8H3eAU+AyGIzGiwBaE4SxYYLW0U2oDi2isbi0pRxEgsclsWnRCFsMi01kxjE0CPkWQkpOeFOpVLafVpPwZ-3IYEEJBoWAYbPC4M5sRMuNMUkSFgOChFOKUhIlxlxUgkqIRjDUFhsFnUqvJLQ1nWp2u+9L+UzoZpWEQ5G2t+REjBE3ts8rEFTE+IUHrEklkbjqwZ9EjUIlDvnDb0jWq+dN+jKkkHWWCg5GZM2B1NBFpTkO5NoL1gkeZUJcdToltizjvEWMkFmXMjrL0pTZ6Ld1cawHYgXZ7yCovV63G6yAAFiaYLAh6soqmoZLCTKtCJ1DYVIT1DRM5JXSKR+R0FJLGFbIt3VRsPmjVs9WwY9TykAA3TAAHd0G7chCDALDiBwVkk0tN8xwQKokhkcwbHSRgcXkEQFwsO1MW-NxMkqEQBSUWCGzITU9x1WN207HhuykAiiNPG8BjAcgID4MApFw9CqAAa1UtVBPaXcaRjNt-lQySoGkwjiNwqB5IgMAEHUqhkBoTllmfZNX1HIREBzYo2MKEQagqHQlAlEtiiVBQtAsPjqkcATXiEgzEIPcSTzMizZLM2zFLAQhCCoQgpBIVAXIAM0K3opF0xL9IQ-cxJMiTrMyqzuxyhysA05zXJYdzyK8uIsUYb0LEzDMlGDBFXAlDi9lMdRv3EJQCTEWtHhqnd6tE4yUOaqSZLamzzzs6YcAImhen6kcuW8yVGDEEbRV4x6C2rBEJXkGRvR-R6CXlBbKi0BKtqjBrdqPfbzMOuSTsU2AcAma7PNuuJaKsaCXFW-1tCAvIsjhBQf39AlpTkTcNrDWrhMMpDD1MlrYFvKgsO6LKSKwHLyBoZBkDAMhkYhVGfOdWFMQRapLEYSpJFmpFvWlrERWRKoVUp+tqeS8HkMh9LGeZ1n2ewLm7J8LBSPZFG0xxbQpH-X6Dh0b9xWA4wajtmokWraLVHekGI22oydYZqTjQAV37CrCG6MAyrKsBkAoQQEZc1SaDKkjCAACii6WAEpeyp0Hmx24OoeKmgI7Aboo5juOE5wQWrXfJFMjt2p-1dTEWOA0xvzhB6shqLJSgpxoNeLkSg-p8u8oK6Osus-DZkIAwm4ou6BV2PuVpqGKshx2bHSkR78UqHEtEKKp+PV7cA7B0uZ71qS58Ktmjt7E0+dQdfBsQA5YTCh0BUUoa0cQfWAgTR0RN0jfkKHILE-t4IP2nu2c8l5rzJTvA+OASkVJqS6lpHSRd74l1QSZdBV45hYPvN2OAnVuouQ2G5c0L4hZph0EkAMCJgx2HMFUCU6Q7RS00OoIB1YFBIKSoHOm7YEzWQHG0aYNB0IW2HFbd8xhXr2hUNNGQIDtDZA9PYMCqIMgZnsNKH861x532QWQ2RJl5HtQMr2WhMBf7C3yNWEawCCx5nSM4SwxYibZj9FkNaqJyg31sXBaRKDHEoWcTZVxzksDf08WmYwqIZSMR9D+BEC1yh6FdoUaQ5hvyqDkASMp9Rb5xLqgk1KJl0JDHQIMEi3QABWKiaCuOUubAhGltLVRIfYqeiSjytIwB06uPTWkGQYU5JhfAWFkRutbfRMpjgSHzBEokJS8hCOsGNURhx94SEkfUvSNMUqNRQtM9pqdum9Nca-IqJVyqVVGRPUhEzmkPLabMl5CyPhLJ6swvqrCPLsJbmTawAp3oHCKOIGQn0kgFjYtFQo05KhjzJL88ZtMAWQ3ym-XCXMtKZJbtFbEly3TOAWi4CwHp8RgUcNkRQK03SFCke0PsS8BmqUciMzaGoBXdnBSsrAazLawsom7Py+YUWGLKAKBcV8wL2COIoRwGQYkErsfEhxJKQ49ggAVEg1KFWHDtAxS+jFVBrWcIcxAlS7b5LsM4IGly+W3O1vTC1EwSAKNcVgKg1q7rGBiskH8UUoqBR9GuWaoFFBaD4emmKNg-Va0fu2INJAQ0uI+OQAwcBI1xGjWNawJRbDCnUBUTMs03CTkDGUGoiRhQ2MNQ0-1eaKEXioYonoBa8GDJFcQwlxr-n3KPJQzBCEC1St6swCt5xorJEKCtR0tEfFFmAo9S4CRLAlmipBYG1zNYyNNfO6hi7LVjuFYQ0VYzp3EtndVQdC6oxLschC1ZfVQhyubgqnxJ943+gFDYDMeMfLOCkLnb2gVBSMU8I8cNdl4DhDFW0YDG9K1eyzA6J0LplDuldmoO0WM2LaqRDYC9sSbntNQGAPDf98iSF2My4kpR5AxX3XkE40hlwlF9g4dcObr2zrY14z0BIkjK0ULjAJ4gPS8RlETb8uzdn-UqJJppH7mOsfUfKqNmgszmNOYGN00pL4LlLH3RwiG7AZjkPpk1H6oYyetlFZIU5DGaEuWenueRPS7I9kUbT2gClunczOiGZqMLYWst598CIvy0oyMoMatFTASige28wKhibCnxTht9dyEvlxhtlOGqXKIOFhOuZWv5Ar6NmiWMCK1yg1BUI4cQcX31VefuZJmLN37cA5jlerd1tUn2yP46U3rAoSn7tRLExXHUAMG5VsuI2K5Vxrm-WO8dE4zcRiQN1OJrBuDilOcQqJ9AsYziLdcCGnBFCJIF2iLsABGVAcCI16G6jde87vOseyAYgUBbw4B8hkKw5QCzlGDGkPu+gcIQBwLeODjB9C3jAOgGHcOEDyH0HEHEb2kefdR7s9HwFEhJDBxme7uMdsBrSmhd5E2zIzYpwtPzp6FqSCimNELiBu6yASCjr6IU1aMavQZhLt7h1zGwXQrDbCQN3VdFYTQtKqmMQWvlwMex1wLUCuucQvrL2TyG8HZJqu+cmB0HaQUK1JblmDMYulOgDgHyRBxdn-bAUzOefMvpHxncgUCifCRJZaiMRUGFAkCHHD6JAeUIpBryuNI81Vsl0cKV1ZM9rin0orAik5RURQmQkSspGviWihwlR5mmn6iVUBo8HG+pF5rO7Jr4hdoJgK1gwHrmUN7K5Cu7e7cDZaotKSo+l-wxiXi3ofTpGlEiWitEU2wjTRmuw35p89pubm8hKEVfJQLdHuT8o9hOCU6iFTKfsROGxgGIkkg0PuCAA */
     id: "clientScript",
 
     initial: "idle",
@@ -38,6 +38,11 @@ const clientScriptMachine = createMachine(
               "commit changes": {
                 target: "validate javascript",
                 actions: ["assignCode", "updateScriptCode"],
+              },
+
+              drop: {
+                target: "dropping script",
+                actions: "assignScriptDropMessage",
               },
             },
 
@@ -149,6 +154,29 @@ const clientScriptMachine = createMachine(
               ok: "editing",
             },
           },
+
+          "dropping script": {
+            on: {
+              no: "editing",
+              yes: {
+                target: "commit script drop",
+                actions: ["dropScript"],
+              },
+            },
+          },
+
+          "commit script drop": {
+            invoke: {
+              src: "sendClientScriptUpdate",
+              onDone: [
+                {
+                  target: "editing",
+                  cond: "scripts in scope",
+                },
+                "idle",
+              ],
+            },
+          },
         },
 
         initial: "idle",
@@ -207,6 +235,9 @@ const clientScriptMachine = createMachine(
   },
   {
     guards: {
+      "scripts in scope": (context) =>
+        !!context.scriptProps[context.scope] &&
+        context.scriptProps[context.scope].length,
       "no scripts are present": (_, event) => {
         const scriptProps = {
           page: event.scripts,

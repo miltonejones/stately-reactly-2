@@ -11,6 +11,7 @@ import { TinyButton } from "../../../styled/TinyButton";
 import { Chip, Collapse } from "@mui/material";
 import findMaxNumber from "../../../util/findMaxNumber";
 import useBinding from "../../../hooks/useBinding";
+import { HilitText } from "../../../styled";
 
 export default function ComponentNav(props) {
   const { components, component: currentComponent } = props;
@@ -32,6 +33,15 @@ export default function ComponentNav(props) {
   );
 }
 
+const childNames = (component, components, output = []) => {
+  const offspring = components.filter((c) => c.componentID === component.ID);
+  offspring.map((c) => {
+    output.push(c.ComponentName);
+    childNames(c, components, output);
+  });
+  return output;
+};
+
 const ComponentChild = (props) => {
   const {
     componentList,
@@ -52,6 +62,7 @@ const ComponentChild = (props) => {
     });
   };
 
+  const { searchParam } = machine;
   const childComponents = componentList.filter(
     (comp) => comp.componentID === component.ID
   );
@@ -65,16 +76,22 @@ const ComponentChild = (props) => {
   );
 
   const highest = findMaxNumber(childComponents.map((f) => f.order));
-
   const libRecord = iconList[component.ComponentType];
   const marginLeft = !!childComponents.length ? ml : ml + 2;
+
+  const kindred = childNames(component, componentList);
+  const matching =
+    !!searchParam &&
+    kindred.some((f) => f.toLowerCase().indexOf(searchParam) > -1);
+
   return (
     <>
+      {/* {JSON.stringify(matching)} */}
       <Flex sx={{ ml: marginLeft }}>
         {!!childComponents.length && (
           <TinyButton
             onClick={() => expand(component.ID)}
-            icon={!!expanded[component.ID] ? Remove : Add}
+            icon={matching || !!expanded[component.ID] ? Remove : Add}
           />
         )}
         <TinyButton icon={libRecord?.icon || CheckBoxOutlineBlankRounded} />
@@ -85,7 +102,7 @@ const ComponentChild = (props) => {
           bold={currentComponent?.ID === component.ID}
           onClick={() => selectComponent(component.ID)}
         >
-          {component.ComponentName}
+          <HilitText value={searchParam}>{component.ComponentName}</HilitText>
           {component.ComponentType === "Repeater" && !!repeaterItems && (
             <Chip
               sx={{ ml: 1 }}
@@ -104,6 +121,7 @@ const ComponentChild = (props) => {
       </Flex>
       <Collapse
         in={
+          matching ||
           !!expanded[component.ID] ||
           (!childComponents.length && !!libRecord?.allowChildren)
         }

@@ -71,7 +71,7 @@ export default function ComponentModal({ machine }) {
             onClick={() => machine.send("cancel create")}
           />
         </Flex>
-
+        {/* [[{machine.createdComponent.componentID}]] */}
         {/* <Flex>
           <Nowrap variant="body2">
             {machine.createdComponent.ComponentName}
@@ -81,7 +81,6 @@ export default function ComponentModal({ machine }) {
         <Nowrap variant="caption">
           {machine.createdComponent.ComponentType}
         </Nowrap> */}
-
         <Stack spacing={1}>
           {machine.state.can("back") && (
             <Stack spacing={2}>

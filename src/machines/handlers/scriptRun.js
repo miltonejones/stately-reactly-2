@@ -22,7 +22,7 @@ const scriptRun = async (context) => {
   const { action, componentID } = currentEvent;
   const { target } = action;
 
-  const { resourceData, setupData } = application;
+  const { resourceData } = application;
 
   const scriptList = getScriptList(application);
   const script = scriptList.find((f) => f.ID === target);
@@ -46,60 +46,18 @@ const scriptRun = async (context) => {
       pagename: selectedPage?.PagePath,
       application,
       data: scriptData,
-      state: clientLib.page, // stateReduce(selectedPage?.state),
+      state: clientLib.page,
       setState: (fn) => {
         if (!selectedPage) {
           return console.log(
             `setState is being called in page scope by "${script.name}" but there is no page.`
           );
         }
-
-        // const states = selectedPage.state.reduce((out, st) => {
-        //   out[st.Key] = st.Value;
-        //   return out;
-        // }, {});
-
         const updated = fn(clientLib.page);
         console.log("%cupdated state", "border: dotted 1px red;color:magenta", {
           updated,
         });
         Object.assign(clientLib, { page: updated });
-
-        // const oldPage = { ...selectedPage };
-
-        // Object.assign(selectedPage, {
-        //   state: selectedPage.state.map((item) =>
-        //     updated.hasOwnProperty(item.Key)
-        //       ? {
-        //           ...item,
-        //           Value:
-        //             item.Type === "boolean"
-        //               ? !!updated[item.Key]
-        //               : updated[item.Key],
-        //           added: "special",
-        //           by: script.name,
-        //         }
-        //       : item
-        //   ),
-        // });
-
-        // updatedApp.pages = updatedApp.pages.map((p) =>
-        //   p.ID === selectedPage.ID ? selectedPage : p
-        // );
-
-        // const diff1 = stateCompare(oldPage.state, selectedPage.state);
-        // diff1.map((diff) =>
-        //   console.log(
-        //     `  %c"%s" was altered by script "%s" from %O to %O`,
-        //     "color:lime",
-        //     diff.Key,
-        //     script.name,
-        //     diff.Value,
-        //     diff.change
-        //   )
-        // );
-
-        // console.log({ states, app: updated, selectedPage, updatedApp });
       },
       application: {
         getState: async () => stateReduce(updatedApp.state),

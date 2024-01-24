@@ -65,7 +65,16 @@ function ComponentNode(props) {
       eventType,
       {
         ...options,
-        item: { ...repeaterItem, index: repeaterIndex, row: repeaterItem },
+        item: {
+          ...repeaterItem,
+          index: repeaterIndex,
+          // row: repeaterItem,
+
+          // deprecate other properties for these standard ones
+          row: repeaterIndex,
+          rowData: repeaterItem,
+          rowItems: repeaterItems,
+        },
       },
       event
     );

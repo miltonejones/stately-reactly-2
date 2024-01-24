@@ -3,6 +3,8 @@ import { createMachine } from "xstate";
 import setState from "./handlers/setState";
 import dataExec from "./handlers/dataExec";
 import pathOpen from "./handlers/pathOpen";
+import execRef from "./handlers/execRef";
+import openLink from "./handlers/openLink";
 import modalOpen from "./handlers/modalOpen";
 import scriptRun from "./handlers/scriptRun";
 import { invokeActions } from "./actions/invoke";
@@ -195,4 +197,6 @@ const handlers = {
   modalOpen,
   scriptRun,
   pathOpen,
+  execRef,
+  openLink,
 };

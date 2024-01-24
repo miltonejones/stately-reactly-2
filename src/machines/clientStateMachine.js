@@ -3,7 +3,7 @@ import { useMachine } from "@xstate/react";
 import { assign, createMachine } from "xstate";
 const clientStateMachine = createMachine(
   {
-    /** @xstate-layout N4IgpgJg5mDOIC5QGMA2BLMA7ALgZRwEMcwBiVAe0IgG0AGAXUVAAcLZ0d0KtmQAPRACYAnCIB0ARiEAWOgA4A7AGY6yxQFZpAGhABPRAFoxEujMWSlQ+fMkz5ygL6PdaTLgLEysMDgAEsMgULGD0TEggbBxcPHyCCIp0dOL2igBsaco2MspCafK6BgiG0mLiyll5dGlmkiJCzq4Y2PhEJKQ+-oHBoZLhrOyc3LwR8WlCiikilhby9kpzhUaSdBbl6bmSWxrpQhqNIG4tniTikENYUAFtZGjsoYx8UUOxo4gyaZOSWQ5pMiIZZTjJYIaSTRQTDT1ITKAFqdQHI4eG5nCAXK6wG6kACuLAgXjCT0GMRGoHi8ny4nkCjoGlp-yB+RB3xk4j+kLs-yUdP2LkOzWRXlR6OuXlILEIMEJEWeJLiiBW6hSUL2Ghk1jokgyIOMZTMswhNjsc0RAtaQvOXEuovaYH4EqwtEeMuJw3lCDS4gUeTsdBEULk8hEih1OWUVI0uVyMjk5mUGjSpvc5tOlvQ1sxQoATmBqHpSEEALaFzjSgbRN1vBDq1kKOx2f0aClq0NCKmKMRCaSRunxkRJ44otMZlE5vMdChZnBlyKu15k4TyNt5LsyOppDSRoSyUMAql7Paw2xaJcyAeC1Noq0Y0e5iD56hO-qzivzgSIHlUnIQkQOBQ7D5Qxqdsu1UT4EzPPkkRTMBhWvG1YLHe9SAAK1gHgZ1lSsFwSalxBED5Iw3X86S1HV8kkKkaj+FQtGo+RzxguD0xvIUixLfxoIQvxkAAC0IS44FICAeFg9MADcKAAa1g6CTlg4dWNOdjOB4s1uL4gSYFgBAJIoZBiGGMJMLnUl3w9BwvS2EQsnMLdlEkHUu09ZQYwpOyzDDBioLNeTmJHIVOngzMSD8LBCELW5+MEkzXzMsYYXEPYti1NItgyRQQ30IxFHsfCYxqXK7B+BofOTPzFIQ8QgpY7jwsigsBOQMBUFil54veepxAsP11BsoR9X9HUIU9LtqUy+NNT2RMysHC0r1qkLYJqgLQvq7xCHEh5nywt94h2DRuqSWRt0SXJVh1NVklWBMiLqBxLEYiqFtWhSXquNCeD8CgACMULAZAcGE0S2rlKsVi2bq+zME6E3jHVYVZJR2WqSx6nkSMnpRO4OEuYGsDErBJJk8Q5OxyhcagXSif0wyMMYUHsPMwxw0+SwshUabEgBEEVyOtc1HSeoVBUZw+SwCgIDgPgya8Ik4vdQwtDZWYOdyBNubSHVvgpKlKj+GpBd5JpypRdAIFQMB5fa90Bu1jHxA0GF1X9IFN2qUqTbmy8RSW62wZw52kvGesAU3XId2y4pfhSAr8jD53IK9i83t928839pn4hjcFZDEQX2bBBHbCkTngz+NdbABLH5rTtiKGLVSuKWnjou0zO9sQP55CS6YARsH8oQKKPDAd1RtySOw0hEJJ0hrn3gpRFalLAMKIqtl0FarOk2yI6wQ7jnJyO+KQl00dI6TMNL59Txfa-gz6sG+v6AZwDuOoQYMJF-WEZ81T5qhaxHsRKQrk-QUU0NGG+pMKYsXfu6Nckx1AOQTv3PIvNgI5FWFfCoTZq5iyAA */
+    /** @xstate-layout N4IgpgJg5mDOIC5QGMA2BLMA7ALgZRwEMcwBiVAe0IgG0AGAXUVAAcLZ0d0KtmQAPRACYAnAHYAdABYAbFKkBmABxKArEroKAjABoQAT0QBaLXRGqJCujLHitCkSKFapAX1d60mXAWJlYYDgABLDIFCxg9ExIIGwcXDx8gghidHTSSmIyMspKikIySnqGCCaiIpbKBdZ0UlpO7p4Y2PhEJKQBwaHhkVrRrOyc3LwxyTJCklIiWpkzUipiecXGpmJallkKzlpaqllCqo0gXi2+JBKQQ1hQIW1kaOyRjHxxQ4mjiLJK0nQTSoX1GSaETLBDqKQSOj2GTqJRWcwKQ4eY7NHx3C4QK43WB3UgAVxYED8URegwSI1AyTUMgkWkKqikYm0IkK5lBihpYgKmX+DjpQiEbmRJzRfgxWNuflILEIMBJMVe5KSiFMU0hWVsUgZGnUQlBJl+QgkQiUAphqhNQm0SKa3laYsuXGukvaYH4MqwtGeCrJw2VCBpdFNMhcZlUIikQfE+sUCgkai2W3ktSZqhkRxF9vOjvQzpxYoATmBqPpSGEALblzjygbxP0fBBSCbxpkFcOCrL-UGCmlpxm-VIh6wKDOorNgcVO7HoosljoUAs4GuxX3vSnCU3G8YuQGqVRbQUxlnxg4HBxKXYzQWju1nCc5vMz4sQUvUL39Fd1tcCRCqOgWPIFC5EQ4SDPZZBjIEW2cKwbD7G9TnRB9p0LZ9SwAK1gHhl0Vet1xSDQJAjGEFBhEC-zpfUAXjIE5FTOlrCUBDRWzTEpxdCdZxfUgIALcIggAN0IAt0EIAAjVAng-XDv2SSN0j3TQ6FsC8bC0PUDGMCZ1n3bckwFeoxGY8dJ1zFDzgrKtgkzDigmQAALQhrjgHieAnXMBIoABrCdMzvUzHzFSzODssdbIcpyYFgBAPIoZBiGGKIcNXCkfxSeYiMFOE9yUERERkEFNNKA4KhEWoBQORk8qbIVbUQh02LMjiJE6dj8xIIIsEIct7kc5zkq-VKxitY1VB2OkQwmsQxH1MQMojWRlLqRQVCEYz-OQ5rWqa9qwE67r7ic5AwFQAa3iGz4nAkNYzCAvKhBTNkiqMLkaWcDRpsRKEDnTYUxw2xrAvObagb2rqeo6QgBKk0lBv9PYLFSX4mwmTQHpm56GXSZS010+o4RmdakMB8z7xJoJMJ4IIKDE9CwGQHBXKwGGfThhtTB2a7ETKmqfsRfUHAhTI5AekNcpNfciYaiVdokXj+KEkTxMk0h9DgM6lQbBlJCtFxpjTbQL10Z6tDWH4NC1VJ1HqLQpdYmX0XllhBOE0SJLILAKA1vC0phGlSK5M1SIUICime0jrp2U0SrUUWFFqlFb3RB4OGuJn3KwTyfIkPzk8oVOoBizO4oS7DGG92TjG+LksnkwUVqhDGSlsI1yhNMqnDEC07bJh3pfYymsGp2n6cZsIWH0CuLoQHYcgkfd1OcNMcgjDSShevJIVN3J9cRNZ3GRT2IDgPhc78WHzv9Iw02uiY5DSevlF+fV7H+eMqkWLG00Jv6k7FdAICSQvprfCD0X5qHnlaJsCJzTWDWr-eq9s2p3GAT7ZIUCtzODqCyPcB4pD6lmPPU2kZ6SmwKEZBBLFe7INQiWVBldGyMlvlMMqQEZjaAmALC8tJWziDkHUC8LIe4BVJjnCglYQo2V2nZPqUV6HT0WBCCM-5-xwiyOGbsZhaQFDvl3IE9hTbCM2rLEGpN9o9XkfDX489SImm3PIbIigqL2FpKaLu6i0iyFtpQkyxjiYSkHsPOmDNLENnEKVOEjg0h0kHDIKi4ZaTxzMACLuSYjHk1lk7F2St3ahPwn+SYTJCi1DMKUhQoIdhxjIUCWw+5pozF+nVKhOd85mTyWlWQEJ7B5XBJqFQcSipd2+E2NYhtTSZHmAfVwQA */
     id: "clientState",
 
     initial: "idle",
@@ -56,9 +56,15 @@ const clientStateMachine = createMachine(
               },
 
               add: "setting state name",
+
               json: {
                 target: "editing json object",
                 actions: "assignJSON",
+              },
+
+              "drop variable": {
+                target: "drop variable",
+                actions: "assignClientStateDropMessage",
               },
             },
 
@@ -95,6 +101,27 @@ const clientStateMachine = createMachine(
               done: {
                 target: "ready",
                 actions: "updateJSON",
+              },
+
+              copy: {
+                target: "editing json object",
+                internal: true,
+                actions: "copyJson",
+              },
+            },
+          },
+
+          "drop variable": {
+            description: `Confirm action before dropping variable.`,
+
+            on: {
+              yes: {
+                target: "ready",
+                actions: ["dropClientStateVariable", "statePaginate"],
+              },
+              no: {
+                target: "ready",
+                actions: "clearClientStateDropMessage",
               },
             },
           },
@@ -143,6 +170,37 @@ const clientStateMachine = createMachine(
         json: event.json,
         jsonKey: event.key,
       })),
+
+      dropClientStateVariable: assign((context, event) => {
+        const updatedProps = context.stateProps[context.scope].filter(
+          (prop) => prop.Key !== context.selectedKey
+        );
+        return {
+          dirty: true,
+          internalProps: {
+            ...context.internalProps,
+            [context.scope]: updatedProps,
+          },
+          stateProps: {
+            ...context.stateProps,
+            [context.scope]: updatedProps,
+          },
+        };
+      }),
+      clearClientStateDropMessage: assign({
+        selectedKey: null,
+      }),
+
+      copyJson: assign((context) => ({
+        json: JSON.stringify(context.clientLib.page[context.jsonKey], 0, 2),
+      })),
+
+      assignClientStateDropMessage: assign((_, event) => ({
+        message: `Are you sure you want to delete variable${event.key}?`,
+        caption: "This action cannot be undone!",
+        selectedKey: event.key,
+      })),
+
       updateJSON: assign((context, event) => {
         if (!event.json) {
           return;
@@ -258,6 +316,7 @@ const clientStateMachine = createMachine(
       assignState: assign((_, event) => ({
         scope: !!event.state?.length ? "page" : "application",
         pageNum: 1,
+        clientLib: event.clientLib,
         internalProps: {
           page: event.state,
           application: event.appState,

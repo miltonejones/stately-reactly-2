@@ -30,6 +30,7 @@ import DropModal from "../ComponentTree/DropModal";
 import { ComponentStylesEditor } from "../ComponentEditor/ComponentStylesEditor";
 import JsonTree from "../../../styled/JsonTree";
 import React from "react";
+import IconPopover from "../ComponentTree/IconPopover";
 
 const AppEditor = (props) => {
   const [open, setOpen] = React.useState({});
@@ -76,6 +77,17 @@ const AppEditor = (props) => {
 
   const expanded = Boolean(machine.columnsOpen & 2);
 
+  const eventProps = {
+    componentEvents: "onApplicationLoad",
+    events: machine.appData.events,
+    machine,
+    title: (
+      <>
+        Events in <b>{machine.appData.Name}</b>
+      </>
+    ),
+  };
+
   return (
     <>
       <DropModal machine={machine} />
@@ -103,6 +115,18 @@ const AppEditor = (props) => {
         />
       </Flex>
 
+      {!expanded && (
+        <Stack sx={{ mt: 1 }} spacing={1}>
+          <IconPopover icon="Settings">
+            <CommonForm {...formProps} />
+          </IconPopover>
+          <IconPopover icon="Bolt">
+            <EventList {...eventProps} />
+          </IconPopover>
+          <MachineButton machine={machine} message="home" icon="Close" />
+        </Stack>
+      )}
+
       {expanded && (
         <>
           <Flex sx={{ mb: 2, pt: 1, borderBottom: 1, borderColor: "divider" }}>
@@ -126,16 +150,7 @@ const AppEditor = (props) => {
             </Collapse>
             <Collapse orientation="horizontal" in={machine.appTab === 1}>
               <Box sx={{ width: "100%", minWidth: 400 }}>
-                <EventList
-                  componentEvents={"onApplicationLoad"}
-                  events={machine.appData.events}
-                  machine={machine}
-                  title={
-                    <>
-                      Events in <b>{machine.appData.Name}</b>
-                    </>
-                  }
-                />
+                <EventList {...eventProps} />
               </Box>
             </Collapse>
             <Collapse orientation="horizontal" in={machine.appTab === 2}>
@@ -219,6 +234,18 @@ const PageEditor = (props) => {
     },
   };
 
+  const eventProps = {
+    componentEvents: "onPageLoad",
+    pageID: machine.page.ID,
+    events: machine.page.events,
+    machine,
+    title: (
+      <>
+        Events in <b>{machine.page.PageName}</b>
+      </>
+    ),
+  };
+
   const expanded = Boolean(machine.columnsOpen & 2);
   return (
     <>
@@ -245,6 +272,26 @@ const PageEditor = (props) => {
           message="set context"
         />
       </Flex>
+
+      {!expanded && (
+        <Stack sx={{ mt: 1 }} spacing={1}>
+          <IconPopover icon="Settings">
+            <PageSettings machine={machine} />
+          </IconPopover>
+          <IconPopover icon="Palette">
+            <ComponentStylesEditor
+              {...props}
+              bit={1 + 16 + 32 + 64}
+              component={machine.page}
+            />
+          </IconPopover>
+          <IconPopover icon="Bolt">
+            <EventList {...eventProps} />
+          </IconPopover>
+          <MachineButton machine={machine} message="navigate" icon="Close" />
+        </Stack>
+      )}
+
       {expanded && (
         <>
           <Flex sx={{ mb: 2, pt: 1, borderBottom: 1, borderColor: "divider" }}>
@@ -254,112 +301,7 @@ const PageEditor = (props) => {
           </Flex>
           <Stack direction="row">
             <TabBody in={machine.pageTab === 0}>
-              <CommonForm {...formProps} />
-
-              <Flex sx={{ p: 1 }}>
-                <Typography
-                  sx={{ textTransform: "capitalize" }}
-                  variant="caption"
-                >
-                  <b> parameters</b>
-                </Typography>
-                <Spacer />
-                <TinyButton
-                  icon="Add"
-                  onClick={() => machine.send("add")}
-                  disabled={!machine.state.can("add")}
-                />
-              </Flex>
-
-              {!machine.page.parameters && (
-                <Warning>Page contains no parameters</Warning>
-              )}
-
-              <Collapse in={machine.state.can("ok")}>
-                <Stack spacing={1}>
-                  <TextField
-                    size="small"
-                    onChange={(e) => {
-                      machine.send({
-                        type: "change",
-                        name: e.target.value,
-                      });
-                    }}
-                  />
-                  <Flex>
-                    <Button
-                      disabled={!!machine.state.context.name}
-                      onClick={() => machine.send("ok")}
-                    >
-                      cancel
-                    </Button>
-                    <Button
-                      disabled={!machine.state.context.name}
-                      variant="contained"
-                      onClick={() => machine.send("ok")}
-                    >
-                      ok
-                    </Button>
-                  </Flex>
-                </Stack>
-              </Collapse>
-
-              {!!machine.page.parameters && (
-                <Stack sx={{ m: 1 }}>
-                  <Typography variant="caption">
-                    Parameters to be passed into the page
-                  </Typography>
-
-                  {!(
-                    !!machine.page.parameters &&
-                    !!Object.keys(machine.page.parameters).length
-                  ) && (
-                    <Warning>
-                      No parameters for {machine.page.PageName}.
-                    </Warning>
-                  )}
-
-                  {Object.keys(machine.page.parameters).map((key) => (
-                    <TextField
-                      size="small"
-                      key={key}
-                      label={key}
-                      value={machine.page.parameters[key]}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              onClick={() => {
-                                const parameters = {
-                                  ...machine.page.parameters,
-                                };
-                                delete parameters[key];
-                                machine.send({
-                                  type: "update",
-                                  field: "parameters",
-                                  value: parameters,
-                                });
-                              }}
-                            >
-                              <Delete />
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      }}
-                      onChange={(e) => {
-                        machine.send({
-                          type: "update",
-                          field: "parameters",
-                          value: {
-                            ...machine.page.parameters,
-                            [key]: e.target.value,
-                          },
-                        });
-                      }}
-                    />
-                  ))}
-                </Stack>
-              )}
+              <PageSettings machine={machine} />
             </TabBody>
 
             <TabBody in={machine.pageTab === 1}>
@@ -371,22 +313,11 @@ const PageEditor = (props) => {
             </TabBody>
 
             <TabBody in={machine.pageTab === 2}>
-              <EventList
-                componentEvents={"onPageLoad"}
-                pageID={machine.page.ID}
-                events={machine.page.events}
-                machine={machine}
-                title={
-                  <>
-                    Events in <b>{machine.page.PageName}</b>
-                  </>
-                }
-              />
+              <EventList {...eventProps} />
             </TabBody>
 
             <TabBody in={machine.pageTab === 3}>
               <JsonTree open={open} setOpen={setOpen} value={machine.page} />
-              {/* <Json>{JSON.stringify(machine.page, 0, 2)}</Json> */}
             </TabBody>
           </Stack>
         </>
@@ -396,3 +327,144 @@ const PageEditor = (props) => {
 };
 
 export default PageEditor;
+
+function PageSettings({ machine }) {
+  const pageProps = [
+    {
+      title: "PageName",
+      description: "Name of the page as it appears in the title bar.",
+    },
+    {
+      title: "PagePath",
+      description: "Path of the page as it appears in the address bar.",
+    },
+    {
+      title: "pageID",
+      alias: "Parent Page",
+      description: "Parent of this page in the site hierarchy.",
+      type: machine.appData.pages
+        .filter((f) => f.ID !== machine.page.ID)
+        .map((p) => ({
+          value: p.ID,
+          label: p.PageName,
+        })),
+    },
+  ];
+
+  const formProps = {
+    fields: pageProps,
+    record: machine.page,
+    disabled: !machine.state.can("update"),
+    onChange: (field, value) => {
+      machine.send({
+        type: "update",
+        field,
+        value,
+      });
+    },
+  };
+
+  return (
+    <>
+      <CommonForm {...formProps} />
+
+      <Flex sx={{ p: 1 }}>
+        <Typography sx={{ textTransform: "capitalize" }} variant="caption">
+          <b> parameters</b>
+        </Typography>
+        <Spacer />
+        <TinyButton
+          icon="Add"
+          onClick={() => machine.send("add")}
+          disabled={!machine.state.can("add")}
+        />
+      </Flex>
+
+      {!machine.page.parameters && (
+        <Warning>Page contains no parameters</Warning>
+      )}
+
+      <Collapse in={machine.state.can("ok")}>
+        <Stack spacing={1}>
+          <TextField
+            size="small"
+            onChange={(e) => {
+              machine.send({
+                type: "change",
+                name: e.target.value,
+              });
+            }}
+          />
+          <Flex>
+            <Button
+              disabled={!!machine.state.context.name}
+              onClick={() => machine.send("ok")}
+            >
+              cancel
+            </Button>
+            <Button
+              disabled={!machine.state.context.name}
+              variant="contained"
+              onClick={() => machine.send("ok")}
+            >
+              ok
+            </Button>
+          </Flex>
+        </Stack>
+      </Collapse>
+
+      {!!machine.page.parameters && (
+        <Stack sx={{ m: 1 }}>
+          <Typography variant="caption">
+            Parameters to be passed into the page
+          </Typography>
+
+          {!(
+            !!machine.page.parameters &&
+            !!Object.keys(machine.page.parameters).length
+          ) && <Warning>No parameters for {machine.page.PageName}.</Warning>}
+
+          {Object.keys(machine.page.parameters).map((key) => (
+            <TextField
+              size="small"
+              key={key}
+              label={key}
+              value={machine.page.parameters[key]}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => {
+                        const parameters = {
+                          ...machine.page.parameters,
+                        };
+                        delete parameters[key];
+                        machine.send({
+                          type: "update",
+                          field: "parameters",
+                          value: parameters,
+                        });
+                      }}
+                    >
+                      <Delete />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              onChange={(e) => {
+                machine.send({
+                  type: "update",
+                  field: "parameters",
+                  value: {
+                    ...machine.page.parameters,
+                    [key]: e.target.value,
+                  },
+                });
+              }}
+            />
+          ))}
+        </Stack>
+      )}
+    </>
+  );
+}

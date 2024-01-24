@@ -1,4 +1,4 @@
-import { Avatar, Box, Button } from "@mui/material";
+import { Avatar, Box, Button, Link } from "@mui/material";
 import Nowrap from "../../../styled/Nowrap";
 import TextIcon from "../../../styled/TextIcon";
 import moment from "moment";
@@ -27,9 +27,14 @@ export const RyDataGrid = ({
     invokeEvent(event, "onCellClick", {
       ID: row[selectedProp],
       column,
+
+      // does this make sense?
+      // TODO: use rowData instead
       ...row,
+
       row: index,
       items,
+      rowData: row,
       rowItems,
     });
   };
@@ -43,7 +48,7 @@ export const RyDataGrid = ({
     .map((f) =>
       ["Image", "Icon"].some((p) => bindings.typeMap[f].type === p)
         ? "32px"
-        : "1fr"
+        : bindings.typeMap[f].fr || "1fr"
     )
     .join(" ");
   return (
@@ -89,12 +94,24 @@ export const RyDataGrid = ({
                 />
               );
             }
+
+            const Tag = datatype?.type === "Link" ? Link : Nowrap;
             return (
-              <Nowrap
+              <Tag
+                noWrap
                 bold={!!selectedProp && row[selectedProp] === selectedID}
                 variant="body2"
+                underline="hover"
                 onClick={(e) => handleChangePage(e, f, row, index, rowItems)}
-                sx={{ display: "flex", alignItems: "center" }}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  fontWeight:
+                    !!selectedProp && row[selectedProp] === selectedID
+                      ? 600
+                      : 400,
+                }}
                 key={f}
               >
                 {!!selectedRowIcon &&
@@ -104,7 +121,7 @@ export const RyDataGrid = ({
                     <TextIcon icon={selectedRowIcon} />
                   )}
                 {parseProp(row[f], datatype)}
-              </Nowrap>
+              </Tag>
             );
           })}
         </Box>

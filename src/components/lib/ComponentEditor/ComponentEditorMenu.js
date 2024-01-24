@@ -73,7 +73,7 @@ export default function ComponentEditorMenu({ component, machine }) {
           <b>{component.ComponentName}</b>
         </Typography>
         <Flex onClick={menu.handleClick}>
-          <TinyButton icon={componentData.Icon || "Info"} />
+          <TinyButton icon={componentData?.Icon || "Info"} />
           <Typography variant="caption">{component.ComponentType}</Typography>
         </Flex>
       </Stack>

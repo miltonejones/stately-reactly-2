@@ -9,8 +9,6 @@ import { useClientState } from "./clientStateMachine";
 import { useClientScript } from "./clientScriptMachine";
 import { useConnection } from "./connectionMachine";
 import { getComponents } from "../connector/getComponents";
-import { reduceSettings } from "../util/reduceSettings";
-import invokeResource from "../connector/invokeResource";
 import { useTableBinder } from "./tableBinderMachine";
 import { useInvoke } from "./invokeMachine";
 
@@ -22,7 +20,7 @@ import React from "react";
 import getDynamoApplicationList from "../connector/getDynamoApplicationList";
 const reactlyMachine = createMachine(
   {
-    /** @xstate-layout N4IgpgJg5mDOIC5QCcwEMDGAXANgTwGJYwsACDAewDsswAPLAbQAYBdRUABwtgEste1DiDqIAtACYA7AA4AbADoAnMykAWJQEYlGpXIlyANCDzjNMmZoUXZagMwqArJs12JAX3fHUmXHgWQ-LxUUKRonJw4vBhoAtQEABYUALZgLOxIINx8cVTCogiSUgYKdmrMzHJSjo56UkrGpoUuzGoKckqySnYV3Wpyap7e6Nj4ARBBIWERUTG5BFRgAO6knGgw6cLZQUKZBZKaqgpqNXJyqhKqjkYmZsx2UqUy-c6Hdo49g14gPqP+gQIpuFItFYoIqARKMlkvxyNQAGa8KAAV2QYOom0y21y+XEEjU9QUFTsZR0H00ahkjkaiCk5mszBcUjs2mYzyUHm+vz840moWBs3REKhMLIYAAbmAaGFsODMVweDs8ns8f02kolDVzJpzo4ZJUaQhTgpanSZFIBqo1OYhj8RjyAcF+TNQfMIMgKJxSBKpUw2FtFTiVYV8T0FJpquZHBJHOo3IaZN1SpHo4cTppbdyxo6gS65uCCO7PdNOPKsoHwbiQ8VFIyJDo5Nc9CdqbcEC1mESDHS7FVHOV3pn7dmJoDnSD8-F6GsqBBSFQKBA0v6sRXdqB9kzHCbLnIHBJNNdoxJDWJD3IrPXGz3Wmy7EPfCO+SXBbleWPVuswAQAWXsZXgzPB4JGUeQ3GYWo1H6KRDWKbdmQvBw40sWoHz+d8nRfV1wQwqY1hgBY0HFJFYmXDIFRyACN0QFw9SJNQDw6d5mT0U8XAkEDe2kNk02ZGM0IdUdMIFbDqFw0J8O-VJkA2FcKKVKtY07ORExjSkJBkaQLDYiCZAUOkGPuNxrQ0GQBKfD8RMnKhxM-AjUGILAMBwdAqD-NdlWo9tKTaFprWYFR7igmC2zPXT9IpS4SXxCklDMrlh3+ITcwnIVbMkghkU4CBSJLdzKPXEQaPUJQiVkZkfI4+wbiaMK6IMqLjNi+LhkfJLnystKcwkr9Muy3LgUYTRyPLArPKKhAOMOZR1B1So3gGNiXCsfRWhJM4dV7RxzPayy8y65KevssAoF4WBaGQfKFODDjtxcd4Av7NxpGuHT6sioyYtMnbbM6t9urs78spy2hSHO0irqDLyz30O6OQgjU3C0HRDXsTsY3Oa0tCkVpzx+gG-pwgGMowHxaEhqiJrPCM7FKBj60sHjNM0U9mW3DTrRUiMrljfHDqw6z0t6gAjYI53B8m5NG67oZ1EoJBZMpzk1ZxLENBW9LZZgYx6ZxtZOPmOv2-7+ckhQcAoNA5wy4GIal-9CoKeRlOKGMAr3BjtENVwKWOa98SqDT9U5Vr0IJ42idNr9zct63eqtiAKcdmiSW3ZxjP1c1ArUb2MfaEkKn6OLmRtBK2t+iOxOJ6OLatwGFERVABaFb1JRoWAFAwBIwAwABrUh4QoZBW99WACCT8aCgY9UcZjHUpAtbXWyabR7HaPQHj0AYdQYw29tSk3nzN2u45gBveCbwnqBH9vO+7vuB6Hm+sDHoaRodyfEAJUqpoXlkVN7NrdWhljgVAjHqd4eoqh72EpXGy1cz4n3ro3MAzdcjPw7jEHAOBn6kASGgWcLlkCQhSJEEgZEAxjSrLReCzxWjyC0AYBW3sVCa0cAFVo7DGT1CkDAlKr5I5HxrrHZBF9UFXyoBgzuaBsG4PwYQsAxCoRkPJsNShMsJouE0iaMouMqiUlVurSojw9QEgjM8Cwzg+HjgEVXKOiCRFmxQYDDBJDkgqIoauKhwY5bbkbPoaQe4LwQWXjRdkCgdYWhJJoBW6htplzDvzCRQsHF1ycWIlxPpb5rGRMQR+w8skvwIHQCWYAFBoHhBdAAFFwgAlAQLMu1YEH0ER+Y+jjo7OMklInJeTB4FLbi-Ce1CGKKA5Bec0h5ozOHVmUNoJxrTFE0geB48TQ6CSNi0uxQjUmnzKV0r8PS0C5NQf01xJSsCkXKZUxRNSKj1MaRXLZ8D7FlKQekpu3TCkd16acp+3y37qKhpoqCbQBgaDKJpdkZwjG+w4oyTUGp1DmjWXacu4dnkpLeR0s+Xce79yQaU8e9sPJVgtCBUyusQndFqN7fQtN3gK0PGYheEFrFoNaZhdpaTo54ofoSy5tBx5qK8RogohwdTKHhQMZkjIyh0oVqUaMLJ+x0lZaix5GLbEvJ2WUgGyjqC+khBbYgwzgyYxNN0FS0hrQGF7N7VQtMORu0epcbs7LkkIL1fzA1iwaAKBgGQX1vpSAgzQIWQ1ChgjigoL3MpmqklwKxbZYN-rA1wncYa6UYaEDRooNZdIZqvIdEUFE8oep5oXhPG2NeshzhuBxs9OZHqk1epTaQrNWAA0kAzdwP1ZAw0-mQB6ZAChIixH6ckBQCbNnauTfqjt-bu1BsXSGnNeaC1sCLVTfEftQz9EVgHToS1OzaE6GqjaOMdQtsxW2hdmal3ptTQO2I4a8BwG3fsHoDKPbvBZP0esdhTwEj0lBSFZRzAKw1HIG9c670+tXf659obX2kBPpAPqINPHyWBeKuknZ7D1HKOUK9MZUbFCJJ0e4NQWSBQ+LB0SOq2nR3vX230ndEMvsuWh2OGHRazk-TRZs1gLCHH0JpW8MhyMgQCo2mjrI2UJI2fvODrz20PvY8hsNPGrYYeRFQfjicSXeK8hxaQpRWgElTtGKk0nKNyfJIFGDSmLLNNU7q9TbGkOcZQ9x9DEASFUERCiVAgn2yAKeNUMorK2SLRrVSUoCsS06GtDZ5z6zXP8MY-OhDGnvN5a42gHTS4AueilGDLAeAXKwDCy4PQoF6y6Qk+Jw0bh9LOCqDoZk7wkUMcFvB58z6OMFd80V-zBAyuSMcmOGrxmxU0VeNYZ15R6HaA4q1kCkZOtWZ63oPrB0POsc7cNrzhXisYcmxg2rOhOwVBkCSewLQNSniTLoRrPQ4nnAzC5ppWX+tqaO0urTqHxuXYAFIAGUADyAA5MLHEOT6TrPdmlDggOhQPD-KkrQcZWn-SHNFiTZ3ZYGx+IbwO-O8YC5QILSJUSoPOlV7D0tcOIEsCBWMEYIwGFUJFWZmtg4MTcA4bW+J9uH2Y2fQHmmfPafG0WUsc3WfthLUt5wtQ+x7hZqFQj4Z+yUlkBYXcCtxecrwix3Lp2TudtG+d6nCI6dN0M06ML4ETEltcHxKB6Pap2D0loSzD2yhzK+Bl37NiScA8t8dinY2qfvlIJD2H070AQGoPgH8o5SAACtYAYiV5TAo3FOx6iitBGsHwWF6QtDoCka19AWg1YlJ57nJfesG5x63-bbf+YT0nmHDdUCoNoAwCNix4cNuOPTSkiZujC9PGGHoGl9dVBJL2JQpvtlt88zH2XIP48AkT9Dgf8Ih+kBH1gSEBCMBgBwbn7dtV6zWCYU4HQBhIKtiL0bhkB5scQVMqHoTspm5pHodtHkuooiOsVphM+gsBQGFmIKVNcCtlBJUPYB1qeJBMoKshJijgMOlkAZlhHv9mAR3gVgEMOk-CfDAZxgQO+rNu-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-wvExhFfOsFPbHU8YkO52H88OFJfufMR66cv-7lAhEfPFGXACEDD3bnn3eHsw8SEDe9H1EvVChsduBWDNbdCajEfFCFElAhFItXBrRk8a+xGDFyVkDVe68HhlQhKnB44227vYEEgcTFnEgmNQ8Pdb71m6dKk8n6dqlONNDje8veFe9Xh3ElzvCoyNUqSGR9AfDuoq8uulew8bepkdrpnucdCPA-kvD+IKwQSYEYOVAN7rTknRgxu2XPpScctpx7k+Vbn+W1QfAE95H6gtiaOQ+U2q9B9UVN-QX0WwU+bwUt917WA5Vnoezr3MuPQ5V6zphctZ+89qbj8YkOXIY32z8wePTdBlGaj2pQesFmKAarKgplAxvlVrCVUXTueAbtY6zsIaQOC5VWilAxPmgBRM4m-HrtDzEjusDOabPUrx2OAfBRkLxdQvxSAgDtruKkUIg2ANhb9kkL1VBIjVnDI1deqqOEiyEmQVQYUoUACv5AgydBOurQcCrgImDXVdevlPmhVFJCBxXA6sBLK0Exjwp6wVRXWrhxZz1UDg-QAVovHuyXARWoUaoP7gFqUgt4TTQup42KyGcGw39WLDjlcAoxzuNrJJg8CJ71AqQeoJQeHX4bnM-aYAAOoZwvBWBcWevWphYEQEtBtw9LBhCiwGDc9Q6ygswWfTDSGdzQigfAhX2wozE1WPnGAbdE1D4gTgd3V2t4NkZEN5GYDYEFPXnaQDKWeoRBvYC6waAEY21M9OvH0RSs9QeoTwfg3iHeM5G59CBmQwTaH90hvLP9JU1NbF86EYmWCH4hqY1AuEukC0CYL4YJCBGSQy5AoEUaiNgQ-gjSO0AAy0sucvlFnra2VRsgOIVQDoP73KGmCLGVAXxrY3saONhS-g5TjSw0H0ttBtUX5lYCRiFxUBDJCmuhGOYM5TmmzCRLTxxgmh86iyPcLrAaYxMuwZwDkEjG7YANm8Dwnphs3yZYCHc3pQzvWEeBVMamjCNbOR1+ZzNTu6kE4JrRFqgj1mZzLZjsxwQTCGhSdZ6O8P2oRgvh+RB1F-WjBnAjcm8F2gfUhbWRoW40dIoBCPSDtuBJQxXh718iphRktIlwPoE8CeAgAA */
+    /** @xstate-layout N4IgpgJg5mDOIC5QCcwEMDGAXANgTwGJYwsACDAewDsswAPLAbQAYBdRUABwtgEste1DiDqIAtACYA7AA4AbADoAnMykAWJQEYlGpXIlyANCDzjNMmZoUXZagMwqArJs12JAX3fHUmXHgWQ-LxUUKRonJw4vBhoAtQEABYUALZgLOxIINx8cVTCogiSUgYKdmrMzHJSjo56UkrGpoUuzGoKckqySnYV3Wpyap7e6Nj4ARBBIWERUTG5BFRgAO6knGgw6cLZQUKZBZKaqgpqNXJyqhKqjkYmZsx2UqUy-c6Hdo49g14gPqP+gQIpuFItFYoIqARKMlkvxyNQAGa8KAAV2QYOom0y21y+XEEjU9QUFTsZR0H00ahkjkaiCk5mszBcUjs2mYzyUHm+vz840moWBs3REKhMLIYAAbmAaGFsODMVweDs8ns8f02kolDVzJpzo4ZJUaQhTgpanSZFIBqo1OYhj8RjyAcF+TNQfMIMgKJxSBKpUw2FtFTiVYV8T0FJpquZHBJHOo3IaZN1SpHo4cTppbdyxo6gS65uCCO7PdNOPKsoHwbiQ8VFIyJDo5Nc9CdqbcEC1mESDHS7FVHOV3pn7dmJoDnSD8-F6GsqBBSFQKBA0v6sRXdqB9kzHCbLnIHBJNNdoxJDWJD3IrPXGz3Wmy7EPfCO+SXBbleWPVuswAQAWXsZXgzPB4JGUeQ3GYWo1H6KRDWKbdmQvBw40sWoHz+d8nRfV1wQwqY1hgBY0HFJFYmXDIFRyACN0QFw9SJNQDw6d5mT0U8XAkEDe2kNk02ZGM0IdUdMIFbDqFw0J8O-VJkA2FcKKVKtY07ORExjSkJBkaQLDYiCZAUOkGPuNxrQ0GQBKfD8RMnKhxM-AjUGILAMBwdAqD-NdlWo9tKTaFprWYFR7igmC2zPXT9IpS4SXxCklDMrlh3+ITcwnIVbMkghkU4CBSJLdzKPXEQaPUJQiVkZkfI4+wbiaMK6IMqLjNi+LhkfJLnystKcwkr9Muy3LgUYTRyPLArPKKhAOMOZR1B1So3gGNiXCsfRWhJM4dV7RxzPayy8y65KevssAoF4WBaGQfKFODDjtxcd4Av7NxpGuHT6sioyYtMnbbM6t9urs78spy2hSHO0irqDLyz30O6OQgjU3C0HRDXsTsY3Oa0tCkVpzx+gG-pwgGMowHxaEhqiJrPCM7FKBj60sHjNM0U9mW3DTrRUiMrljfHDqw6z0t6gAjYI53B8m5NG67oZ1EoJBZMpzk1ZxLENBW9LZZgYx6ZxtZOPmOv2-7+ckhQcAoNA5wy4GIal-9CoKeRlOKGMAr3BjtENVwKWOa98SqDT9U5Vr0IJ42idNr9zct63eqtiAKcdmiSW3ZxjP1c1ArUb2MfaEkKn6OLmRtBK2t+iOxOJ6OLatwGFERVABaFb1JRoWAFAwBIwAwABrUh4QoZBW99WACCT8aCgY9UcZjHUpAtbXWyabR7HaPQHj0AYdQYw29tSk3nzN2u45gBveCbwnqBH9vO+7vuB6Hm+sDHoaRodyfEAJUqpoXlkVN7NrdWhljgVAjHqd4eoqh72EpXGy1cz4n3ro3MAzdcjPw7jEHAOBn6kASGgWcLlkCQhSJEEgZEAxjSrLReCzxWjyC0AYBW3sVCa0cAFVo7DGT1CkDAlKr5I5HxrrHZBF9UFXyoBgzuaBsG4PwYQsAxCoRkPJsNShMsJouE0iaMouMqiUlVurSojw9QEgjM8Cwzg+HjgEVXKOiCRFmxQYDDBJDkgqIoauKhwY5bbkbPoaQe4LwQWXjRdkCgdYWhJJoBW6htplzDvzCRQsHF1ycWIlxPpb5rGRMQR+w8skvwIHQCWYAFBoHhBdAAFFwgAlAQLMu1YEH0ER+Y+jjo7OMklInJeTB4FLbi-Ce1CGKKA5Bec0h5ozOHVmUNoJxrTFE0geB48TQ6CSNi0uxQjUmnzKV0r8PS0C5NQf01xJSsCkXKZUxRNSKj1MaRXLZ8D7FlKQekpu3TCkd16acp+3y37qKhpoqCbQBgaDKJpdkZwjG+w4oyTUGp1DmjWXacu4dnkpLeR0s+Xce79yQaU8e9sPJVgtCBUyusQndFqN7fQtN3gK0PGYheEFrFoNaZhdpaTo54ofoSy5tBx5qK8RogohwdTKHhQMZkjIyh0oVqUaMLJ+x0lZaix5GLbEvJ2WUgGyjqC+khBbYgwzgyYxNN0FS0hrQGF7N7VQtMORu0epcbs7LkkIL1fzA1iwaAKBgGQX1vpSAgzQIWQ1ChgjigoL3MpmqklwKxbZYN-rA1wncYa6UYaEDRooNZdIZqvIdEUFE8oep5oXhPG2NeshzhuBxs9OZHqk1epTaQrNWAA0kAzdwP1ZAw0-mQB6ZAChIixH6ckBQCbNnauTfqjt-bu1BsXSGnNeaC1sCLVTfEftQz9EVgHToS1OzaE6GqjaOMdQtsxW2hdmal3ptTQO2I4a8BwG3fsHoDKPbvBZP0esdhTwEj0lBSFZRzAKw1HIG9c670+tXf659obX2kBPpAPqINPHyWBeKuknZ7D1HKOUK9MZUbFCJJ0e4NQWSBQ+LB0SOq2nR3vX230ndEMvsuWh2OGHRazk-TRZs1gLCHH0JpW8MhyMgQCo2mjrI2UJI2fvODrz20PvY8hsNPGrYYeRFQfjicSXeK8hxaQpRWgElTtGKk0nKNyfJIFGDSmLLNNU7q9TbGkOcZQ9x9DEASFUERCiVAgn2yAKeNUMorK2SLRrVSUoCsS06GtDZ5z6zXP8MY-OhDGnvN5a42gHTS4AueilGDLAeAXKwDCy4PQoF6y6Qk+Jw0bh9LOCqDoZk7wkUMcFvB58z6OMFd80V-zBAyuSMcmOGrxmxU0VeNYZ15R6HaA4q1kCkZOtWZ63oPrB0POsc7cNrzhXisYcmxg2rOhOwVBkCSewLQNSniTLoRrPQ4nnAzC5ppWX+tqaO0urTqHxuXYAFIAGUADyAA5MLHEOT6TrPdmlDggOhQPD-KkrQcZWn-SHNFiTZ3ZYGx+IbwO-O8YC5QILSJUSoPOlV7D0tcOIEsCBWMEYIwGFUJFWZmtg4MTcA4bW+J9uH2Y2fQHmmfPafG0WUsc3WfthLUt5wtQ+x7hZqFQj4Z+yUlkBYXcCtxecrwix3Lp2TudtG+d6nCI6dN0M06ML4ETEltcHxKB6Pap2D0loSzD2yhzK+Bl37NiScA8t8dinY2qfvlIJD2H070AQGoPgH8o5SAACtYAYiV5TAo3FOx6iitBGsHwWF6QtDoCka19AWg1YlJ57nJfesG5x63-bbf+YT0nmHDdUCoNoAwCNix4cNuOPTSkiZujC9PGGHoGl9dVBJL2JQpvtlt88zH2XIP48AkT9Dgf8Ih+kBH1gSEBCMBgBwbn7dtV6zWCYU4HQBhIKtiL0bhkB5scQVMqHoTspm5pHodtHkuooiOsVphM+gsBQGFmIKVNcCtlBJUPYB1qeJBMoKshJijgMOlkAZlhHv9mAR3gVgEMOk-CfDAZxgQO+rNu-KSj4oeI8FSP0PqL2AxPICFLVCBuGKylrhyAvBGJvkxlyhbmQVbjTsFqiDQSNtNk6FflQDfjgLVh8NuH7uCsYijlJm2OwmwtwoyOcGyFBAQTOipqAdvtLt5rTiFnIadmDCQGOJhnbIwSZiCheDuDqGBOoIsrBE-haJYCZHuP2GLj9i3pYeIVLuATLrYbIVMMhgoSEEQERMzh-FWBYHpPIJYByNcBBHSIaHuKVMUKoDjGcJSIrKITlpIcdrAKkXCHEWiG6JGnmnGinuiomrelHjUUunUZKA0TIU0eCLmlQDGpuqwAgayGVDqIeM6ksjwYgGcIoNoB8PcG-taNoFUaTvYbvo0agokZVi5C4ZLG4fNkaK0O0NIIFOYFSPWNWivL7FArqPqGerJlsd0WTp3tIY7vsT5ozkcX0WkUwV5FjBEqpGUK8FzA0HoWyESOwn7hqPqLzoeO8aQZ8eQd8SFr8fIYcd+DEMobfhVkzrVisccDEqCuChUa1hBJcVoGcNrI2MLk3h0cTiQVYTEf6qgKfnAAkL2jblEMLGiMgIQGnosFGqMbGvGs3lqpEebtET0exlyQ5LychgKUKXgCMWMUKIWgXsnM0DEscMHvCgxLjkAm2OBNYB9iRq0DGJpKieyQqf6grnyakDQIWB6F6N8cgMkLVh0NuM8OWjPljJpKeEseGDoA4DoM8IyYAeYSAWyVEe3uiVbs6Qaq6ZfviSoaGh6bVovBEv2Pdvdg4LcaEoUMFMcL4ewvCa7M8PaYmZ3GTNiadgQMkIuLwPCHgAgXFOjBqBUI1OzjnG2KvPpJobEgeASASHWXKWUqTOgKDLAZmYSbOa4UCoXuIMjCaBGJqPdqYhGIObVLDEjrGN2ecJcK4FOUdDOY2XyUDkkDwE2TbpVpwN+IsAwJMSYcoNBpzNaH+j7mYPoJRpqIhJoTEjUBefXMufOV8XeXkshk+d+MclgBQOQI2QgVUI8BpP-pYIvH7qWZIM8PRJMkEVMhSPeOETKQmdOQ2XOQ+beRQPeTeSGvBS2UPECe4ZuB+RqM2DvK4B8H+WWdGEqucM8KquaCyOBWbJBbRZpjBdJdKFQGgKkAsPQH6KccrmIKvlPnuNIDzrFjVIgLdrYDRlaBULUFoLGdKZ0a3vWVJYxUhrJXZWQApUpcLJgL3JMfPJueoJZhePULSqFHRMqlak4EbvRuRVZbKZeeUhAHHGiKkBdBNu5bqZ-N5ASMoLUDEg9JSBeKWZlU6pUGvhSNzPcBJdHAnJ+HFeQkovIrJGpWud5P2ESK4JYHXjjBoPpQgN0JtpaIyFAomNaKVbivfP3AcaRMSnVXqdICSMcJ0KJhwlVN7KZESAEtGLqPdN9mHhEZRVFXyiNX8YKt+ICqKsrgHBSuwq4I2FBrILlUtZULdDzq8OJeFayWlO8ocoOqKWUq0VKSyRYYLG9TAKNpqfmtqVuslRkRUMoGtvSviOoR1XVBhUVXFPTH7i1IQeHhymJJifTrbs7iEGPJ9eKTGm0XGX9mlNjU3NpnjVALAMDeMa7rUBzvUJUN0DEgwvxZleGAeIeCEptL2GYZZS9RLphFTWLE6GPM5AxYZq7nalze1YEXrPcYgPiKVAFPWOYPoGzecALb9fGeTdeRlK2RMB2fOIpWxWcZIAiu0KtDrA2gvPDcecoPNIyLPkimRZtRRfrTRYDGPubepTvBhVvDEoyBBOtKzB8CORyJqNoEWbWc9X9V7blCTNfoSYsCsJJJMRyG0OrdBp0CcHSErfqRoM-loPIHxYyKXJtcLGAP0qgifDHHXMCKQHGngATS0RKSTc3tXbXcVg3XOE3S3bTRuqDRMeDYBD1o8L2UiYyP5CpC9tNWZeaOrYmKJj9N3axb3Ugk3WGuUhELAHbhNs+W5GPdDLDTJgrDFMUBqFFKeBxNXjUKZM8CLs8LwuEevU3PXVvREKNrvZwPveNmnXlCfVTJAlYD7PcKLvYA4PDRxPpOoPbdcMYQMO7ejQoO-XXbHH3SWD-b6IopjZIs5XiTVX7fVWINFlkRpAeNUDGLGFUN7BaJRg8DuewUFGjY8ug5vSItva+gEDQHgxIqbUpZ9QgZvFYHMZ0EpAYI2N7IeJcQiSsVvPIBZeXBw5-Vw9-Tvbg8PAI4Q0oVmYA4NMA1+gSBznULFGyOaKGarZ1qoPXp1hvm-TXRvWo43Rozw4CfOMsCWL7UTZKe0ehKo5g1-V6DvR4wYxEHTSPSIxYLTImAvEiUHIEvPaWl9KGNrIeATuw04x-Zg8EEEDIrwAAF5128CCloDCk+PfX+M8iBNWzin5NRDFNoalPqmRO5A6kTUpVkOxicSRRxQqAXXFBsQPYRJ7gF2s3aDVA-RLguSgzEAuTYCQD4Mca07el0EfpGPiBIylR+4Hhsh6D4jVALHtgHjbhGSoFnDkr8ThEzPkKOELO0D91JpenJBwEIHcRtBQLlCMTR32DexuB3T1DdB9mqAWDTO353PzM9yPPLO9y8CyLAiVMd0-XoS3NzMQuLNPOYpwsIsRPD3tNg2dNVhkM9Cq05HVBgamiFHvD6RLHXCuBMKWA-TBPao5554QiE1VOPIsuMZsvUBtNyiEurl6lniIkmg46c7Wr9jQm1S3Y2qmQN684V2Tm2gLhLjwCZCNLCtdORltABQ9DOxmIOD7n-mUj6QbwQpxS9guCiHavEuY7Z36iLz3aXDWhsTlpwnzTsgaRxQbWoOe3C3Tl2uAQfSgTaUIymHHNiCWLrwmkv0P2qCDXYo8owDBvQxtCaTwyVBai2oHiLVnDisQOaT9jSuv0e0RXbX1wA37IZICPfJpsTRrzcxAtzJUjmi6Erz3YEYHoLwa6gtJtYMfLiJwJSK7X5IYINsFBaD8GqCIxQRtuyAsLWhaW2rMwWPKNE4J2BtRXVvnyXwjvfLSKyKFJ4IEIQBEKTts4OBc3OqJgPC9vHPaARjKAHqiaoGJjMmbt63btVs4plLdJy5U6XsnNVDhiVDyDBLQaPu1B6RcJ3FZ13EbvAFk0-vcp7J7uoJfKDIas4b1XLSwc0qN48IGLqyhjWDXB8TaxQrSADu7sHKA2Hu-Ljv1vHV4c6iKC1DMTXh522ZtgKwPBSoQR7nq4cS0d-sYeZLYcKDECzi4KpCwB1Gpusd6kRgLztAWjwOMwMsmuTTRJCXqAxjkopZicpsznDXFYVakTAckh6QxI9h0j9g5UdVyxgPax3gaCGeJvx3ftm5RXWFYDAdkPqAiaXD9gUjIOsxxThn2ALIxKHDFADv+fLqOWjaBduCKBG7-7hd-PmkgRmbtXUao12necoe+f1xJex527AcuBmtxSNZ6jNYaQL7OBglvZ9CWJ+uk3EEHYOnJm74jaAe6YQAJ5JE03VeLauBmIz09MLzqyeGOf6w6UvEOPltC1ldmwVd76U5Dcje4k4cs5sedD6TPDkmaTFDMiLVIG4wr0PDlDFerdbvrcSF9dA5bdx47eH4se4cqd9BlQMJ1iVBXDeyazVCOfsiuyISJccldqVe96H797AccSEhQRVQWCIzz6hQ7w-7YwLx6AQKZOC2Pdb71mbcDf74fdZ797tGin4CI8kilQ0r4gVCN6F2HhWCxg1DXUMxtsoNdfLPbEJFfFvd2597H6D5gDD4qWI81DowmEPT-7I232lSaT6Cv6jIf5Q+OldqQFUGxw7H9ppe0zIPzsbEXj4HAbXDLXaz-wvExgrf+sVs9ck-Q8rODH68hqjfVfMR67xf-7lAhHUvFGXACEDD3bnklfdeofPfu-+oeMU1CjWcHjP4s0OC0MLyF36CKAhFnpOvsL2Ca8vexGDFyVkD-FgCJ9WC2M1CnB46F34ggR9CuzFnEgE+62lfE9UVJdKk8kpdqnlNNDfddPeHYEMQHNCGKylkLLtDPCXB9AfDuoR-88fEx9dqpkdrpnVcdCPA-kvD+IKwQSYGyOVAN7rTknRgDu2XPqBdxdpx7k+Vbn+W1QfDK95ERgXiuDGIX-Xnk4OVwV4DPnX8681gHKmeg9gwMzWj0HKnrHTAJdF+nqNTJf2gr0VYKPmQhoAIE6PRugZRTUPaj46sEzEgGVZKCjKADtyqawSqhdGq6AZ2sOsdhBpFT4OpguxZYuAFEziwCHuPnDvjtXM6jVaAiPAzuGCmQqRHUdqZzjG13AqByij0NhoT04E2Rq2qXZTilUc7HAPgoyF4uoX4pARn2MvFSKEQbAGw4BzzB3FiVxpi18a1nVVHCRZCTIKoMKUKABX8gQZOgt3VoOBVFqzhxa1nXyk7QqikhA4rgdWAllaCYx4U9YKorZUkiBdxyigTCs63AhutQo1Qf3C7UpBbxTma9bJhgythpcGwjDWLDjlcAoxMe-QWIXuEsC7NZAx-TIT3RcZYtm6YAVuml3f4zUwImOcTPdhPTbgjWDCPPgMHt5ZNahQTdRiE1fRpdzQWfADAay5y+VMCFgVQUz0YQkhbANQ5xsMNcajDLkv9f+kByUHEt3glgF9saxKgIx4aZ6dePomWF6g9QAwrulkM4YbCcGfDbRiOzQF7Dx6z-J4FeFmrlAxMsEPxPs2r4VBdIFoVYTkzqbBMf6YTLxsCHGEaR2gUwniHSFmE65LeJwffssiqAdBW+ATe4fXTyYCACmTTPvsKXGFRd9WBQo1sUNqgMsrASMQuHoIZI61UWELdFg8yWYSJDeOME0CvUWR7hdYxzfpl2DOBUZgkrwcFrMwZwYsYWySF5ml3rCPBdm+zRhGth04MtAW6PdSCcDjqbU0WUo9kViznQ4scEsI94dDGigc5eRb-AuLGEYEccpGRuURjIPLg8trIfLcaOkUAhHoX2IQ64aHzr6+RUwoyM4C1X0CeBPAQAA */
     id: "reactly",
 
     initial: "before load",
@@ -71,40 +69,6 @@ const reactlyMachine = createMachine(
                           },
                           "#reactly.editing application.editing page.load page.fire page events",
                         ],
-
-                        // states: {
-                        //   "ping invoker": {
-                        //     invoke: {
-                        //       src: "getInvokerLoadState",
-                        //       onDone: {
-                        //         target: "wait for invoker",
-                        //         actions: "assignInvokerState",
-                        //       },
-                        //     },
-                        //   },
-
-                        //   "wait for invoker": {
-                        //     after: {
-                        //       500: [
-                        //         {
-                        //           // target: "ping invoker",
-                        //           cond: "event invoker is not ready",
-                        //         },
-                        //         {
-                        //           target:
-                        //             "#reactly.editing application.editing page.load page.fire application events.call event handler",
-                        //           cond: "application has events",
-                        //         },
-                        //         {
-                        //           target:
-                        //             "#reactly.editing application.editing page.load page.fire page events",
-                        //         },
-                        //       ],
-                        //     },
-                        //   },
-                        // },
-
-                        // initial: "ping invoker",
                       },
 
                       "call event handler": {
@@ -118,12 +82,12 @@ const reactlyMachine = createMachine(
                               target:
                                 "#reactly.editing application.editing page.load page.page data loaded",
                               cond: "no page has loaded",
-                              actions: "reassignAppData",
+                              actions: ["reassignAppData", "expandStateList"],
                             },
                             {
                               target:
                                 "#reactly.editing application.editing page.load page.fire page events",
-                              actions: "reassignAppData",
+                              actions: ["reassignAppData", "expandStateList"],
                             },
                           ],
                         },
@@ -142,7 +106,7 @@ const reactlyMachine = createMachine(
                     on: {
                       complete: {
                         target: "page data loaded",
-                        actions: "reassignAppData",
+                        actions: ["reassignAppData", "expandStateList"],
                       },
                     },
 
@@ -471,9 +435,19 @@ const reactlyMachine = createMachine(
                   },
                 },
               },
+
+              "check component state": {
+                always: [
+                  {
+                    target: "editing component.component data loaded",
+                    cond: "component is being edited",
+                  },
+                  "load page",
+                ],
+              },
             },
 
-            initial: "load page",
+            initial: "check component state",
 
             on: {
               edit: {
@@ -495,6 +469,7 @@ const reactlyMachine = createMachine(
                   "assignStateList",
                   "assignAppLoading",
                   "resetApplicationClientLib",
+                  "expandStateList",
                 ],
                 internal: true,
               },
@@ -518,7 +493,7 @@ const reactlyMachine = createMachine(
               "update app": [
                 {
                   target: "editing page",
-                  actions: "reassignAppData",
+                  actions: ["reassignAppData", "expandStateList"],
                   cond: "event contains no nav info",
                 },
                 {
@@ -753,8 +728,8 @@ const reactlyMachine = createMachine(
   },
   {
     guards: {
-      "event invoker is not ready": (context) =>
-        !context.invokerLoadState && !!context.appLoading,
+      // "event invoker is not ready": (context) =>
+      //   !context.invokerLoadState && !!context.appLoading,
       "event contains no nav info": (_, event) =>
         !event.application?.navigation,
       "application has events": (context) => {
@@ -780,7 +755,8 @@ const reactlyMachine = createMachine(
         return loadOK;
       },
       "no page has loaded": (context) => !context.page,
-      "more keys": (context) => context.key_index < context.appKeys.length,
+      "component is being edited": (context) => !!context.selectedComponent,
+      // "more keys": (context) => context.key_index < context.appKeys.length,
     },
     actions,
   }
@@ -1068,83 +1044,42 @@ export const useReactly = () => {
   }
 
   /**
-   * Retrieves data from a resource and resolves rows based on the resource's node path.
-   * @param {Object} context - The context object containing page and appData.
-   * @returns {Object} - An object containing the key and rows.
-   */
-  async function invokeComponentResources(context) {
-    const { page, appData } = context;
-
-    // Find the component with the "bindings" setting
-    const bound = page.components.find((component) =>
-      component.settings.some((setting) => setting.SettingName === "bindings")
-    );
-
-    // Reduce the settings of the bound component
-    const args = reduceSettings(bound.settings);
-
-    // Parse the bindings argument as JSON
-    const json = JSON.parse(args.bindings);
-
-    // Find the resource with the matching ID
-    const resource = appData.resources.find(
-      (resource) => resource.ID === json.resourceID
-    );
-
-    // Find the connection with the matching ID
-    const connection = appData.connections.find(
-      (connection) => connection.ID === resource.connectionID
-    );
-
-    // Invoke the resource using the connection
-    const data = await invokeResource(connection, resource);
-
-    // Resolve rows based on the resource's node path
-    const rows = resolveRows(data, resource.node.split("/"));
-
-    return {
-      key: json.resourceID,
-      rows: rows,
-    };
-  }
-
-  /**
    * This function takes a context object and performs some operations based on its properties.
    * @param {Object} context - The context object containing configuration and data.
    * @returns {boolean} - Returns true if the operations are successful.
    */
-  async function loadConfigurationMachine(context) {
-    // Get the machine based on the configuration type
-    const machine = configMachines[context.configurationType];
+  // async function loadConfigurationMachine(context) {
+  //   // Get the machine based on the configuration type
+  //   const machine = configMachines[context.configurationType];
 
-    // If no machine is found, display an alert and return
-    if (!machine) {
-      alert(`No machine for "${context.configurationType}"`);
-      return false;
-    }
+  //   // If no machine is found, display an alert and return
+  //   if (!machine) {
+  //     alert(`No machine for "${context.configurationType}"`);
+  //     return false;
+  //   }
 
-    // Destructure the page object from the context, defaulting to empty arrays
-    const { state = [], scripts = [] } = context.page || {};
+  //   // Destructure the page object from the context, defaulting to empty arrays
+  //   const { state = [], scripts = [] } = context.page || {};
 
-    // Log the appData property of the context object
-    console.log({ app: context.appData });
+  //   // Log the appData property of the context object
+  //   console.log({ app: context.appData });
 
-    // Send a message to the machine with relevant data
-    machine.send({
-      type: "load",
-      state,
-      scripts,
-      appState: context.appData.state,
-      appScripts: context.appData.scripts,
-      resources: context.appData.resources,
-      connections: context.appData.connections,
-      resourceData: context.resourceData,
-      setupData: context.setupData,
-    });
+  //   // Send a message to the machine with relevant data
+  //   machine.send({
+  //     type: "load",
+  //     state,
+  //     scripts,
+  //     appState: context.appData.state,
+  //     appScripts: context.appData.scripts,
+  //     resources: context.appData.resources,
+  //     connections: context.appData.connections,
+  //     resourceData: context.resourceData,
+  //     setupData: context.setupData,
+  //   });
 
-    // Return true to indicate successful operations
-    return true;
-  }
+  //   // Return true to indicate successful operations
+  //   return true;
+  // }
 
   /**
    * Updates a component in the context using the given data.
@@ -1170,21 +1105,25 @@ export const useReactly = () => {
     const { page, appData, clientLib } = state.context;
 
     if (!events) return;
+
+    // remove setState actions from the event array
     const invoked = events
       .filter((f) => f.event === eventType)
-      .filter((f) => f.action.type !== "setState");
+      .filter((item) => item.action.type !== "setState");
+
+    // create an array with only setState actions
     const setters = events
       .filter((f) => f.event === eventType)
       .filter((item) => item.action.type === "setState");
 
-    // console.log({ invoked, setters, appData });
-
     if (!appData) return;
 
+    // initialize updated clientLib as the existing one
     let updatedClientLib = clientLib;
 
+    // updated clientLib if there are state setters
     if (setters.length) {
-      // console.log({ setters: setters.length });
+      // send state update messages to the primary machine
       setters.map((step) => {
         send({
           type: "update state",
@@ -1193,21 +1132,36 @@ export const useReactly = () => {
         });
       });
 
-      // console.log({ setters });
+      // update clientLib before passing it into the invoker
       updatedClientLib = setters.reduce((out, step) => {
-        const up = actions.getUpdatedAppState(state.context, {
-          options,
-          step,
-        }).clientLib;
+        // update state for each state setter
+        const updatedState = actions.getUpdatedAppState(
+          {
+            ...state.context,
+
+            // pass updated clientLib to keep state setter current
+            //  with the values it is updating
+            clientLib: out,
+          },
+          {
+            // pass action and options into the state setter
+            options,
+            step,
+          }
+        ).clientLib;
+
+        // extract updated page/application data and append to clientLib
+        const { page, application } = updatedState;
+
         return {
           ...out,
-          ...up,
+          page,
+          application,
         };
       }, clientLib);
-
-      // console.log({ updatedClientLib });
     }
 
+    // invoke remaining events
     if (!invoked.length) return;
     invoker.send({
       type: "load",
@@ -1233,11 +1187,7 @@ export const useReactly = () => {
     loadDataBindingMachine,
     invokeAppLoad: invokeApplicationLoad,
     invokePageLoad,
-    invokeComponentResources,
-    loadConfigurationMachine,
     commitComponentDefinition,
-    getInvokerLoadState: async () => true, // invoker.state.can("load"),
-    invokeEvent,
   };
 
   const [state, send] = useMachine(reactlyMachine, { services });
@@ -1309,13 +1259,3 @@ export const useReactly = () => {
     machineList,
   };
 };
-
-function resolveRows(object, node) {
-  const key = node.shift();
-  const descendent = object[key];
-  if (!!node.length) {
-    return resolveRows(descendent, node);
-  }
-
-  return descendent;
-}
